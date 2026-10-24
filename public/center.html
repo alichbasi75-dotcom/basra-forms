@@ -227,7 +227,17 @@
           <i class="fa-solid fa-landmark"></i>
         </div>
         <div>
-          <h1 class="text-lg sm:text-xl font-black text-slate-900 leading-tight">المفوضية العليا المستقلة للانتخابات</h1>
+          <div class="flex items-center gap-2 flex-wrap">
+            <h1 class="text-lg sm:text-xl font-black text-slate-900 leading-tight">المفوضية العليا المستقلة للانتخابات</h1>
+            <span id="centerVersionBadge" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-black bg-amber-100 text-amber-900 border border-amber-300 shadow-xs" title="رقم إصدار برنامج المراكز">
+              <i class="fa-solid fa-code-commit text-[11px] text-amber-600"></i>
+              <span id="centerVersionVal">الإصدار 2.0.0</span>
+            </span>
+            <span id="centerDateBadge" class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-600 border border-slate-300" title="تاريخ آخر تحديث">
+              <i class="fa-regular fa-calendar-check text-[11px] text-emerald-600"></i>
+              <span id="centerDateVal">2026-10-24</span>
+            </span>
+          </div>
           <p class="text-xs sm:text-sm font-bold text-amber-700">مكتب انتخابات محافظة البصرة — نماذج واستمارات مراكز التسجيل</p>
         </div>
       </div>
@@ -2336,31 +2346,29 @@
       });
     }
 
-        async function loadVersionInfo() {
+    async function loadVersionInfo() {
       try {
-        const res = await fetch('./version.json?t=' + Date.now());
+        const res = await fetch("./version.json?t=" + Date.now());
         if (res.ok) {
           const vData = await res.json();
-          const verStr = vData.version ? ('الإصدار ' + vData.version) : 'الإصدار 2.0.0';
-          let dateStr = '2026-10-24';
+          const verStr = vData.version ? ("الإصدار " + vData.version) : "الإصدار 2.0.0";
+          let dateStr = "2026-10-24";
           if (vData.updatedAt) {
             try {
               const d = new Date(vData.updatedAt);
               if (!isNaN(d.getTime())) {
-                dateStr = d.toLocaleDateString('ar-IQ', { year: 'numeric', month: 'long', day: 'numeric' });
+                dateStr = d.toLocaleDateString("ar-IQ", { year: "numeric", month: "long", day: "numeric" });
               }
             } catch(e) {}
           }
-          const vEls = [document.getElementById('centerVersionVal'), document.getElementById('footerCenterVersion')];
-          const dEls = [document.getElementById('centerDateVal'), document.getElementById('footerCenterDate')];
-          vEls.forEach(el => { if (el) el.textContent = verStr; });
-          dEls.forEach(el => { if (el) el.textContent = 'تاريخ التحديث: ' + dateStr; });
+          const vEl = document.getElementById("centerVersionVal");
+          const dEl = document.getElementById("centerDateVal");
+          if (vEl) vEl.textContent = verStr;
+          if (dEl) dEl.textContent = dateStr;
         }
-      } catch (err) {
-        console.warn('Could not fetch version.json:', err);
-      }
+      } catch(e) {}
     }
-document.addEventListener('DOMContentLoaded', () => { init(); loadVersionInfo(); });
+    document.addEventListener("DOMContentLoaded", () => { init(); loadVersionInfo(); });
   </script>
 </body>
 </html>
