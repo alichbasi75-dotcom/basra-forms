@@ -12,7 +12,7 @@
     "version": "v1.0",
     "description": "إشعار مباشرة الموظف بالدوام الرسمي بعد انتهاء مدة الإجازة.",
     "fillableTemplateId": null,
-    "hidden": false,
+    "hidden": true,
     "downloads": 0,
     "pages": [
       "/sheets/form_1792790662356_page_1.png"
