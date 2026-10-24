@@ -14,6 +14,8 @@ app.use(express.urlencoded({ extended: true }));
 const DATA_DIR = path.join(__dirname, 'data');
 const UPLOADS_DIR = path.join(__dirname, 'uploads');
 const PUBLIC_DIR = path.join(__dirname, 'public');
+const SHEETS_DIR = path.join(__dirname, 'sheets');
+if (!fs.existsSync(SHEETS_DIR)) fs.mkdirSync(SHEETS_DIR, { recursive: true });
 
 if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
@@ -817,7 +819,7 @@ app.post('/api/admin/auto-sync', async (req, res) => {
 
 app.listen(PORT, '0.0.0.0', () => {
   // Auto-sync on startup in background
-  autoSyncWithCloud().catch(() => {});
+  setTimeout(() => { autoSyncWithCloud().catch(() => {}); }, 3000);
   console.log(`====================================================`);
   console.log(`نظام نماذج مكتب انتخابات محافظة البصرة ومراكز التسجيل الـ 76`);
   console.log(`- بوابة مراكز التسجيل (المركز): http://localhost:${PORT}/center`);
