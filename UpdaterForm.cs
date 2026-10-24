@@ -86,7 +86,7 @@ namespace BasraUpdater
             this.Controls.Add(lblTitle);
 
             lblSubTitle = new Label();
-            lblSubTitle.Text = "تحديث برنامج المراكز أو برنامج المسؤول بشكل منفصل تماماً مع التحقق الإلزامي من مطابقة الملفات";
+            lblSubTitle.Text = "تحديث واجهة المراكز (index.html) أو واجهة المسؤول (admin.html) فقط دون لمس الاستمارات";
             lblSubTitle.Font = new Font("Segoe UI", 8.5f, FontStyle.Regular);
             lblSubTitle.ForeColor = Color.FromArgb(100, 116, 139);
             lblSubTitle.Location = new Point(20, 38);
@@ -133,11 +133,11 @@ namespace BasraUpdater
             grpTarget.Font = new Font("Segoe UI", 9.5f, FontStyle.Bold);
             grpTarget.ForeColor = Color.FromArgb(30, 41, 59);
             grpTarget.Location = new Point(20, 118);
-            grpTarget.Size = new Size(610, 105);
+            grpTarget.Size = new Size(610, 115);
             grpTarget.BackColor = Color.White;
 
             rbCenters = new RadioButton();
-            rbCenters.Text = "تحديث برنامج مراكز التسجيل فقط (بوابة المراكز الـ 76 — ملف index.html أو الاستمارات)";
+            rbCenters.Text = "تحديث برنامج مراكز التسجيل فقط (بوابة المراكز الـ 76 — ملف index.html حصراً)";
             rbCenters.Location = new Point(20, 25);
             rbCenters.Size = new Size(570, 24);
             rbCenters.Font = new Font("Segoe UI", 9.5f, FontStyle.Bold);
@@ -156,11 +156,11 @@ namespace BasraUpdater
             grpTarget.Controls.Add(rbAdmin);
 
             lblTargetNotice = new Label();
-            lblTargetNotice.Text = "⚠️ إشعار: عند اختيار أحد البرنامجين، يلزمك البرنامج باختيار الملف المتطابق معه حصراً ولا يسمح برفع غيره.";
-            lblTargetNotice.Font = new Font("Segoe UI", 8f);
-            lblTargetNotice.ForeColor = Color.FromArgb(100, 116, 139);
+            lblTargetNotice.Text = "⚠️ إشعار مهم: تحديث الاستمارات متوقف على برنامج المسؤول حصراً. برنامج التحديث مخصص لرفع كود البرنامجين فقط.";
+            lblTargetNotice.Font = new Font("Segoe UI", 8f, FontStyle.Bold);
+            lblTargetNotice.ForeColor = Color.FromArgb(180, 83, 9);
             lblTargetNotice.Location = new Point(20, 80);
-            lblTargetNotice.Size = new Size(570, 18);
+            lblTargetNotice.Size = new Size(570, 28);
             grpTarget.Controls.Add(lblTargetNotice);
 
             this.Controls.Add(grpTarget);
@@ -170,8 +170,8 @@ namespace BasraUpdater
             grpFile.Text = "2. اختيار الملف المطلوب وشرط المطابقة الإلزامي:";
             grpFile.Font = new Font("Segoe UI", 9.5f, FontStyle.Bold);
             grpFile.ForeColor = Color.FromArgb(30, 41, 59);
-            grpFile.Location = new Point(20, 230);
-            grpFile.Size = new Size(610, 220);
+            grpFile.Location = new Point(20, 240);
+            grpFile.Size = new Size(610, 210);
             grpFile.BackColor = Color.White;
 
             lblFilePath = new Label();
@@ -213,7 +213,7 @@ namespace BasraUpdater
             pnlDropZone.Click += (s, e) => BtnBrowseFile_Click(s, e);
 
             lblDropHint = new Label();
-            lblDropHint.Text = "📥 اسحب وأفلت الملف المطابق هنا مباشرة\n(برنامج المراكز: index.html أو استمارة معتمدة | برنامج المسؤول: admin.html)";
+            lblDropHint.Text = "📥 اسحب وأفلت ملف برنامج المراكز حصراً:\n(index.html)";
             lblDropHint.TextAlign = ContentAlignment.MiddleCenter;
             lblDropHint.Font = new Font("Segoe UI", 9f, FontStyle.Bold);
             lblDropHint.ForeColor = Color.FromArgb(100, 116, 139);
@@ -231,7 +231,7 @@ namespace BasraUpdater
             lblFileValidation.Font = new Font("Segoe UI", 9f, FontStyle.Bold);
             lblFileValidation.ForeColor = Color.FromArgb(217, 119, 6);
             lblFileValidation.Location = new Point(15, 145);
-            lblFileValidation.Size = new Size(575, 65);
+            lblFileValidation.Size = new Size(575, 58);
             grpFile.Controls.Add(lblFileValidation);
 
             this.Controls.Add(grpFile);
@@ -335,7 +335,7 @@ namespace BasraUpdater
             }
             else
             {
-                lblDropHint.Text = "📥 اسحب وأفلت ملف برنامج المراكز حصراً:\n(index.html أو استمارة Word/Excel/PDF أو forms.json)";
+                lblDropHint.Text = "📥 اسحب وأفلت ملف برنامج المراكز حصراً:\n(index.html)";
                 lblDropHint.ForeColor = Color.FromArgb(3, 105, 161);
             }
 
@@ -366,12 +366,12 @@ namespace BasraUpdater
             if (rbAdmin.Checked)
             {
                 ofd.Title = "اختر ملف لوحة المسؤول حصراً (admin.html)";
-                ofd.Filter = "ملف لوحة المسؤول (admin.html)|admin.html|صفحات HTML (*.html)|*.html|جميع الملفات (*.*)|*.*";
+                ofd.Filter = "ملف لوحة المسؤول (admin.html)|admin.html";
             }
             else
             {
-                ofd.Title = "اختر ملف برنامج المراكز (index.html أو استمارة معتمدة)";
-                ofd.Filter = "ملفات برنامج المراكز (index.html;*.json;*.xlsx;*.docx;*.pdf)|index.html;center.html;*.json;*.xlsx;*.docx;*.pdf|صفحات HTML (*.html)|*.html|استمارات معتمدة (*.xlsx;*.docx;*.pdf)|*.xlsx;*.docx;*.pdf|جميع الملفات (*.*)|*.*";
+                ofd.Title = "اختر ملف برنامج المراكز حصراً (index.html)";
+                ofd.Filter = "ملف برنامج المراكز (index.html)|index.html";
             }
 
             if (ofd.ShowDialog() == DialogResult.OK)
@@ -405,9 +405,15 @@ namespace BasraUpdater
             {
                 if (fname == "admin.html")
                 {
-                    lblFileValidation.Text = string.Format("✅ تطابق تام ومؤكد: تم اختيار ملف لوحة المسؤول المعتمد ({0}) بنجاح.\nسيتم تحديث كود لوحة المسؤول السحابية حصراً دون لمس برنامج المراكز.", fi.Name);
+                    lblFileValidation.Text = string.Format("✅ تطابق تام ومؤكد: تم اختيار ملف لوحة المسؤول ({0}) بنجاح.\nسيتم تحديث كود لوحة المسؤول السحابية حصراً دون لمس برنامج المراكز أو الاستمارات.", fi.Name);
                     lblFileValidation.ForeColor = Color.FromArgb(16, 185, 129);
                     return true;
+                }
+                else if (fname == "index.html")
+                {
+                    lblFileValidation.Text = "🚫 غير مسموح وعدم تطابق! لقد اخترت (تحديث برنامج المسؤول فقط)،\nولكن الملف المختار هو ملف برنامج المراكز (index.html).\nيجب اختيار ملف (admin.html) حصراً.";
+                    lblFileValidation.ForeColor = Color.FromArgb(225, 29, 72);
+                    return false;
                 }
                 else
                 {
@@ -420,36 +426,29 @@ namespace BasraUpdater
             // Case B: User chose to update CENTERS only
             if (rbCenters.Checked)
             {
-                if (fname == "admin.html")
+                if (fname == "index.html" || fname == "center.html")
+                {
+                    lblFileValidation.Text = string.Format("✅ تطابق تام ومؤكد: تم اختيار صفحة بوابة مراكز التسجيل الـ 76 ({0}).\nسيتم تحديث واجهة المراكز أونلاين حصراً دون لمس لوحة المسؤول أو الاستمارات.", fi.Name);
+                    lblFileValidation.ForeColor = Color.FromArgb(16, 185, 129);
+                    return true;
+                }
+                else if (fname == "admin.html")
                 {
                     lblFileValidation.Text = "🚫 غير مسموح وعدم تطابق! لقد اخترت (تحديث برنامج المراكز فقط)،\nولكن الملف المختار هو ملف المسؤول (admin.html).\nإذا كنت تريد تحديث المسؤول يرجى تحديد خيار المسؤول أعلاه أولاً.";
                     lblFileValidation.ForeColor = Color.FromArgb(225, 29, 72);
                     return false;
                 }
-
-                if (fname == "index.html" || fname == "center.html")
+                else if (fname == "forms.json" || ext == ".xlsx" || ext == ".docx" || ext == ".pdf")
                 {
-                    lblFileValidation.Text = string.Format("✅ تطابق تام ومؤكد: تم اختيار صفحة بوابة مراكز التسجيل الـ 76 ({0}).\nسيتم تحديث واجهة المراكز أونلاين حصراً دون لمس لوحة المسؤول.", fi.Name);
-                    lblFileValidation.ForeColor = Color.FromArgb(16, 185, 129);
-                    return true;
-                }
-                else if (fname == "forms.json" || fname == "centers.json" || fname == "categories.json")
-                {
-                    lblFileValidation.Text = string.Format("✅ تطابق تام: تم اختيار قاعدة بيانات المراكز ({0}).\nسيتم تحديث بيانات المراكز أونلاين فوراً.", fi.Name);
-                    lblFileValidation.ForeColor = Color.FromArgb(16, 185, 129);
-                    return true;
-                }
-                else if (ext == ".xlsx" || ext == ".docx" || ext == ".pdf" || ext == ".png" || ext == ".jpg")
-                {
-                    lblFileValidation.Text = string.Format("✅ تطابق تام: تم اختيار استمارة/ملف معتمد للمراكز ({0}).\nسيتم نسخه لمجلد النماذج ورفعه للمراكز الـ 76 أونلاين.", fi.Name);
-                    lblFileValidation.ForeColor = Color.FromArgb(16, 185, 129);
-                    return true;
+                    lblFileValidation.Text = "🚫 غير مسموح! تحديث الاستمارات والنماذج متوقف تماماً على برنامج المسؤول حصراً أونلاين.\nبرنامج التحديث مخصص لتحديث واجهة برنامج المراكز (ملف index.html حصراً).";
+                    lblFileValidation.ForeColor = Color.FromArgb(225, 29, 72);
+                    return false;
                 }
                 else
                 {
-                    lblFileValidation.Text = string.Format("⚠️ تنبيه: الملف \"{0}\" غير معتاد لبرنامج المراكز. الملف المعتمد هو index.html أو ملفات الاستمارات.", fi.Name);
-                    lblFileValidation.ForeColor = Color.FromArgb(217, 119, 6);
-                    return true;
+                    lblFileValidation.Text = string.Format("🚫 غير مسموح وعدم تطابق! الملف \"{0}\" غير مسموح به هنا.\nيجب عليك حصراً اختيار ملف واجهة المراكز (index.html).", fi.Name);
+                    lblFileValidation.ForeColor = Color.FromArgb(225, 29, 72);
+                    return false;
                 }
             }
 
@@ -460,135 +459,123 @@ namespace BasraUpdater
         {
             lblCloudVerVal.Text = "جاري الفحص...";
             lblCloudVerVal.ForeColor = Color.FromArgb(2, 132, 199);
-            btnCheckCloud.Enabled = false;
-
-            System.Threading.ThreadPool.QueueUserWorkItem((state) => {
-                string fetched = null;
-                try
-                {
-                    ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-                    using (WebClient wc = new WebClient())
-                    {
-                        wc.Headers.Add("User-Agent", "BasraUpdaterClient");
-                        string json = wc.DownloadString(CLOUD_URL + "?t=" + DateTime.UtcNow.Ticks);
-                        Match m = Regex.Match(json, "\"version\"\\s*:\\s*\"([^\"]+)\"");
-                        if (m.Success) fetched = m.Groups[1].Value;
-                    }
-                }
-                catch
-                {
-                    try
-                    {
-                        using (WebClient wc = new WebClient())
-                        {
-                            wc.Headers.Add("User-Agent", "BasraUpdaterClient");
-                            string json = wc.DownloadString(CLOUD_BACKUP + "?t=" + DateTime.UtcNow.Ticks);
-                            Match m = Regex.Match(json, "\"version\"\\s*:\\s*\"([^\"]+)\"");
-                            if (m.Success) fetched = m.Groups[1].Value;
-                        }
-                    }
-                    catch { }
-                }
-
-                this.BeginInvoke((MethodInvoker)delegate {
-                    btnCheckCloud.Enabled = true;
-                    if (!string.IsNullOrEmpty(fetched))
-                    {
-                        cloudVersion = fetched.Trim();
-                        lblCloudVerVal.Text = cloudVersion;
-                        lblCloudVerVal.ForeColor = Color.FromArgb(16, 185, 129);
-                        AutoSuggestNextVersion(cloudVersion);
-                    }
-                    else
-                    {
-                        cloudVersion = "2.0.0";
-                        lblCloudVerVal.Text = cloudVersion + " (محلي)";
-                        lblCloudVerVal.ForeColor = Color.FromArgb(100, 116, 139);
-                        AutoSuggestNextVersion("2.0.0");
-                    }
-                    ValidateAll();
-                });
-            });
-        }
-
-        private void AutoSuggestNextVersion(string curVer)
-        {
-            if (string.IsNullOrEmpty(txtNewVer.Text) || txtNewVer.Text == "جاري...")
-            {
-                string clean = curVer.Trim().TrimStart('v', 'V');
-                string[] parts = clean.Split('.');
-                if (parts.Length >= 2)
-                {
-                    int last;
-                    if (int.TryParse(parts[parts.Length - 1], out last))
-                    {
-                        parts[parts.Length - 1] = (last + 1).ToString();
-                        txtNewVer.Text = string.Join(".", parts);
-                        return;
-                    }
-                }
-                txtNewVer.Text = clean + ".1";
-            }
-        }
-
-        private int CompareVersions(string v1, string v2)
-        {
-            string c1 = Regex.Replace(v1.Trim().TrimStart('v', 'V'), @"[^0-9.]", "");
-            string c2 = Regex.Replace(v2.Trim().TrimStart('v', 'V'), @"[^0-9.]", "");
-
-            string[] p1 = c1.Split(new char[] { '.' }, StringSplitOptions.RemoveEmptyEntries);
-            string[] p2 = c2.Split(new char[] { '.' }, StringSplitOptions.RemoveEmptyEntries);
-
-            int maxLen = Math.Max(p1.Length, p2.Length);
-            for (int i = 0; i < maxLen; i++)
-            {
-                int num1 = (i < p1.Length) ? int.Parse(p1[i]) : 0;
-                int num2 = (i < p2.Length) ? int.Parse(p2[i]) : 0;
-                if (num1 > num2) return 1;
-                if (num1 < num2) return -1;
-            }
-            return 0;
-        }
-
-        private bool ValidateVersionNumber()
-        {
-            string inputVer = txtNewVer.Text.Trim();
-
-            if (string.IsNullOrEmpty(inputVer))
-            {
-                lblVersionValidation.Text = "يرجى كتابة رقم الإصدار الجديد (مثال: 2.0.1 أو 2.1.0).";
-                lblVersionValidation.ForeColor = Color.FromArgb(217, 119, 6);
-                return false;
-            }
-
-            if (!Regex.IsMatch(inputVer, @"^[vV]?\d+(\.\d+)+$"))
-            {
-                lblVersionValidation.Text = "صيغة الإصدار غير صالحة. اكتب أرقاماً مفصولة بنقاط (مثل: 2.0.1).";
-                lblVersionValidation.ForeColor = Color.FromArgb(225, 29, 72);
-                return false;
-            }
 
             try
             {
-                int cmp = CompareVersions(inputVer, cloudVersion);
-                if (cmp <= 0)
+                ServicePointManager.SecurityProtocol = (SecurityProtocolType)3072; // Tls12
+                using (WebClient wc = new WebClient())
                 {
-                    lblVersionValidation.Text = string.Format("🚫 غير مسموح: الإصدار ({0}) يجب أن يكون أكبر من الإصدار السحابي ({1}).", inputVer, cloudVersion);
-                    lblVersionValidation.ForeColor = Color.FromArgb(225, 29, 72);
-                    return false;
+                    wc.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
+                    string json = "";
+                    try
+                    {
+                        json = wc.DownloadString(CLOUD_URL + "?t=" + DateTime.Now.Ticks);
+                    }
+                    catch
+                    {
+                        json = wc.DownloadString(CLOUD_BACKUP + "?t=" + DateTime.Now.Ticks);
+                    }
+
+                    Match m = Regex.Match(json, "\"version\"\\s*:\\s*\"([^\"]+)\"");
+                    if (m.Success)
+                    {
+                        cloudVersion = m.Groups[1].Value;
+                    }
+                    else
+                    {
+                        cloudVersion = "1.0.0";
+                    }
+                }
+
+                lblCloudVerVal.Text = "الإصدار " + cloudVersion;
+                lblCloudVerVal.ForeColor = Color.FromArgb(16, 185, 129);
+
+                // Auto-suggest next version
+                SuggestNextVersion(cloudVersion);
+            }
+            catch (Exception ex)
+            {
+                lblCloudVerVal.Text = "تعذر الاتصال (محلياً: 1.0.0)";
+                lblCloudVerVal.ForeColor = Color.FromArgb(225, 29, 72);
+                cloudVersion = "1.0.0";
+                SuggestNextVersion("1.0.0");
+            }
+
+            ValidateAll();
+        }
+
+        private void SuggestNextVersion(string cur)
+        {
+            try
+            {
+                string[] parts = cur.Trim().Split('.');
+                if (parts.Length >= 2)
+                {
+                    int last = int.Parse(parts[parts.Length - 1]);
+                    parts[parts.Length - 1] = (last + 1).ToString();
+                    txtNewVer.Text = string.Join(".", parts);
                 }
                 else
                 {
-                    lblVersionValidation.Text = string.Format("✅ الإصدار صالح ({0} > {1}).", inputVer, cloudVersion);
-                    lblVersionValidation.ForeColor = Color.FromArgb(16, 185, 129);
-                    return true;
+                    txtNewVer.Text = "1.0.1";
                 }
             }
             catch
             {
-                lblVersionValidation.Text = "خطأ في مقارنة الإصدارات.";
+                txtNewVer.Text = "1.0.1";
+            }
+        }
+
+        private bool ValidateVersionNumber()
+        {
+            string newVer = txtNewVer.Text.Trim();
+            if (string.IsNullOrEmpty(newVer))
+            {
+                lblVersionValidation.Text = "❌ يرجى إدخال رقم الإصدار الجديد.";
                 lblVersionValidation.ForeColor = Color.FromArgb(225, 29, 72);
                 return false;
+            }
+
+            if (!Regex.IsMatch(newVer, @"^\d+(\.\d+)+$"))
+            {
+                lblVersionValidation.Text = "❌ تنسيق رقم الإصدار غير صالح. استخدم مثلاً: 1.0.1 أو 1.1.0";
+                lblVersionValidation.ForeColor = Color.FromArgb(225, 29, 72);
+                return false;
+            }
+
+            int cmp = CompareVersions(newVer, cloudVersion);
+            if (cmp <= 0)
+            {
+                lblVersionValidation.Text = string.Format("❌ يجب أن يكون الإصدار الجديد ({0}) أكبر من الإصدار الحالي ({1}).", newVer, cloudVersion);
+                lblVersionValidation.ForeColor = Color.FromArgb(225, 29, 72);
+                return false;
+            }
+
+            lblVersionValidation.Text = string.Format("✅ رقم الإصدار صالح ومعتمد: {0} (أكبر من الإصدار الحالي {1})", newVer, cloudVersion);
+            lblVersionValidation.ForeColor = Color.FromArgb(16, 185, 129);
+            return true;
+        }
+
+        private int CompareVersions(string v1, string v2)
+        {
+            try
+            {
+                string[] p1 = v1.Trim().Split('.');
+                string[] p2 = v2.Trim().Split('.');
+                int len = Math.Max(p1.Length, p2.Length);
+
+                for (int i = 0; i < len; i++)
+                {
+                    int num1 = i < p1.Length ? int.Parse(p1[i]) : 0;
+                    int num2 = i < p2.Length ? int.Parse(p2[i]) : 0;
+                    if (num1 > num2) return 1;
+                    if (num1 < num2) return -1;
+                }
+                return 0;
+            }
+            catch
+            {
+                return string.Compare(v1, v2, StringComparison.OrdinalIgnoreCase);
             }
         }
 
@@ -640,7 +627,7 @@ namespace BasraUpdater
                 "• الهدف المعتمد: {0}\n" +
                 "• الملف المختار: {1}\n" +
                 "• رقم الإصدار الجديد: {2}\n\n" +
-                "ملاحظة: سيتم تحديث هذا البرنامج فقط حصراً دون المساس بالبرنامج الآخر.",
+                "ملاحظة: سيتم تحديث هذا البرنامج فقط حصراً دون المساس بالبرنامج الآخر أو بقاعدة الاستمارات.",
                 targetName, fname, newVer
             );
 
@@ -662,46 +649,20 @@ namespace BasraUpdater
             {
                 string gitAddArgs = "";
 
-                // Case 1: Updating ADMIN ONLY
+                // Case 1: Updating ADMIN ONLY (admin.html)
                 if (rbAdmin.Checked)
                 {
-                    // Copy to admin.html and public/admin.html
                     File.Copy(selectedFilePath, Path.Combine(workspaceDir, "admin.html"), true);
                     File.Copy(selectedFilePath, Path.Combine(workspaceDir, "public", "admin.html"), true);
                     gitAddArgs = "admin.html public/admin.html version.json";
                 }
-                // Case 2: Updating CENTERS ONLY
+                // Case 2: Updating CENTERS ONLY (index.html)
                 else
                 {
-                    string ext = Path.GetExtension(selectedFilePath).ToLower();
-                    string name = Path.GetFileName(selectedFilePath).ToLower();
-
-                    if (name == "index.html" || name == "center.html")
-                    {
-                        File.Copy(selectedFilePath, Path.Combine(workspaceDir, "index.html"), true);
-                        File.Copy(selectedFilePath, Path.Combine(workspaceDir, "public", "index.html"), true);
-                        File.Copy(selectedFilePath, Path.Combine(workspaceDir, "public", "center.html"), true);
-                        gitAddArgs = "index.html public/index.html public/center.html version.json";
-                    }
-                    else if (name == "forms.json" || name == "centers.json" || name == "categories.json")
-                    {
-                        File.Copy(selectedFilePath, Path.Combine(workspaceDir, "data", name), true);
-                        File.Copy(selectedFilePath, Path.Combine(workspaceDir, "public", "data", name), true);
-                        gitAddArgs = "data/" + name + " public/data/" + name + " version.json";
-                    }
-                    else if (ext == ".xlsx" || ext == ".docx" || ext == ".pdf")
-                    {
-                        string up1 = Path.Combine(workspaceDir, "uploads", Path.GetFileName(selectedFilePath));
-                        string up2 = Path.Combine(workspaceDir, "public", "uploads", Path.GetFileName(selectedFilePath));
-                        File.Copy(selectedFilePath, up1, true);
-                        File.Copy(selectedFilePath, up2, true);
-                        gitAddArgs = "uploads/ public/uploads/ version.json";
-                    }
-                    else
-                    {
-                        File.Copy(selectedFilePath, Path.Combine(workspaceDir, Path.GetFileName(selectedFilePath)), true);
-                        gitAddArgs = Path.GetFileName(selectedFilePath) + " version.json";
-                    }
+                    File.Copy(selectedFilePath, Path.Combine(workspaceDir, "index.html"), true);
+                    File.Copy(selectedFilePath, Path.Combine(workspaceDir, "public", "index.html"), true);
+                    File.Copy(selectedFilePath, Path.Combine(workspaceDir, "public", "center.html"), true);
+                    gitAddArgs = "index.html public/index.html public/center.html version.json";
                 }
 
                 // 2. Update version.json
@@ -723,7 +684,7 @@ namespace BasraUpdater
 
                 // 4. Git Commit
                 lblStatus.Text = "جاري توثيق التحديث المنفصل (Git Commit)...";
-                string commitMsg = string.Format("تحديث {0} إلى الإصدار {1}: {2}", targetName, newVer, fname);
+                string commitMsg = string.Format("تحديث كود {0} إلى الإصدار {1}: {2}", targetName, newVer, fname);
                 ProcessStartInfo psiCommit = new ProcessStartInfo("git", string.Format("commit -m \"{0}\"", commitMsg));
                 psiCommit.WorkingDirectory = workspaceDir;
                 psiCommit.CreateNoWindow = true;
@@ -752,7 +713,7 @@ namespace BasraUpdater
                             "• النظام المحدث: {0}\n" +
                             "• الملف المرفوع: {1}\n" +
                             "• رقم الإصدار الجديد: {2}\n\n" +
-                            "تم تحديث المنظومة أونلاين فوراً دون التأثير على البرنامج الآخر.",
+                            "تم تحديث المنظومة أونلاين فوراً دون التأثير على البرنامج الآخر وبقاء الاستمارات تحت إدارة المسؤول حصراً.",
                             targetName, fname, newVer
                         ),
                         "اكتمل التحديث السحابي بنجاح",
