@@ -1,7 +1,7 @@
 // api/sync.js - Vercel Serverless Function for Secure Publishing
-// This function acts as a secure cloud relay between the Office Admin PC and GitHub
+// CommonJS format matching package.json
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   // Enable CORS so the desktop app can call this endpoint
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
