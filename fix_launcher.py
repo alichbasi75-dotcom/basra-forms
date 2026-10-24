@@ -1,0 +1,63 @@
+import os
+
+bat_text = """@echo off
+chcp 65001 >nul
+title منظومة نماذج مكتب انتخابات البصرة ومراكز التسجيل 2026
+color 0B
+echo ================================================================
+echo   المفوضية العليا المستقلة للانتخابات - مكتب محافظة البصرة
+echo   منظومة إدارة وتوزيع النماذج لمراكز التسجيل الـ 76
+echo ================================================================
+echo.
+echo جاري الانتقال إلى مجلد المنظومة والتشغيل...
+cd /d "%~dp0"
+if not exist "server.js" (
+    cd /d "C:\\Users\\ali\\.gemini\\antigravity\\scratch\\basra_forms_system"
+)
+
+echo فحص بيئة Node.js...
+node -v >nul 2>&1
+if %errorlevel% neq 0 (
+    echo.
+    echo [خطأ] لم يتم العثور على برنامج Node.js!
+    echo يرجى التأكد من تثبيت Node.js.
+    pause
+    exit /b 1
+)
+
+echo جاري فتح المتصفح على بوابة المراكز وبوابة الإدارة...
+start http://localhost:3000/center
+
+echo.
+echo ================================================================
+echo   الخادم يعمل الآن بنجاح على المنفذ 3000
+echo   - بوابة مراكز التسجيل (76 مركز): http://localhost:3000/center
+echo   - لوحة تحكم مكتب المحافظة (المسؤول): http://localhost:3000/admin
+echo ================================================================
+echo.
+echo يرجى إبقاء هذه النافذة مفتوحة طوال فترة العمل بالمنظومة...
+echo.
+
+node server.js
+
+if %errorlevel% neq 0 (
+    echo.
+    echo [تنبيه] توقف السيرفر عن العمل.
+    pause
+)
+"""
+
+# Windows CRLF line endings
+crlf_content = bat_text.replace('\r\n', '\n').replace('\n', '\r\n').encode('utf-8')
+
+# Target paths:
+paths = [
+    r"C:\Users\ali\.gemini\antigravity\scratch\basra_forms_system\start_system.bat",
+    r"C:\Users\ali\.gemini\antigravity\scratch\basra_forms_system\تشغيل_المنظومة.bat",
+    r"C:\Users\ali\Desktop\تشغيل_نظام_نماذج_البصرة.bat"
+]
+
+for p in paths:
+    with open(p, 'wb') as f:
+        f.write(crlf_content)
+    print(f"Written successfully to: {p} ({len(crlf_content)} bytes)")

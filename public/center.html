@@ -1,0 +1,1695 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>بوابة مراكز التسجيل | نماذج مكتب انتخابات البصرة 2026</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    body { font-family: 'Cairo', sans-serif; }
+    
+    /* Interactive Sheet Canvas */
+    .sheet-wrapper {
+      position: relative;
+      width: 100%;
+      max-width: 820px;
+      margin: 0 auto 24px auto;
+      background: #fff;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.22);
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      overflow: visible;
+      transition: width 0.15s ease-out;
+    }
+    .sheet-bg {
+      width: 100%;
+      height: auto;
+      display: block;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    /* Scroll area with high visibility horizontal and vertical scrollbars for wide files */
+    #sheetScrollArea {
+      overflow-x: auto !important;
+      overflow-y: auto !important;
+      scroll-behavior: smooth;
+    }
+    #sheetScrollArea::-webkit-scrollbar {
+      width: 12px;
+      height: 14px;
+    }
+    #sheetScrollArea::-webkit-scrollbar-track {
+      background: #cbd5e1;
+      border-radius: 8px;
+    }
+    #sheetScrollArea::-webkit-scrollbar-thumb {
+      background: #475569;
+      border-radius: 8px;
+      border: 3px solid #cbd5e1;
+    }
+    #sheetScrollArea::-webkit-scrollbar-thumb:hover {
+      background: #1e293b;
+    }
+
+    /* Draggable & Resizable Box */
+    .drag-box {
+      position: absolute;
+      border: 1.5px dashed transparent;
+      background: transparent !important;
+      box-shadow: none;
+      z-index: 30;
+      border-radius: 4px;
+      display: flex;
+      min-width: 30px;
+      min-height: 22px;
+      touch-action: none;
+      transition: border-color 0.15s ease, background 0.15s ease;
+    }
+    .drag-box:hover,
+    .drag-box.is-focused,
+    .drag-box.active {
+      border: 1.5px dashed #2563eb;
+      background: rgba(255, 255, 255, 0.08) !important;
+    }
+
+    /* Floating action bar ABOVE the text box so it never pushes the text down */
+    .drag-bar {
+      position: absolute;
+      top: -24px;
+      right: 0;
+      background: #1e3a8a;
+      color: #fff;
+      padding: 1px 6px;
+      font-size: 11px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      cursor: grab;
+      user-select: none;
+      border-radius: 4px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.15s ease;
+      height: 22px;
+      white-space: nowrap;
+      z-index: 40;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+    }
+    .drag-box:hover .drag-bar,
+    .drag-box.is-focused .drag-bar,
+    .drag-box.active .drag-bar {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .drag-bar:active {
+      cursor: grabbing;
+      background: #d97706;
+    }
+
+    .drag-textarea {
+      flex: 1;
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: transparent !important;
+      padding: 1px 3px;
+      font-family: 'Cairo', 'Traditional Arabic', serif;
+      font-size: 16px;
+      font-weight: 800;
+      color: #000;
+      resize: none;
+      outline: none;
+      line-height: 1.25;
+      overflow: hidden;
+      direction: rtl;
+      text-align: right;
+    }
+    .drag-textarea::placeholder {
+      color: rgba(100, 116, 139, 0.6);
+      font-size: 13px;
+      font-weight: normal;
+    }
+    .drag-box:not(:hover):not(.is-focused) .drag-textarea::placeholder {
+      color: transparent;
+    }
+
+    .resize-handle {
+      position: absolute;
+      bottom: -4px;
+      left: -4px;
+      width: 14px;
+      height: 14px;
+      background: #2563eb;
+      cursor: sw-resize;
+      border-top-right-radius: 4px;
+      border-bottom-left-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 8px;
+      user-select: none;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.15s ease;
+      z-index: 35;
+    }
+    .drag-box:hover .resize-handle,
+    .drag-box.is-focused .resize-handle,
+    .drag-box.active .resize-handle {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .drag-box:hover .resize-handle {
+      background: #f59e0b;
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col">
+
+  <!-- Welcome Gatekeeper Modal (طلب رقم مركز التسجيل أولاً للدخول) -->
+  <div id="gatekeeperModal" class="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="bg-white border-2 border-slate-300 rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl text-center">
+      
+      <!-- Close button if center already set -->
+      <div id="gateCloseBtnWrap" class="hidden text-left -mt-2 mb-2 flex justify-start">
+        <button type="button" onclick="closeGatekeeperModal()" class="bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white font-black text-xs px-3.5 py-1.5 rounded-xl flex items-center gap-1.5 shadow-md transition-all active:scale-95 border border-red-400" title="إغلاق">
+          <i class="fa-solid fa-xmark text-sm"></i>
+          <span>إغلاق</span>
+        </button>
+      </div>
+
+      <div class="w-16 h-16 rounded-2xl bg-amber-500 text-slate-950 flex items-center justify-center text-3xl mx-auto mb-4 shadow-lg shadow-amber-500/30">
+        <i class="fa-solid fa-landmark"></i>
+      </div>
+
+      <h2 class="text-xl font-black text-slate-900 leading-tight">المفوضية العليا المستقلة للانتخابات</h2>
+      <p class="text-xs font-bold text-amber-700 mt-0.5">مكتب انتخابات محافظة البصرة</p>
+      <div class="inline-block bg-slate-100 text-slate-700 text-xs font-bold px-3 py-1 rounded-full mt-2 mb-6">
+        منظومة نماذج واستمارات مراكز التسجيل (76 مركزاً)
+      </div>
+
+      <div class="bg-slate-50 border-2 border-slate-200 rounded-2xl p-4 text-right mb-5 focus-within:border-amber-500 transition-colors">
+        <label class="block text-xs font-black text-slate-800 mb-2 flex items-center gap-2">
+          <i class="fa-solid fa-id-card text-amber-600 text-base"></i>
+          <span>يرجى إدخال رقم مركز التسجيل الخاص بك للدخول:</span>
+        </label>
+        <input 
+          type="text" 
+          id="gateCenterInput" 
+          maxlength="5"
+          placeholder="مثال: 1921 أو 2928" 
+          oninput="onGateInput(this.value)"
+          onkeydown="if(event.key === 'Enter') submitGatekeeper()"
+          class="w-full bg-white border-2 border-slate-300 focus:border-amber-500 rounded-xl px-4 py-3 text-center text-xl font-black text-slate-900 focus:outline-none font-mono tracking-wider"
+          autofocus
+        >
+        
+        <!-- Live Center Match Badge -->
+        <div id="gateCenterMatchBadge" class="mt-3 hidden p-2.5 rounded-xl text-xs font-bold flex items-center gap-2">
+          <!-- Filled by JS -->
+        </div>
+      </div>
+
+      <button 
+        type="button" 
+        id="gateSubmitBtn" 
+        onclick="submitGatekeeper()" 
+        disabled 
+        class="w-full bg-slate-300 text-slate-500 cursor-not-allowed font-black py-3.5 px-4 rounded-xl text-sm transition-all flex items-center justify-center gap-2 shadow-md"
+      >
+        <span>دخول إلى منظومة النماذج</span>
+        <i class="fa-solid fa-arrow-left"></i>
+      </button>
+
+      <div class="mt-4 text-[11px] text-slate-400">
+        يتم تسجيل عمليات العرض والتنزيل باسم مركزك لمتابعة الإجراءات الرسمية من قبل مكتب انتخابات البصرة
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header class="bg-white border-b-2 border-slate-200 shadow-sm sticky top-0 z-30">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-4">
+      
+      <!-- Title & Logo -->
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 rounded-2xl bg-amber-500 text-slate-950 flex items-center justify-center text-2xl shadow-md">
+          <i class="fa-solid fa-landmark"></i>
+        </div>
+        <div>
+          <h1 class="text-lg sm:text-xl font-black text-slate-900 leading-tight">المفوضية العليا المستقلة للانتخابات</h1>
+          <p class="text-xs sm:text-sm font-bold text-amber-700">مكتب انتخابات محافظة البصرة — نماذج واستمارات مراكز التسجيل</p>
+        </div>
+      </div>
+
+      <!-- رقم مركزك (الضغط على الرقم مباشرة يتيح تغيير المركز) -->
+      <div class="flex items-center gap-2 bg-slate-50 border-2 border-slate-300 rounded-2xl p-1.5 transition-colors">
+        <span class="text-xs font-bold text-slate-600 px-2 flex items-center gap-1.5">
+          <i class="fa-solid fa-id-card text-amber-600 text-base"></i>
+          <span>رقم مركزك:</span>
+        </span>
+        <button type="button" onclick="openGatekeeperModal()" class="bg-white hover:bg-amber-50 hover:border-amber-400 border border-slate-300 rounded-xl px-3.5 py-1.5 font-bold text-sm text-slate-900 flex items-center gap-2 shadow-sm transition-all active:scale-95 cursor-pointer" title="انقر لتغيير رقم المركز">
+          <span id="centerCodeVal" class="font-mono font-black text-amber-700 text-base">--</span>
+          <i class="fa-solid fa-arrows-rotate text-[11px] text-amber-600" title="تغيير"></i>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Active Center Confirmation Bar (عرض اسم المركز الحالي بدون زر تغيير) -->
+    <div id="activeCenterStrip" class="hidden bg-emerald-600 text-white text-xs sm:text-sm font-bold py-2.5 px-4 shadow-inner">
+      <div class="max-w-6xl mx-auto flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-circle-check text-emerald-200 text-base"></i>
+          <span>أنت تعمل حالياً باسم: <strong id="stripCenterName" class="underline text-amber-200 text-base">--</strong></span>
+          <span class="bg-emerald-800 px-2 py-0.5 rounded text-xs" id="stripTamween">--</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="max-w-6xl mx-auto px-4 py-6 flex-1 w-full">
+    
+    <!-- Top Search & Categories Filter -->
+    <div class="bg-white border border-slate-200 rounded-2xl p-4 mb-6 shadow-sm">
+      
+      <!-- Search Input -->
+      <div class="relative mb-4">
+        <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-slate-400">
+          <i class="fa-solid fa-magnifying-glass text-lg"></i>
+        </div>
+        <input type="text" id="quickSearch" oninput="renderFilteredForms()" placeholder="ابحث باسم النموذج أو نوع الإجازة أو الاستمارة..." class="w-full bg-slate-50 border-2 border-slate-200 focus:border-amber-500 rounded-xl pr-12 pl-4 py-3 text-sm font-semibold text-slate-900 focus:outline-none transition-colors">
+      </div>
+
+      <!-- Categories Pills (ديناميكية حسب الأصناف المعتمدة) -->
+      <div class="flex items-center gap-2 overflow-x-auto pb-1" id="categoryTabs">
+        <!-- Rendered dynamically from /api/categories via JS -->
+      </div>
+
+    </div>
+
+    <!-- Forms List Grid (Large & Clear) -->
+    <div id="formsList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <!-- Forms rendered by JS -->
+    </div>
+
+    <!-- Empty search message -->
+    <div id="emptyMessage" class="hidden text-center py-16 bg-white border border-slate-200 rounded-2xl">
+      <i class="fa-solid fa-circle-question text-4xl text-slate-300 mb-2"></i>
+      <h3 class="text-base font-bold text-slate-700">لم يتم العثور على نموذج بهذا الاسم</h3>
+      <p class="text-xs text-slate-500 mt-1">تأكد من كتابة الكلمة بشكل صحيح</p>
+    </div>
+
+  </main>
+
+  <!-- Interactive Form Viewer with Draggable & Resizable Text Boxes (عرض النموذج مع إمكانية إضافة وسحب مربعات النص) -->
+  <div id="sheetModal" class="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-sm hidden flex items-center justify-center p-2 sm:p-3">
+    <div class="bg-white border-2 border-slate-300 rounded-3xl max-w-5xl w-full h-[96vh] flex flex-col overflow-hidden shadow-2xl">
+      
+      <!-- Top Action Toolbar -->
+      <div class="bg-amber-500 text-slate-950 px-4 py-3 flex flex-wrap items-center justify-between gap-3 border-b border-amber-600">
+        
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-slate-950 text-amber-400 flex items-center justify-center text-sm shadow">
+            <i class="fa-solid fa-file-invoice"></i>
+          </div>
+          <div>
+            <h3 id="modalSheetTitle" class="text-sm sm:text-base font-black line-clamp-1">عرض النموذج الأصلي</h3>
+            <p class="text-[11px] font-bold text-slate-900" id="modalSheetSubtitle">يمكنك سحب وتكبير أي مربع نص والكتابة عليه مباشرة أو التمرير بين الصفحات</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          
+          <!-- 🔄 تدوير الصورة والتحكم بالتكبير والتصغير -->
+          <div class="flex items-center bg-slate-900/30 rounded-xl p-0.5 gap-1 text-slate-950 text-xs font-bold border border-slate-900/20">
+            <button type="button" onclick="rotateCurrentSheet()" id="rotateSheetBtn" class="px-3 py-1.5 rounded-lg bg-white/80 hover:bg-white text-slate-950 font-black flex items-center gap-1.5 transition-all shadow-sm active:scale-95" title="تدوير الصفحة / الصورة 90 درجة">
+              <i class="fa-solid fa-rotate text-blue-700 text-sm"></i>
+              <span>تدوير الصورة</span>
+              <span id="rotationAngleBadge" class="text-[10px] bg-blue-100 text-blue-800 font-mono font-bold px-1 rounded hidden">90°</span>
+            </button>
+            <button type="button" onclick="adjustSheetZoom(-150)" class="w-7 h-7 rounded-lg bg-white/70 hover:bg-white flex items-center justify-center font-black text-sm" title="تصغير العرض">-</button>
+            <span id="zoomPercentBadge" class="text-[11px] font-mono px-1 font-bold text-slate-900">100%</span>
+            <button type="button" onclick="adjustSheetZoom(150)" class="w-7 h-7 rounded-lg bg-white/70 hover:bg-white flex items-center justify-center font-black text-sm" title="تكبير العرض">+</button>
+          </div>
+
+          <!-- ➕ زر إضافة مربع نص قابل للسحب والتحجيم (خاص بـ PDF فقط) -->
+          <button id="addBoxModalBtn" onclick="addDraggableBoxToCurrentPage()" class="bg-slate-950 hover:bg-slate-800 text-amber-300 font-black text-xs sm:text-sm px-4 py-2 rounded-xl flex items-center gap-2 shadow-md transition-all active:scale-95">
+            <i class="fa-solid fa-plus-circle text-base"></i>
+            <span>إضافة مربع نص جديد</span>
+          </button>
+
+          <!-- 🖨️ طباعة النموذج A4 لجميع الصفحات -->
+          <button onclick="printSheetWithBoxes()" class="bg-emerald-700 hover:bg-emerald-600 text-white font-black text-xs sm:text-sm px-4 py-2 rounded-xl flex items-center gap-2 shadow-md transition-all active:scale-95">
+            <i class="fa-solid fa-print text-base"></i>
+            <span>طباعة النموذج A4</span>
+          </button>
+
+          <!-- 📥 تنزيل الملف الأصلي باختيار موقع الحفظ -->
+          <button type="button" id="modalDownloadBtn" onclick="handleModalDownload()" class="bg-white hover:bg-slate-100 text-slate-800 font-bold text-xs px-3 py-2 rounded-xl flex items-center gap-1.5 shadow-sm border border-slate-300" title="تنزيل الملف واختيار موقع الحفظ">
+            <i class="fa-solid fa-download text-amber-600"></i>
+            <span>تنزيل</span>
+          </button>
+
+          <!-- إغلاق النافذة -->
+          <button type="button" onclick="closeSheetModal()" class="bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white font-black text-xs sm:text-sm px-4 py-2 rounded-xl flex items-center gap-1.5 shadow-md hover:shadow-lg transition-all active:scale-95 border border-red-400/40 cursor-pointer" title="إغلاق النافذة">
+            <i class="fa-solid fa-xmark text-base"></i>
+            <span>إغلاق</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick Guidance Bar -->
+      <div class="bg-amber-50 border-b border-amber-200 px-4 py-1.5 text-xs text-amber-900 flex items-center justify-between" id="modalGuidanceBar">
+        <div class="flex items-center gap-2 font-bold" id="modalTipContainer">
+          <i class="fa-solid fa-lightbulb text-amber-600" id="modalTipIcon"></i>
+          <span id="modalTipText">اضغط زر "إضافة مربع نص"، ثم اسحبه بالفأرة لأي مكان تريده في النموذج وكبّره وصغّره حسب الفراغ.</span>
+          <span id="scrollNoticeBadge" class="hidden bg-blue-100 text-blue-800 border border-blue-300 px-2 py-0.5 rounded-lg font-bold text-[11px]"><i class="fa-solid fa-arrows-left-right ml-1"></i> شريط التمرير العرضي مفعّل بالأسفل</span>
+        </div>
+        <div class="text-[11px] text-slate-600 flex items-center gap-3">
+          <span>الصفحات: <strong id="pagesCountBadge" class="text-blue-700 font-bold">1</strong></span>
+          <span id="boxesCountWrap">المربعات المضافة: <strong id="boxesCountBadge" class="text-blue-700 font-bold">0</strong></span>
+        </div>
+      </div>
+
+      <!-- Interactive Canvas Area (يدعم التمرير العمودي والعرضي لجميع الأعمدة والصفحات) -->
+      <div class="flex-1 bg-slate-200 overflow-auto p-4 select-none" id="sheetScrollArea">
+        <!-- Rendered page sheets dynamically injected here -->
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-500">
+    <p class="font-semibold text-slate-700">المفوضية العليا المستقلة للانتخابات — مكتب انتخابات محافظة البصرة © 2026</p>
+    <p class="text-[11px] text-slate-400 mt-0.5">منظومة النماذج الرسمية المبسطة لمراكز التسجيل (76 مركزاً)</p>
+  </footer>
+
+  <!-- Elegant Expressive Universal Modal (بديل رسائل وتأكيدات المتصفح الافتراضية) -->
+  <div id="appUniversalModal" class="fixed inset-0 z-[9999] bg-slate-950/80 backdrop-blur-md hidden flex items-center justify-center p-4 transition-all duration-300">
+    <div id="appModalBox" class="bg-white rounded-3xl shadow-2xl max-w-md w-full border-2 border-slate-200 overflow-hidden transform transition-all duration-300 scale-95 opacity-0 flex flex-col text-center relative">
+      
+      <!-- Top Colored Accent Strip -->
+      <div id="appModalStrip" class="h-3 w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700"></div>
+      
+      <!-- Top Close Button (Enlarged, modern, clear) -->
+      <button type="button" onclick="closeAppModal(false)" class="absolute top-5 left-5 w-8 h-8 rounded-full bg-slate-100 hover:bg-rose-100 text-slate-400 hover:text-rose-600 flex items-center justify-center transition-all shadow-sm border border-slate-200 hover:border-rose-300 active:scale-95 cursor-pointer" title="إغلاق">
+        <i class="fa-solid fa-xmark text-sm font-black"></i>
+      </button>
+
+      <div class="p-6 sm:p-7">
+        <!-- Glowing Expressive Icon Badge -->
+        <div id="appModalIconWrapper" class="w-20 h-20 rounded-3xl mx-auto mb-4 flex items-center justify-center text-4xl shadow-xl transition-all">
+          <i id="appModalIcon" class="fa-solid fa-circle-question"></i>
+        </div>
+
+        <!-- Title -->
+        <h3 id="appModalTitle" class="text-lg sm:text-xl font-black text-slate-900 mb-2 leading-tight"></h3>
+        
+        <!-- Message Content Box -->
+        <div class="bg-slate-50 border border-slate-200/90 rounded-2xl p-4 my-3 text-slate-800 text-sm font-bold leading-relaxed whitespace-pre-line text-center shadow-inner" id="appModalMessage"></div>
+
+        <!-- Action Buttons -->
+        <div class="flex items-center justify-center gap-3 mt-5" id="appModalButtons">
+          <button type="button" id="appModalCancelBtn" onclick="closeAppModal(false)" class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-black text-xs sm:text-sm border border-slate-300 transition-all active:scale-95 shadow-sm cursor-pointer">
+            إلغاء التراجع
+          </button>
+          <button type="button" id="appModalConfirmBtn" onclick="closeAppModal(true)" class="px-6 py-2.5 text-white rounded-xl font-black text-xs sm:text-sm transition-all active:scale-95 shadow-md flex items-center gap-2 cursor-pointer">
+            <span>تأكيد</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let appModalResolve = null;
+
+    function showAppModal({
+      title = 'تنبيه',
+      message = '',
+      type = 'info', // 'warning', 'success', 'danger', 'info'
+      icon = null,
+      confirmText = 'حسناً',
+      cancelText = 'إلغاء',
+      isConfirm = false
+    } = {}) {
+      return new Promise((resolve) => {
+        appModalResolve = resolve;
+
+        const modal = document.getElementById('appUniversalModal');
+        const box = document.getElementById('appModalBox');
+        const strip = document.getElementById('appModalStrip');
+        const iconWrap = document.getElementById('appModalIconWrapper');
+        const iconEl = document.getElementById('appModalIcon');
+        const titleEl = document.getElementById('appModalTitle');
+        const msgEl = document.getElementById('appModalMessage');
+        const confirmBtn = document.getElementById('appModalConfirmBtn');
+        const cancelBtn = document.getElementById('appModalCancelBtn');
+
+        titleEl.innerText = title;
+        msgEl.innerText = message;
+
+        if (type === 'warning') {
+          strip.className = 'h-3 w-full bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600';
+          iconWrap.className = 'w-20 h-20 rounded-3xl mx-auto mb-4 flex items-center justify-center text-4xl shadow-xl bg-amber-100 text-amber-600 border-2 border-amber-300 shadow-amber-500/25';
+          iconEl.className = icon || 'fa-solid fa-triangle-exclamation';
+          confirmBtn.className = 'px-6 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 font-black text-xs sm:text-sm rounded-xl shadow-lg shadow-amber-500/30 transition-all active:scale-95 flex items-center gap-2 cursor-pointer';
+        } else if (type === 'success') {
+          strip.className = 'h-3 w-full bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600';
+          iconWrap.className = 'w-20 h-20 rounded-3xl mx-auto mb-4 flex items-center justify-center text-4xl shadow-xl bg-emerald-100 text-emerald-600 border-2 border-emerald-300 shadow-emerald-500/25';
+          iconEl.className = icon || 'fa-solid fa-circle-check';
+          confirmBtn.className = 'px-6 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-black text-xs sm:text-sm rounded-xl shadow-lg shadow-emerald-600/30 transition-all active:scale-95 flex items-center gap-2 cursor-pointer';
+        } else if (type === 'danger') {
+          strip.className = 'h-3 w-full bg-gradient-to-r from-rose-600 via-red-600 to-rose-700';
+          iconWrap.className = 'w-20 h-20 rounded-3xl mx-auto mb-4 flex items-center justify-center text-4xl shadow-xl bg-rose-100 text-rose-600 border-2 border-rose-300 shadow-rose-500/25';
+          iconEl.className = icon || 'fa-solid fa-trash-can';
+          confirmBtn.className = 'px-6 py-2.5 bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700 text-white font-black text-xs sm:text-sm rounded-xl shadow-lg shadow-rose-600/30 transition-all active:scale-95 flex items-center gap-2 cursor-pointer';
+        } else {
+          strip.className = 'h-3 w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700';
+          iconWrap.className = 'w-20 h-20 rounded-3xl mx-auto mb-4 flex items-center justify-center text-4xl shadow-xl bg-blue-100 text-blue-600 border-2 border-blue-300 shadow-blue-500/25';
+          iconEl.className = icon || 'fa-solid fa-circle-info';
+          confirmBtn.className = 'px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-black text-xs sm:text-sm rounded-xl shadow-lg shadow-blue-600/30 transition-all active:scale-95 flex items-center gap-2 cursor-pointer';
+        }
+
+        confirmBtn.innerHTML = `<span>${confirmText}</span>`;
+        cancelBtn.innerText = cancelText;
+
+        if (isConfirm) {
+          cancelBtn.classList.remove('hidden');
+        } else {
+          cancelBtn.classList.add('hidden');
+        }
+
+        modal.classList.remove('hidden');
+        requestAnimationFrame(() => {
+          box.classList.remove('scale-95', 'opacity-0');
+          box.classList.add('scale-100', 'opacity-100');
+        });
+      });
+    }
+
+    function closeAppModal(result) {
+      const modal = document.getElementById('appUniversalModal');
+      const box = document.getElementById('appModalBox');
+      if (!modal || modal.classList.contains('hidden')) return;
+
+      box.classList.remove('scale-100', 'opacity-100');
+      box.classList.add('scale-95', 'opacity-0');
+      setTimeout(() => {
+        modal.classList.add('hidden');
+        if (appModalResolve) {
+          appModalResolve(Boolean(result));
+          appModalResolve = null;
+        }
+      }, 180);
+    }
+
+    // Override native alert to use our beautiful modal
+    window.alert = function(msg) {
+      showAppModal({
+        title: 'تنبيه النظام',
+        message: String(msg),
+        type: 'info',
+        confirmText: 'حسناً',
+        isConfirm: false
+      });
+    };
+
+    let allCenters = [];
+    let allForms = [];
+    let activeCenter = null;
+    let currentCategory = 'all';
+    let activeForm = null;
+    let boxIdCounter = 0;
+    let currentVisiblePage = 1;
+
+    async function init() {
+      await Promise.all([loadCenters(), loadCategories(), loadForms()]);
+      
+      const savedCode = localStorage.getItem('basra_simple_center_code');
+      if (savedCode) {
+        onCodeEntered(savedCode);
+        closeGatekeeperModal();
+      } else {
+        openGatekeeperModal();
+      }
+
+      const scrollArea = document.getElementById('sheetScrollArea');
+      if (scrollArea) {
+        scrollArea.addEventListener('pointerdown', (e) => {
+          if (!e.target.closest('.drag-box') && !e.target.closest('button')) {
+            document.querySelectorAll('.drag-box').forEach(b => b.classList.remove('is-focused'));
+          }
+        });
+      }
+    }
+
+    // Gatekeeper functions (تغيير رقم المركز بالضغط المباشر على الرقم)
+    function openGatekeeperModal() {
+      const modal = document.getElementById('gatekeeperModal');
+      modal.classList.remove('hidden');
+      const closeWrap = document.getElementById('gateCloseBtnWrap');
+      if (closeWrap) {
+        if (activeCenter) closeWrap.classList.remove('hidden');
+        else closeWrap.classList.add('hidden');
+      }
+      const input = document.getElementById('gateCenterInput');
+      input.value = activeCenter ? activeCenter.code : '';
+      onGateInput(input.value);
+      setTimeout(() => input.focus(), 100);
+    }
+
+    function closeGatekeeperModal() {
+      document.getElementById('gatekeeperModal').classList.add('hidden');
+    }
+
+    let gateMatchedCenter = null;
+    function onGateInput(code) {
+      const val = (code || '').trim();
+      const badge = document.getElementById('gateCenterMatchBadge');
+      const btn = document.getElementById('gateSubmitBtn');
+
+      if (!val || allCenters.length === 0) {
+        badge.className = 'mt-3 hidden p-2.5 rounded-xl text-xs font-bold';
+        btn.disabled = true;
+        btn.className = 'w-full bg-slate-300 text-slate-500 cursor-not-allowed font-black py-3.5 px-4 rounded-xl text-sm transition-all flex items-center justify-center gap-2 shadow-md';
+        gateMatchedCenter = null;
+        return;
+      }
+
+      const match = allCenters.find(c => c.code === val);
+      if (match) {
+        gateMatchedCenter = match;
+        badge.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600 text-base"></i> <span>مركز تسجيل <strong>${match.name}</strong> (رمز: ${match.code}) ${match.tamweenName ? '— تموين: ' + match.tamweenName : ''}</span>`;
+        badge.className = 'mt-3 p-2.5 rounded-xl text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-2';
+        btn.disabled = false;
+        btn.className = 'w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-3.5 px-4 rounded-xl text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-amber-500/25 active:scale-95 cursor-pointer';
+      } else {
+        gateMatchedCenter = null;
+        badge.innerHTML = `<i class="fa-solid fa-circle-exclamation text-rose-600 text-base"></i> <span>رقم المركز غير موجود، تأكد من كتابة الرقم بشكل صحيح (مثال: 1921 أو 2928)</span>`;
+        badge.className = 'mt-3 p-2.5 rounded-xl text-xs font-bold bg-rose-100 text-rose-800 border border-rose-300 flex items-center gap-2';
+        btn.disabled = true;
+        btn.className = 'w-full bg-slate-300 text-slate-500 cursor-not-allowed font-black py-3.5 px-4 rounded-xl text-sm transition-all flex items-center justify-center gap-2 shadow-md';
+      }
+    }
+
+    function submitGatekeeper() {
+      if (!gateMatchedCenter) return;
+      activeCenter = gateMatchedCenter;
+      localStorage.setItem('basra_simple_center_code', activeCenter.code);
+      localStorage.setItem('basra_simple_center_name', activeCenter.name);
+      const codeVal = document.getElementById('centerCodeVal');
+      if (codeVal) codeVal.innerText = activeCenter.code;
+      onCodeEntered(activeCenter.code);
+      closeGatekeeperModal();
+      renderFilteredForms();
+    }
+
+    let allCategories = [];
+
+    async function loadCenters() {
+      try {
+        const res = await fetch('/api/centers');
+        const data = await res.json();
+        if (data.success) allCenters = data.centers;
+      } catch (e) { console.error(e); }
+    }
+
+    async function loadCategories() {
+      try {
+        const res = await fetch('/api/categories');
+        const data = await res.json();
+        if (data.success) {
+          allCategories = data.categories || [];
+          renderCategoryTabs();
+        }
+      } catch (e) { console.error(e); }
+    }
+
+    function renderCategoryTabs() {
+      const container = document.getElementById('categoryTabs');
+      if (!container) return;
+
+      let html = `
+        <button onclick="filterCategory('all')" data-cat="all" class="cat-pill ${currentCategory === 'all' ? 'active bg-amber-500 text-slate-950 font-black' : 'bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold'} px-4 py-2 rounded-xl text-xs sm:text-sm transition-all shadow-sm">
+          الكل (${allForms.length})
+        </button>
+      `;
+
+      allCategories.forEach(cat => {
+        const count = allForms.filter(f => f.category === cat.id).length;
+        const isActive = currentCategory === cat.id;
+        const iconCls = (cat.icon || 'fa-folder').includes('fa-solid') || (cat.icon || '').includes('fa-regular') ? cat.icon : ('fa-solid ' + (cat.icon || 'fa-folder'));
+        html += `
+          <button onclick="filterCategory('${cat.id}')" data-cat="${cat.id}" class="cat-pill ${isActive ? 'active bg-amber-500 text-slate-950 font-black' : 'bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold'} px-4 py-2 rounded-xl text-xs sm:text-sm transition-all whitespace-nowrap flex items-center gap-1.5 shadow-sm">
+            <i class="${iconCls} text-amber-600"></i>
+            <span>${cat.name}</span>
+            <span class="text-[11px] opacity-75">(${count})</span>
+          </button>
+        `;
+      });
+
+      container.innerHTML = html;
+    }
+
+    async function loadForms() {
+      try {
+        const res = await fetch('/api/forms');
+        const data = await res.json();
+        if (data.success) {
+          allForms = data.forms;
+          renderCategoryTabs();
+          renderFilteredForms();
+        }
+      } catch (e) { console.error(e); }
+    }
+
+    function onCodeEntered(code) {
+      const val = (code || '').trim();
+      const strip = document.getElementById('activeCenterStrip');
+      const codeVal = document.getElementById('centerCodeVal');
+
+      if (!val || allCenters.length === 0) {
+        strip.classList.add('hidden');
+        if (codeVal) codeVal.innerText = '--';
+        activeCenter = null;
+        localStorage.removeItem('basra_simple_center_code');
+        localStorage.removeItem('basra_simple_center_name');
+        return;
+      }
+
+      const match = allCenters.find(c => c.code === val);
+      if (match) {
+        activeCenter = match;
+        localStorage.setItem('basra_simple_center_code', match.code);
+        localStorage.setItem('basra_simple_center_name', match.name);
+        if (codeVal) codeVal.innerText = match.code;
+        document.getElementById('stripCenterName').innerText = `مركز تسجيل ${match.name} (رمز: ${match.code})`;
+        document.getElementById('stripTamween').innerText = match.tamweenName ? `تموين: ${match.tamweenName}` : '';
+        strip.classList.remove('hidden');
+        renderFilteredForms();
+      } else {
+        strip.classList.add('hidden');
+        if (codeVal) codeVal.innerText = '--';
+        activeCenter = null;
+      }
+    }
+
+    function filterCategory(cat) {
+      currentCategory = cat;
+      renderCategoryTabs();
+      renderFilteredForms();
+    }
+
+    // Native Windows "Save As" file picker with exact original filename as default
+    async function downloadFileWithPicker(downloadUrl, originalFileName) {
+      if (window.showSaveFilePicker) {
+        try {
+          const dotIdx = originalFileName.lastIndexOf('.');
+          const ext = dotIdx !== -1 ? originalFileName.substring(dotIdx).toLowerCase() : '';
+
+          let mime = 'application/octet-stream';
+          if (ext === '.docx') mime = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+          else if (ext === '.doc') mime = 'application/msword';
+          else if (ext === '.xlsx') mime = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+          else if (ext === '.xls') mime = 'application/vnd.ms-excel';
+          else if (ext === '.pdf') mime = 'application/pdf';
+          else if (ext === '.jpg' || ext === '.jpeg') mime = 'image/jpeg';
+          else if (ext === '.png') mime = 'image/png';
+
+          const fileHandle = await window.showSaveFilePicker({
+            suggestedName: originalFileName,
+            types: [{
+              description: 'ملف النموذج الأصلي',
+              accept: { [mime]: [ext] }
+            }]
+          });
+
+          const res = await fetch(downloadUrl);
+          const blob = await res.blob();
+          const writable = await fileHandle.createWritable();
+          await writable.write(blob);
+          await writable.close();
+          return;
+        } catch (err) {
+          if (err.name === 'AbortError') return; // User cancelled
+          console.warn('showSaveFilePicker fallback:', err);
+        }
+      }
+
+      // Fallback if browser doesn't support showSaveFilePicker
+      const a = document.createElement('a');
+      a.href = downloadUrl;
+      a.download = originalFileName;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    }
+
+    function downloadFormFile(formId) {
+      const f = allForms.find(item => item.id === formId);
+      if (!f) return;
+      const centerCode = activeCenter ? activeCenter.code : '';
+      const centerName = activeCenter ? encodeURIComponent(activeCenter.name) : '';
+      const downloadUrl = `/api/forms/${f.id}/download?centerCode=${centerCode}&centerName=${centerName}`;
+      downloadFileWithPicker(downloadUrl, f.originalName || `${f.title}.${f.fileType}`);
+    }
+
+    function handleModalDownload() {
+      if (!activeForm) return;
+      const centerCode = activeCenter ? activeCenter.code : '';
+      const centerName = activeCenter ? encodeURIComponent(activeCenter.name) : '';
+      const downloadUrl = `/api/forms/${activeForm.id}/download?centerCode=${centerCode}&centerName=${centerName}`;
+      downloadFileWithPicker(downloadUrl, activeForm.originalName || `${activeForm.title}.${activeForm.fileType}`);
+    }
+
+    // Track activity in backend for admin oversight
+    async function trackActivity(formId, formTitle, action) {
+      try {
+        const centerCode = activeCenter ? activeCenter.code : (localStorage.getItem('basra_simple_center_code') || 'غير محدد');
+        const centerName = activeCenter ? activeCenter.name : (localStorage.getItem('basra_simple_center_name') || 'غير محدد');
+
+        await fetch('/api/activity', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ centerCode, centerName, formId, formTitle, action })
+        });
+      } catch (e) {
+        console.error('Tracking error:', e);
+      }
+    }
+
+    // Open Word / Excel directly in Office App
+    function openOfficeApp(formId) {
+      const f = allForms.find(item => item.id === formId);
+      if (!f) return;
+
+      trackActivity(f.id, f.title, 'office');
+
+      const centerCode = activeCenter ? activeCenter.code : '';
+      const centerName = activeCenter ? encodeURIComponent(activeCenter.name) : '';
+      const directDownloadUrl = `/api/forms/${f.id}/download?centerCode=${centerCode}&centerName=${centerName}`;
+      const fileUrl = `${window.location.origin}/uploads/${f.fileName}`;
+
+      let officeProtocol = '';
+      if (f.fileType === 'xlsx') {
+        officeProtocol = `ms-excel:ofe|u|${fileUrl}`;
+      } else {
+        officeProtocol = `ms-word:ofe|u|${fileUrl}`;
+      }
+
+      // Try launching MS Office protocol link
+      const link = document.createElement('a');
+      link.href = officeProtocol;
+      link.click();
+
+      // Also trigger file download as reliable fallback
+      setTimeout(() => {
+        const dl = document.createElement('a');
+        dl.href = directDownloadUrl;
+        dl.download = f.originalName || '';
+        dl.click();
+      }, 500);
+    }
+
+    function renderFilteredForms() {
+      const q = (document.getElementById('quickSearch').value || '').trim().toLowerCase();
+      const list = document.getElementById('formsList');
+      const emptyMsg = document.getElementById('emptyMessage');
+
+      const filtered = allForms.filter(f => {
+        const matchCat = (currentCategory === 'all' || f.category === currentCategory);
+        const matchQ = !q || (f.title && f.title.toLowerCase().includes(q)) || (f.description && f.description.toLowerCase().includes(q));
+        return matchCat && matchQ;
+      });
+
+      if (filtered.length === 0) {
+        list.innerHTML = '';
+        emptyMsg.classList.remove('hidden');
+        return;
+      }
+      emptyMsg.classList.add('hidden');
+
+      const centerCode = activeCenter ? activeCenter.code : '';
+      const centerName = activeCenter ? encodeURIComponent(activeCenter.name) : '';
+
+      list.innerHTML = filtered.map(f => {
+        let typeBadge = '';
+        let fileIcon = '';
+        const isOffice = f.isOffice || ['docx', 'doc', 'xlsx', 'xls'].includes(f.fileType);
+
+        if (f.fileType === 'docx' || f.fileType === 'doc') {
+          typeBadge = '<span class="bg-blue-100 text-blue-800 text-xs font-bold px-2.5 py-1 rounded-lg">ملف Word</span>';
+          fileIcon = 'fa-file-word text-blue-600';
+        } else if (f.fileType === 'xlsx') {
+          typeBadge = '<span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-2.5 py-1 rounded-lg">ملف Excel</span>';
+          fileIcon = 'fa-file-excel text-emerald-600';
+        } else if (f.fileType === 'image') {
+          typeBadge = '<span class="bg-purple-100 text-purple-800 text-xs font-bold px-2.5 py-1 rounded-lg">صورة JPG</span>';
+          fileIcon = 'fa-file-image text-purple-600';
+        } else {
+          typeBadge = '<span class="bg-rose-100 text-rose-800 text-xs font-bold px-2.5 py-1 rounded-lg">ملف PDF</span>';
+          fileIcon = 'fa-file-pdf text-rose-600';
+        }
+
+        const downloadUrl = `/api/forms/${f.id}/download?centerCode=${centerCode}&centerName=${centerName}`;
+
+        let actionButtonsHtml = '';
+        if (isOffice) {
+          // Word & Excel: Equal Buttons: In-App View (50%) & Download with Picker (50%)
+          actionButtonsHtml = `
+            <button onclick="openSheetModal('${f.id}')" class="flex-1 w-1/2 bg-blue-600 hover:bg-blue-500 text-white font-black text-xs sm:text-sm py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-sm">
+              <i class="fa-regular fa-eye text-base"></i>
+              <span>عرض النموذج</span>
+            </button>
+
+            <button onclick="downloadFormFile('${f.id}')" class="flex-1 w-1/2 bg-slate-100 hover:bg-slate-200 text-slate-800 font-black text-xs sm:text-sm py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 transition-colors border border-slate-300 shadow-sm" title="تنزيل الملف واختيار موقع الحفظ باسم: ${f.originalName || f.title}">
+              <i class="fa-solid fa-download text-amber-600"></i>
+              <span>تنزيل الملف</span>
+            </button>
+          `;
+        } else {
+          // PDF & Image: Equal Buttons: View & Write & Print (50%) & Download with Picker (50%)
+          actionButtonsHtml = `
+            <button onclick="openSheetModal('${f.id}')" class="flex-1 w-1/2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs sm:text-sm py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-sm">
+              <i class="fa-regular fa-eye text-base"></i>
+              <span>عرض وكتابة وطباعة</span>
+            </button>
+
+            <button onclick="downloadFormFile('${f.id}')" class="flex-1 w-1/2 bg-slate-100 hover:bg-slate-200 text-slate-800 font-black text-xs sm:text-sm py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 transition-colors border border-slate-300 shadow-sm" title="تنزيل الملف واختيار موقع الحفظ باسم: ${f.originalName || f.title}">
+              <i class="fa-solid fa-download text-amber-600"></i>
+              <span>تنزيل الملف</span>
+            </button>
+          `;
+        }
+
+        return `
+          <div class="bg-white border-2 border-slate-200 hover:border-amber-400 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                ${typeBadge}
+                <span class="text-xs text-slate-400 font-mono">${f.fileSize}</span>
+              </div>
+
+              <div class="flex items-start gap-3 mb-2">
+                <i class="fa-solid ${fileIcon} text-2xl mt-0.5"></i>
+                <div>
+                  <h3 class="text-base font-bold text-slate-900 leading-snug">${f.title}</h3>
+                  <p class="text-xs text-slate-500 mt-1 leading-relaxed">${f.description || ''}</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Action Buttons: Exactly Equal Size (50% / 50%) -->
+            <div class="pt-4 mt-3 border-t border-slate-100 flex items-center gap-2">
+              ${actionButtonsHtml}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Open Interactive Sheet Modal for PDF & Image & Office files (يدعم التمرير لجميع الصفحات والعرض داخل البرنامج)
+    function openSheetModal(formId) {
+      activeForm = allForms.find(item => item.id === formId);
+      if (!activeForm) return;
+
+      trackActivity(activeForm.id, activeForm.title, 'view');
+
+      const isOffice = activeForm.isOffice || ['docx', 'doc', 'xlsx', 'xls'].includes(activeForm.fileType);
+
+      document.getElementById('modalSheetTitle').innerText = `عرض النموذج: ${activeForm.title}`;
+      const centerCode = activeCenter ? activeCenter.code : '';
+      const centerName = activeCenter ? encodeURIComponent(activeCenter.name) : '';
+      const dlBtn = document.getElementById('modalDownloadBtn');
+      if (dlBtn) {
+        dlBtn.setAttribute('title', `تنزيل: ${activeForm.originalName || activeForm.title}`);
+      }
+
+      const addBoxBtn = document.getElementById('addBoxModalBtn');
+      const boxesCountWrap = document.getElementById('boxesCountWrap');
+      const modalSubtitle = document.getElementById('modalSheetSubtitle');
+      const tipText = document.getElementById('modalTipText');
+      const tipIcon = document.getElementById('modalTipIcon');
+
+      if (isOffice) {
+        if (addBoxBtn) addBoxBtn.classList.add('hidden');
+        if (boxesCountWrap) boxesCountWrap.classList.add('hidden');
+        if (modalSubtitle) modalSubtitle.innerText = 'معاينة النموذج الرسمي الأصلي لملف Word/Excel مع إمكانية التمرير والطباعة A4 مباشرة';
+        if (tipIcon) tipIcon.className = 'fa-solid fa-file-circle-check text-blue-600';
+        if (tipText) tipText.innerText = 'هذا النموذج للعرض والمعاينة والطباعة المباشرة بدون كتابة. يمكنك التمرير لكافة الصفحات وطباعتها أو تنزيل الملف الأصلي.';
+      } else {
+        if (addBoxBtn) addBoxBtn.classList.remove('hidden');
+        if (boxesCountWrap) boxesCountWrap.classList.remove('hidden');
+        if (modalSubtitle) modalSubtitle.innerText = 'يمكنك سحب وتكبير أي مربع نص والكتابة عليه مباشرة أو التمرير بين الصفحات';
+        if (tipIcon) tipIcon.className = 'fa-solid fa-lightbulb text-amber-600';
+        if (tipText) tipText.innerText = 'اضغط زر "إضافة مربع نص"، ثم اسحبه بالفأرة لأي مكان تريده في النموذج وكبّره وصغّره حسب الفراغ.';
+      }
+
+      // Determine pages list
+      let pages = [];
+      if (activeForm.pages && activeForm.pages.length > 0) {
+        pages = activeForm.pages;
+      } else if (activeForm.sheetImage) {
+        pages = [activeForm.sheetImage];
+      } else if (activeForm.fileType === 'image' || ['.png', '.jpg', '.jpeg', '.webp'].some(ext => (activeForm.fileName || '').toLowerCase().endsWith(ext))) {
+        pages = ['/uploads/' + activeForm.fileName];
+      } else if (!isOffice) {
+        pages = [`/sheets/${activeForm.id}_sheet.png`];
+      }
+
+      const scrollArea = document.getElementById('sheetScrollArea');
+      scrollArea.innerHTML = '';
+      boxIdCounter = 0;
+      currentVisiblePage = 1;
+
+      // If it's an office file with no rendered page images yet, show an elegant Office Card
+      if (pages.length === 0 && isOffice) {
+        const isWord = ['docx', 'doc'].includes(activeForm.fileType);
+        const iconClass = isWord ? 'fa-file-word text-blue-600' : 'fa-file-excel text-emerald-600';
+        const officeBg = isWord ? 'bg-blue-50 border-blue-200' : 'bg-emerald-50 border-emerald-200';
+        const officeBtn = isWord ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-emerald-600 hover:bg-emerald-700 text-white';
+        const officeType = isWord ? 'Word' : 'Excel';
+
+        scrollArea.innerHTML = `
+          <div class="my-auto py-16 px-6 max-w-lg mx-auto text-center ${officeBg} border-2 rounded-3xl shadow-xl">
+            <div class="w-24 h-24 rounded-3xl bg-white shadow-lg mx-auto flex items-center justify-center text-5xl mb-5">
+              <i class="fa-solid ${iconClass}"></i>
+            </div>
+            <h4 class="text-xl font-black text-slate-900 mb-2">${activeForm.title}</h4>
+            <p class="text-xs font-bold text-slate-600 mb-6 leading-relaxed">
+              هذا النموذج بصيغة ${officeType} (${(activeForm.fileType || '').toUpperCase()})، تم إعداده للفتح والطباعة والتعديل المباشر عبر برنامج مايكروسوفت ${officeType}.
+            </p>
+            <div class="flex items-center justify-center gap-3">
+              <a href="/api/forms/${activeForm.id}/download" download class="px-6 py-3 ${officeBtn} rounded-xl font-black text-sm flex items-center gap-2 shadow-lg transition-all active:scale-95">
+                <i class="fa-solid fa-download"></i>
+                <span>تنزيل وفتح في برنامج ${officeType}</span>
+              </a>
+            </div>
+          </div>
+        `;
+        document.getElementById('pagesCountBadge').innerText = '1';
+        document.getElementById('sheetModal').classList.remove('hidden');
+        return;
+      }
+
+      document.getElementById('pagesCountBadge').innerText = pages.length;
+
+      // Render each page with its own wrapper and rotatable box layer
+      currentSheetRotation = 0;
+      pages.forEach((pageSrc, pageIdx) => {
+        const pNum = pageIdx + 1;
+        const pageWrapper = document.createElement('div');
+        pageWrapper.className = 'sheet-wrapper';
+        pageWrapper.id = `sheetWrapper_${pNum}`;
+        pageWrapper.setAttribute('data-page', pNum);
+
+        let pageHeaderHtml = '';
+        if (pages.length > 1) {
+          if (!isOffice) {
+            pageHeaderHtml = `
+              <div class="bg-slate-800 text-white text-xs font-bold px-3 py-1.5 rounded-t flex items-center justify-between">
+                <span>صفحة ${pNum} من ${pages.length}</span>
+                <button type="button" onclick="addDraggableBox('', 35, 30, 140, 30, ${pNum})" class="bg-amber-500 hover:bg-amber-400 text-slate-950 px-2.5 py-0.5 rounded text-xs font-black">
+                  + إضافة نص في هذه الصفحة
+                </button>
+              </div>
+            `;
+          } else {
+            pageHeaderHtml = `
+              <div class="bg-slate-800 text-white text-xs font-bold px-3 py-1.5 rounded-t flex items-center justify-between">
+                <span>صفحة ${pNum} من ${pages.length}</span>
+              </div>
+            `;
+          }
+        }
+
+        pageWrapper.innerHTML = `
+          ${pageHeaderHtml}
+          <div class="page-rotatable-inner" id="pageRotatable_${pNum}" style="position: relative; width: 100%; transition: transform 0.2s ease;">
+            <img src="${pageSrc}" class="sheet-bg" id="sheetImage_${pNum}" alt="الصفحة ${pNum}" onerror="if(this.src.indexOf('/uploads/') === -1 && '${activeForm.fileName}'){ this.src = '/uploads/${activeForm.fileName}'; }">
+            <div id="boxesContainer_${pNum}" class="absolute inset-0">
+              <!-- Text Boxes for page ${pNum} -->
+            </div>
+          </div>
+        `;
+        scrollArea.appendChild(pageWrapper);
+      });
+
+      // Open Modal
+      document.getElementById('sheetModal').classList.remove('hidden');
+      updateBoxesCount();
+
+      // Smart auto-detection for wide landscape documents vs standard portrait:
+      setSheetWidth(850);
+
+      const firstImg = document.getElementById('sheetImage_1');
+      if (firstImg) {
+        const checkAspect = () => {
+          if (firstImg.naturalWidth > firstImg.naturalHeight * 1.15) {
+            setSheetWidth(1450);
+            if (tipIcon) tipIcon.className = 'fa-solid fa-arrows-left-right text-blue-600';
+            if (tipText) tipText.innerText = 'ملف عريض: تم تفعيل شريط التمرير العرضي بالأسفل لإظهار كامل الأعمدة والأبعاد.';
+          } else {
+            setSheetWidth(850);
+          }
+        };
+        if (firstImg.complete && firstImg.naturalWidth > 0) {
+          checkAspect();
+        } else {
+          firstImg.onload = checkAspect;
+        }
+      }
+
+      // Note: We DO NOT auto-write center name in any text box per user request
+    }
+
+    // Rotation & Zoom controller (يدعم تدوير الصورة مع بقاء النصوص في مكانها ودورانها معها)
+    let currentSheetWidth = 850;
+    let currentSheetRotation = 0; // 0, 90, 180, 270
+
+    function rotateCurrentSheet(delta = 90) {
+      currentSheetRotation = (currentSheetRotation + delta) % 360;
+      applySheetRotation();
+    }
+
+    function setSheetWidth(width) {
+      currentSheetWidth = Math.max(600, Math.min(2600, width));
+      const zoomBadge = document.getElementById('zoomPercentBadge');
+      if (zoomBadge) {
+        const pct = Math.round((currentSheetWidth / 850) * 100);
+        zoomBadge.innerText = `${pct}%`;
+      }
+
+      // Proportional font-size scaling on zoom - ensures text stays locked to the form lines without drifting!
+      const zoomRatio = currentSheetWidth / 850;
+      document.querySelectorAll('#sheetScrollArea .drag-textarea').forEach(ta => {
+        const baseFont = parseFloat(ta.getAttribute('data-base-font')) || 16;
+        ta.style.fontSize = `${Math.round(baseFont * zoomRatio)}px`;
+      });
+
+      applySheetRotation();
+    }
+
+    function adjustSheetZoom(delta) {
+      setSheetWidth(currentSheetWidth + delta);
+    }
+
+    function applySheetRotation() {
+      const wrappers = document.querySelectorAll('#sheetScrollArea .sheet-wrapper');
+      const badge = document.getElementById('rotationAngleBadge');
+      if (badge) {
+        if (currentSheetRotation > 0) {
+          badge.innerText = `${currentSheetRotation}°`;
+          badge.classList.remove('hidden');
+        } else {
+          badge.classList.add('hidden');
+        }
+      }
+
+      wrappers.forEach(wrapper => {
+        const pNum = wrapper.getAttribute('data-page') || '1';
+        const inner = document.getElementById(`pageRotatable_${pNum}`);
+        const img = document.getElementById(`sheetImage_${pNum}`);
+        if (!inner || !img) return;
+
+        const natW = img.naturalWidth || 1200;
+        const natH = img.naturalHeight || 1700;
+        const aspect = natH / natW;
+
+        const W = currentSheetWidth;
+        const H = Math.round(W * aspect);
+
+        inner.style.width = `${W}px`;
+        inner.style.height = `${H}px`;
+
+        const headerEl = wrapper.querySelector('.bg-slate-800');
+        const headerH = headerEl ? headerEl.offsetHeight : 0;
+
+        wrapper.style.maxWidth = 'none';
+
+        if (currentSheetRotation === 0) {
+          wrapper.style.width = `${W}px`;
+          wrapper.style.height = 'auto';
+          inner.style.position = 'relative';
+          inner.style.top = '0px';
+          inner.style.left = '0px';
+          inner.style.transformOrigin = 'top left';
+          inner.style.transform = 'none';
+        } else if (currentSheetRotation === 90) {
+          wrapper.style.width = `${H}px`;
+          wrapper.style.height = `${W + headerH}px`;
+          inner.style.position = 'absolute';
+          inner.style.top = `${headerH}px`;
+          inner.style.left = '0px';
+          inner.style.transformOrigin = 'top left';
+          inner.style.transform = `translate(${H}px, 0px) rotate(90deg)`;
+        } else if (currentSheetRotation === 180) {
+          wrapper.style.width = `${W}px`;
+          wrapper.style.height = `${H + headerH}px`;
+          inner.style.position = 'absolute';
+          inner.style.top = `${headerH}px`;
+          inner.style.left = '0px';
+          inner.style.transformOrigin = 'top left';
+          inner.style.transform = `translate(${W}px, ${H}px) rotate(180deg)`;
+        } else if (currentSheetRotation === 270) {
+          wrapper.style.width = `${H}px`;
+          wrapper.style.height = `${W + headerH}px`;
+          inner.style.position = 'absolute';
+          inner.style.top = `${headerH}px`;
+          inner.style.left = '0px';
+          inner.style.transformOrigin = 'top left';
+          inner.style.transform = `translate(0px, ${W}px) rotate(270deg)`;
+        }
+      });
+    }
+
+    function closeSheetModal() {
+      document.getElementById('sheetModal').classList.add('hidden');
+      document.getElementById('sheetScrollArea').innerHTML = '';
+    }
+
+    function addDraggableBoxToCurrentPage() {
+      // Find visible page in scroll area
+      const wrappers = document.querySelectorAll('#sheetScrollArea .sheet-wrapper');
+      let targetPage = 1;
+      const scrollArea = document.getElementById('sheetScrollArea');
+      const scrollTop = scrollArea.scrollTop;
+
+      wrappers.forEach(w => {
+        const pageNum = parseInt(w.getAttribute('data-page')) || 1;
+        if (w.offsetTop - 100 <= scrollTop) {
+          targetPage = pageNum;
+        }
+      });
+
+      addDraggableBox('', 35, 30, 140, 30, targetPage);
+    }
+
+    // Add New Draggable & Resizable Text Box to specified page
+    function addDraggableBox(defaultText = '', posXPercent = 35, posYPercent = 30, widthVal = 16.5, heightVal = 2.7, pageNum = 1, baseFont = 16) {
+      const container = document.getElementById(`boxesContainer_${pageNum}`) || document.getElementById('boxesContainer_1');
+      if (!container) return;
+
+      boxIdCounter++;
+      const boxId = 'box_' + boxIdCounter;
+
+      let wPct = parseFloat(widthVal) || 16.5;
+      if (wPct > 50) wPct = ((wPct / 850) * 100); // convert legacy pixel inputs to percentage
+      let hPct = parseFloat(heightVal) || 2.7;
+      if (hPct > 15) hPct = ((hPct / 1200) * 100);
+
+      const box = document.createElement('div');
+      box.className = 'drag-box is-focused';
+      box.id = boxId;
+      box.setAttribute('data-page', pageNum);
+      box.style.top = `${posYPercent}%`;
+      box.style.left = `${posXPercent}%`;
+      box.style.width = `${wPct.toFixed(2)}%`;
+      box.style.height = `${hPct.toFixed(2)}%`;
+
+      box.innerHTML = `
+        <div class="drag-bar" onpointerdown="startDrag(event, '${boxId}', ${pageNum})">
+          <span class="flex items-center gap-1">
+            <i class="fa-solid fa-arrows-up-down-left-right text-[10px]"></i>
+            <span>اسحب</span>
+          </span>
+          <div class="flex items-center gap-1.5 no-drag">
+            <button type="button" onclick="duplicateBox('${boxId}')" class="hover:text-emerald-300 font-bold px-1 flex items-center gap-0.5 text-[10px] bg-white/10 rounded" title="تكرار / نسخ هذا المربع">
+              <i class="fa-regular fa-clone"></i>
+              <span>نسخ</span>
+            </button>
+            <button type="button" onclick="adjustBoxFont('${boxId}', 1)" class="hover:text-amber-300 font-bold px-1" title="تكبير الخط">A+</button>
+            <button type="button" onclick="adjustBoxFont('${boxId}', -1)" class="hover:text-amber-300 font-bold px-1" title="تصغير الخط">A-</button>
+            <button type="button" onclick="deleteBox('${boxId}')" class="hover:text-rose-300 font-bold px-1 text-xs" title="حذف المربع">✕</button>
+          </div>
+        </div>
+        <textarea class="drag-textarea" placeholder="اكتب هنا..." data-base-font="${baseFont}">${defaultText}</textarea>
+        <div class="resize-handle" onpointerdown="startResize(event, '${boxId}')" title="اسحب لتكبير وتصغير المربع">⇲</div>
+      `;
+
+      container.appendChild(box);
+      updateBoxesCount();
+
+      const ta = box.querySelector('.drag-textarea');
+      const zoomRatio = currentSheetWidth / 850;
+      if (ta) {
+        ta.style.fontSize = `${Math.round(baseFont * zoomRatio)}px`;
+      }
+
+      // Focus handling:
+      ta.addEventListener('focus', () => {
+        document.querySelectorAll('.drag-box').forEach(b => b.classList.remove('is-focused'));
+        box.classList.add('is-focused');
+      });
+      ta.addEventListener('blur', () => {
+        box.classList.remove('is-focused');
+      });
+      box.addEventListener('pointerdown', () => {
+        document.querySelectorAll('.drag-box').forEach(b => b.classList.remove('is-focused'));
+        box.classList.add('is-focused');
+      });
+
+      // Auto expand height if needed
+      ta.addEventListener('input', () => {
+        const containerH = container.offsetHeight || 1200;
+        if (ta.scrollHeight > box.clientHeight) {
+          const newHPct = ((ta.scrollHeight + 4) / containerH) * 100;
+          box.style.height = `${newHPct.toFixed(2)}%`;
+        }
+      });
+
+      // Focus the textarea
+      setTimeout(() => {
+        if (ta) ta.focus();
+      }, 50);
+    }
+
+    function deleteBox(id) {
+      const el = document.getElementById(id);
+      if (el) el.remove();
+      updateBoxesCount();
+    }
+
+    // Duplicate text box
+    function duplicateBox(boxId) {
+      const srcBox = document.getElementById(boxId);
+      if (!srcBox) return;
+
+      const pageNum = parseInt(srcBox.getAttribute('data-page')) || 1;
+      const srcTa = srcBox.querySelector('.drag-textarea');
+      const text = srcTa ? srcTa.value : '';
+      const baseFont = srcTa ? (parseFloat(srcTa.getAttribute('data-base-font')) || 16) : 16;
+
+      const srcLeftPct = parseFloat(srcBox.style.left) || 35;
+      const srcTopPct = parseFloat(srcBox.style.top) || 30;
+      const srcWidthPct = parseFloat(srcBox.style.width) || 16.5;
+      const srcHeightPct = parseFloat(srcBox.style.height) || 2.7;
+
+      let newLeftPct = Math.max(1, Math.min(85, srcLeftPct - 1.5));
+      let newTopPct = Math.max(1, Math.min(94, srcTopPct + 2.5));
+
+      addDraggableBox(text, newLeftPct.toFixed(2), newTopPct.toFixed(2), srcWidthPct.toFixed(2), srcHeightPct.toFixed(2), pageNum, baseFont);
+    }
+
+    function adjustBoxFont(id, delta) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const ta = el.querySelector('.drag-textarea');
+      if (!ta) return;
+      let baseFont = parseFloat(ta.getAttribute('data-base-font')) || 16;
+      baseFont = Math.max(8, Math.min(48, baseFont + (delta * 2)));
+      ta.setAttribute('data-base-font', baseFont);
+      const zoomRatio = currentSheetWidth / 850;
+      ta.style.fontSize = `${Math.round(baseFont * zoomRatio)}px`;
+    }
+
+    function updateBoxesCount() {
+      const count = document.querySelectorAll('#sheetScrollArea .drag-box').length;
+      const badge = document.getElementById('boxesCountBadge');
+      if (badge) badge.innerText = count;
+    }
+
+    // Drag Implementation with Rotation Support
+    let activeDrag = null;
+
+    function startDrag(e, boxId, pageNum = 1) {
+      if (e.target.closest('.no-drag')) return;
+      e.preventDefault();
+
+      const box = document.getElementById(boxId);
+      const container = box.parentElement; // boxesContainer
+      const containerW = container.offsetWidth || currentSheetWidth;
+      const containerH = container.offsetHeight || Math.round(currentSheetWidth * 1.414);
+
+      const currentLeftPct = parseFloat(box.style.left) || 35;
+      const currentTopPct = parseFloat(box.style.top) || 30;
+
+      activeDrag = {
+        box,
+        pageNum,
+        startX: e.clientX,
+        startY: e.clientY,
+        initialLeftPx: (currentLeftPct / 100) * containerW,
+        initialTopPx: (currentTopPct / 100) * containerH,
+        containerW,
+        containerH,
+        rotation: currentSheetRotation
+      };
+
+      box.classList.add('active');
+
+      window.addEventListener('pointermove', onDragging);
+      window.addEventListener('pointerup', stopDrag);
+    }
+
+    function onDragging(e) {
+      if (!activeDrag) return;
+      e.preventDefault();
+
+      const dxScreen = e.clientX - activeDrag.startX;
+      const dyScreen = e.clientY - activeDrag.startY;
+
+      let dxLocal = dxScreen;
+      let dyLocal = dyScreen;
+
+      if (activeDrag.rotation === 90) {
+        dxLocal = dyScreen;
+        dyLocal = -dxScreen;
+      } else if (activeDrag.rotation === 180) {
+        dxLocal = -dxScreen;
+        dyLocal = -dyScreen;
+      } else if (activeDrag.rotation === 270) {
+        dxLocal = -dyScreen;
+        dyLocal = dxScreen;
+      }
+
+      let newLeft = activeDrag.initialLeftPx + dxLocal;
+      let newTop = activeDrag.initialTopPx + dyLocal;
+
+      newLeft = Math.max(0, Math.min(activeDrag.containerW - 30, newLeft));
+      newTop = Math.max(0, Math.min(activeDrag.containerH - 20, newTop));
+
+      const leftPct = (newLeft / activeDrag.containerW) * 100;
+      const topPct = (newTop / activeDrag.containerH) * 100;
+
+      activeDrag.box.style.left = `${leftPct.toFixed(2)}%`;
+      activeDrag.box.style.top = `${topPct.toFixed(2)}%`;
+    }
+
+    function stopDrag() {
+      if (activeDrag && activeDrag.box) {
+        activeDrag.box.classList.remove('active');
+      }
+      activeDrag = null;
+      window.removeEventListener('pointermove', onDragging);
+      window.removeEventListener('pointerup', stopDrag);
+    }
+
+    // Resize Implementation with Rotation Support
+    let activeResize = null;
+
+    function startResize(e, boxId) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const box = document.getElementById(boxId);
+      const container = box.parentElement;
+      const containerW = container.offsetWidth || currentSheetWidth;
+      const containerH = container.offsetHeight || Math.round(currentSheetWidth * 1.414);
+
+      activeResize = {
+        box,
+        startX: e.clientX,
+        startY: e.clientY,
+        initialWidthPx: box.offsetWidth,
+        initialHeightPx: box.offsetHeight,
+        containerW,
+        containerH,
+        rotation: currentSheetRotation
+      };
+
+      box.classList.add('active');
+
+      window.addEventListener('pointermove', onResizing);
+      window.addEventListener('pointerup', stopResize);
+    }
+
+    function onResizing(e) {
+      if (!activeResize) return;
+      e.preventDefault();
+
+      const dxScreen = activeResize.startX - e.clientX;
+      const dyScreen = e.clientY - activeResize.startY;
+
+      let dxLocal = dxScreen;
+      let dyLocal = dyScreen;
+
+      if (activeResize.rotation === 90) {
+        dxLocal = dyScreen;
+        dyLocal = dxScreen;
+      } else if (activeResize.rotation === 180) {
+        dxLocal = -dxScreen;
+        dyLocal = -dyScreen;
+      } else if (activeResize.rotation === 270) {
+        dxLocal = -dyScreen;
+        dyLocal = -dxScreen;
+      }
+
+      const newWidthPx = Math.max(30, activeResize.initialWidthPx + dxLocal);
+      const newHeightPx = Math.max(20, activeResize.initialHeightPx + dyLocal);
+
+      const widthPct = (newWidthPx / activeResize.containerW) * 100;
+      const heightPct = (newHeightPx / activeResize.containerH) * 100;
+
+      activeResize.box.style.width = `${widthPct.toFixed(2)}%`;
+      activeResize.box.style.height = `${heightPct.toFixed(2)}%`;
+    }
+
+    function stopResize() {
+      if (activeResize && activeResize.box) {
+        activeResize.box.classList.remove('active');
+      }
+      activeResize = null;
+      window.removeEventListener('pointermove', onResizing);
+      window.removeEventListener('pointerup', stopResize);
+    }
+
+    // Generate high-resolution canvas with official sheet and user texts baked in (supports multi-page)
+    async function generateBakedCanvases() {
+      if (!activeForm) return [];
+
+      if (document.fonts && document.fonts.ready) {
+        await document.fonts.ready;
+      }
+
+      let pages = [];
+      if (activeForm.pages && activeForm.pages.length > 0) {
+        pages = activeForm.pages;
+      } else if (activeForm.sheetImage) {
+        pages = [activeForm.sheetImage];
+      } else if (activeForm.fileType === 'image' || ['.png', '.jpg', '.jpeg', '.webp'].some(ext => (activeForm.fileName || '').toLowerCase().endsWith(ext))) {
+        pages = ['/uploads/' + activeForm.fileName];
+      } else {
+        pages = [`/sheets/${activeForm.id}_sheet.png`];
+      }
+
+      const canvases = [];
+
+      for (let pIdx = 0; pIdx < pages.length; pIdx++) {
+        const pNum = pIdx + 1;
+        const pageImgEl = document.getElementById(`sheetImage_${pNum}`);
+        const rotatableInner = document.getElementById(`pageRotatable_${pNum}`);
+        const boxes = document.querySelectorAll(`#boxesContainer_${pNum} .drag-box`);
+        if (!pageImgEl) continue;
+
+        const origW = pageImgEl.naturalWidth || 1700;
+        const origH = pageImgEl.naturalHeight || 2200;
+
+        const canvas = document.createElement('canvas');
+        if (currentSheetRotation === 90 || currentSheetRotation === 270) {
+          canvas.width = origH;
+          canvas.height = origW;
+        } else {
+          canvas.width = origW;
+          canvas.height = origH;
+        }
+        const ctx = canvas.getContext('2d');
+
+        ctx.save();
+        if (currentSheetRotation === 90) {
+          ctx.translate(origH, 0);
+          ctx.rotate(90 * Math.PI / 180);
+        } else if (currentSheetRotation === 180) {
+          ctx.translate(origW, origH);
+          ctx.rotate(180 * Math.PI / 180);
+        } else if (currentSheetRotation === 270) {
+          ctx.translate(0, origW);
+          ctx.rotate(270 * Math.PI / 180);
+        }
+
+        // Draw original page sheet
+        ctx.drawImage(pageImgEl, 0, 0, origW, origH);
+
+        const innerW = rotatableInner ? rotatableInner.offsetWidth : currentSheetWidth;
+        const innerH = rotatableInner ? rotatableInner.offsetHeight : Math.round(currentSheetWidth * (origH / origW));
+
+        const scaleX = origW / innerW;
+        const scaleY = origH / innerH;
+
+        boxes.forEach(box => {
+          const ta = box.querySelector('.drag-textarea');
+          const text = ta ? ta.value : '';
+          if (text && text.trim()) {
+            const leftPct = parseFloat(box.style.left) || 0;
+            const topPct = parseFloat(box.style.top) || 0;
+            const widthPct = parseFloat(box.style.width) || 16.5;
+
+            const baseFontPx = parseFloat(ta.getAttribute('data-base-font')) || 16;
+            const printScale = origW / 850;
+            const canvasFontSize = Math.round(baseFontPx * printScale);
+
+            ctx.save();
+            ctx.font = `bold ${canvasFontSize}px "Cairo", "Traditional Arabic", sans-serif`;
+            ctx.fillStyle = '#000000';
+            ctx.direction = 'rtl';
+            ctx.textAlign = 'right';
+            ctx.textBaseline = 'top';
+
+            // Coordinates on canvas (rotates with image context)
+            const boxX = (leftPct / 100) * origW;
+            const boxY = (topPct / 100) * origH;
+            const boxW = (widthPct / 100) * origW;
+            const textRight = boxX + boxW;
+            const baselineNudge = canvasFontSize * 0.18; // precise downward baseline alignment
+
+            const lines = text.split('\n');
+            const lineHeight = canvasFontSize * 1.30;
+
+            lines.forEach((line, idx) => {
+              ctx.fillText(line, textRight - (2 * printScale), boxY + baselineNudge + (idx * lineHeight));
+            });
+
+            ctx.restore();
+          }
+        });
+
+        ctx.restore();
+        canvases.push(canvas);
+      }
+
+      return canvases;
+    }
+
+    // Print the Sheet with 100% pixel accuracy (supports all pages)
+    async function printSheetWithBoxes() {
+      if (!activeForm) return;
+
+      trackActivity(activeForm.id, activeForm.title, 'print');
+
+      const canvases = await generateBakedCanvases();
+      if (!canvases || canvases.length === 0) return;
+
+      const pageImagesHtml = canvases.map((c, idx) => {
+        const dataUrl = c.toDataURL('image/png', 1.0);
+        return `
+          <div class="a4-print-page" ${idx > 0 ? 'style="page-break-before: always;"' : ''}>
+            <img src="${dataUrl}" class="baked-sheet-img" alt="صفحة ${idx + 1}">
+          </div>
+        `;
+      }).join('');
+
+      let printFrame = document.getElementById('basraPrintFrame');
+      if (printFrame) printFrame.remove();
+
+      printFrame = document.createElement('iframe');
+      printFrame.id = 'basraPrintFrame';
+      printFrame.style.position = 'fixed';
+      printFrame.style.right = '0';
+      printFrame.style.bottom = '0';
+      printFrame.style.width = '1px';
+      printFrame.style.height = '1px';
+      printFrame.style.opacity = '0.01';
+      printFrame.style.border = '0';
+      printFrame.style.pointerEvents = 'none';
+      document.body.appendChild(printFrame);
+
+      const isLandscape = canvases[0].width > canvases[0].height;
+      const printOrientation = isLandscape ? 'A4 landscape' : 'A4 portrait';
+      const printPageWidth = isLandscape ? '297mm' : '210mm';
+
+      const fdoc = printFrame.contentWindow.document;
+      fdoc.open();
+      fdoc.write(`
+        <!DOCTYPE html>
+        <html lang="ar" dir="rtl">
+        <head>
+          <meta charset="UTF-8">
+          <title>${activeForm.title}</title>
+          <style>
+            @page {
+              size: ${printOrientation};
+              margin: 0;
+            }
+            * {
+              box-sizing: border-box;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            html, body {
+              margin: 0;
+              padding: 0;
+              width: 100%;
+              background: #fff;
+            }
+            .a4-print-page {
+              width: ${printPageWidth};
+              max-width: 100%;
+              margin: 0 auto;
+            }
+            .baked-sheet-img {
+              width: 100%;
+              height: auto;
+              display: block;
+            }
+            @media print {
+              html, body {
+                width: 100%;
+                margin: 0;
+                padding: 0;
+              }
+              .a4-print-page {
+                width: 100% !important;
+                margin: 0 !important;
+              }
+            }
+          </style>
+        </head>
+        <body>
+          ${pageImagesHtml}
+        </body>
+        </html>
+      `);
+      fdoc.close();
+
+      setTimeout(() => {
+        try {
+          printFrame.contentWindow.focus();
+          printFrame.contentWindow.print();
+        } catch (err) {
+          console.error('Print trigger error:', err);
+        }
+      }, 300);
+    }
+
+    // Download the completed sheet directly as a high-resolution PNG image
+    async function downloadBakedSheet() {
+      if (!activeForm) return;
+      const canvases = await generateBakedCanvases();
+      if (!canvases || canvases.length === 0) return;
+
+      canvases.forEach((canvas, idx) => {
+        const link = document.createElement('a');
+        link.download = canvases.length > 1
+          ? `${activeForm.title}_صفحة_${idx + 1}_معبأ.png`
+          : `${activeForm.title}_معبأ.png`;
+        link.href = canvas.toDataURL('image/png', 1.0);
+        link.click();
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
