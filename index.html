@@ -200,16 +200,7 @@
           <i class="fa-solid fa-id-card text-amber-600 text-base"></i>
           <span>يرجى إدخال رقم مركز التسجيل الخاص بك للدخول:</span>
         </label>
-        <input 
-          type="text" 
-          id="gateCenterInput" 
-          maxlength="5"
-          placeholder="مثال: 1921 أو 2928" 
-          oninput="onGateInput(this.value)"
-          onkeydown="if(event.key === 'Enter') submitGatekeeper()"
-          class="w-full bg-white border-2 border-slate-300 focus:border-amber-500 rounded-xl px-4 py-3 text-center text-xl font-black text-slate-900 focus:outline-none font-mono tracking-wider"
-          autofocus
-        >
+        <input type="text" id="gateCenterInput" maxlength="4" inputmode="numeric" pattern="[0-9]*" placeholder="أدخل 4 أرقام (مثال: 2928)" oninput="onGateInput(this.value)" onkeydown="if(event.key === 'Enter' && !document.getElementById('gateSubmitBtn').disabled) submitGatekeeper()" class="w-full bg-white border-2 border-slate-300 focus:border-amber-500 rounded-xl px-4 py-3 text-center text-2xl font-black text-slate-900 focus:outline-none font-mono tracking-widest" autofocus>
         
         <!-- Live Center Match Badge -->
         <div id="gateCenterMatchBadge" class="mt-3 hidden p-2.5 rounded-xl text-xs font-bold flex items-center gap-2">
@@ -217,16 +208,7 @@
         </div>
       </div>
 
-      <button 
-        type="button" 
-        id="gateSubmitBtn" 
-        onclick="submitGatekeeper()" 
-        disabled 
-        class="w-full bg-slate-300 text-slate-500 cursor-not-allowed font-black py-3.5 px-4 rounded-xl text-sm transition-all flex items-center justify-center gap-2 shadow-md"
-      >
-        <span>دخول إلى منظومة النماذج</span>
-        <i class="fa-solid fa-arrow-left"></i>
-      </button>
+      <button type="button" id="gateSubmitBtn" onclick="submitGatekeeper()" disabled class="w-full bg-slate-200 text-slate-400 cursor-not-allowed font-black py-3.5 px-4 rounded-xl text-sm transition-all flex items-center justify-center gap-2 shadow-sm"><span>دخول إلى منظومة النماذج</span><i class="fa-solid fa-arrow-left"></i></button>
 
       <div class="mt-4 text-[11px] text-slate-400">
         يتم تسجيل عمليات العرض والتنزيل باسم مركزك لمتابعة الإجراءات الرسمية من قبل مكتب انتخابات البصرة
@@ -585,31 +567,55 @@
 
     let gateMatchedCenter = null;
     function onGateInput(code) {
-      const val = (code || '').trim();
+      const input = document.getElementById('gateCenterInput');
+      // Strictly enforce numbers only and exactly at most 4 digits
+      let val = (code || '').replace(/[^0-9]/g, '');
+      if (val.length > 4) val = val.slice(0, 4);
+      if (input && input.value !== val) {
+        input.value = val;
+      }
+
       const badge = document.getElementById('gateCenterMatchBadge');
       const btn = document.getElementById('gateSubmitBtn');
 
-      if (!val || allCenters.length === 0) {
-        badge.className = 'mt-3 hidden p-2.5 rounded-xl text-xs font-bold';
-        btn.disabled = true;
-        btn.className = 'w-full bg-slate-300 text-slate-500 cursor-not-allowed font-black py-3.5 px-4 rounded-xl text-sm transition-all flex items-center justify-center gap-2 shadow-md';
+      // Less than 4 digits: Strictly disabled
+      if (val.length < 4) {
         gateMatchedCenter = null;
+        btn.disabled = true;
+        btn.className = 'w-full bg-slate-200 text-slate-400 cursor-not-allowed font-black py-3.5 px-4 rounded-xl text-sm transition-all flex items-center justify-center gap-2 shadow-sm';
+        
+        if (val.length > 0) {
+          badge.innerHTML = `<i class="fa-solid fa-circle-info text-amber-600 text-base"></i> <span>يرجى إدخل 4 أرقام لرمز المركز (${val.length} من 4)</span>`;
+          badge.className = 'mt-3 p-2.5 rounded-xl text-xs font-bold bg-amber-50 text-amber-800 border border-amber-300 flex items-center gap-2 justify-center';
+        } else {
+          badge.className = 'mt-3 hidden p-2.5 rounded-xl text-xs font-bold';
+        }
         return;
       }
 
-      const match = allCenters.find(c => c.code === val);
+      // Exactly 4 digits:
+      if (allCenters.length === 0) {
+        badge.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-amber-600 text-base"></i> <span>جاري التحقق من قاعدة بيانات المراكز...</span>`;
+        badge.className = 'mt-3 p-2.5 rounded-xl text-xs font-bold bg-amber-50 text-amber-800 border border-amber-300 flex items-center gap-2 justify-center';
+        btn.disabled = true;
+        btn.className = 'w-full bg-slate-200 text-slate-400 cursor-not-allowed font-black py-3.5 px-4 rounded-xl text-sm transition-all flex items-center justify-center gap-2 shadow-sm';
+        return;
+      }
+
+      const match = allCenters.find(c => String(c.code).trim() === val);
       if (match) {
         gateMatchedCenter = match;
-        badge.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600 text-base"></i> <span>مركز تسجيل <strong>${match.name}</strong> (رمز: ${match.code}) ${match.tamweenName ? '— تموين: ' + match.tamweenName : ''}</span>`;
-        badge.className = 'mt-3 p-2.5 rounded-xl text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-2';
+        const tamweenPart = match.tamweenName ? ' • تموين: ' + match.tamweenName : '';
+        badge.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600 text-base"></i> <span>تم التعرف: <strong>${match.name}</strong> (رمز: ${match.code})${tamweenPart}</span>`;
+        badge.className = 'mt-3 p-2.5 rounded-xl text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-300 flex items-center gap-2 justify-center';
         btn.disabled = false;
         btn.className = 'w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-3.5 px-4 rounded-xl text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-amber-500/25 active:scale-95 cursor-pointer';
       } else {
         gateMatchedCenter = null;
-        badge.innerHTML = `<i class="fa-solid fa-circle-exclamation text-rose-600 text-base"></i> <span>رقم المركز غير موجود، تأكد من كتابة الرقم بشكل صحيح (مثال: 1921 أو 2928)</span>`;
-        badge.className = 'mt-3 p-2.5 rounded-xl text-xs font-bold bg-rose-100 text-rose-800 border border-rose-300 flex items-center gap-2';
+        badge.innerHTML = `<i class="fa-solid fa-circle-exclamation text-rose-600 text-base"></i> <span>الرمز (${val}) غير مسجل ضمن مراكز البصرة الـ 76</span>`;
+        badge.className = 'mt-3 p-2.5 rounded-xl text-xs font-bold bg-rose-50 text-rose-800 border border-rose-300 flex items-center gap-2 justify-center';
         btn.disabled = true;
-        btn.className = 'w-full bg-slate-300 text-slate-500 cursor-not-allowed font-black py-3.5 px-4 rounded-xl text-sm transition-all flex items-center justify-center gap-2 shadow-md';
+        btn.className = 'w-full bg-slate-200 text-slate-400 cursor-not-allowed font-black py-3.5 px-4 rounded-xl text-sm transition-all flex items-center justify-center gap-2 shadow-sm';
       }
     }
 
@@ -629,21 +635,43 @@
 
     async function loadCenters() {
       try {
-        const res = await fetch('/api/centers');
+        let res = await fetch('./data/centers.json');
+        if (!res.ok) res = await fetch('/api/centers');
         const data = await res.json();
-        if (data.success) allCenters = data.centers;
-      } catch (e) { console.error(e); }
+        allCenters = Array.isArray(data) ? data : (data.centers || []);
+        // Re-evaluate gate input in case user entered digits before load finished
+        const input = document.getElementById('gateCenterInput');
+        if (input && input.value) onGateInput(input.value);
+      } catch (e) {
+        try {
+          const res = await fetch('/api/centers');
+          const data = await res.json();
+          allCenters = Array.isArray(data) ? data : (data.centers || []);
+          const input = document.getElementById('gateCenterInput');
+          if (input && input.value) onGateInput(input.value);
+        } catch (err) {
+          console.error('loadCenters error:', err);
+        }
+      }
     }
 
     async function loadCategories() {
       try {
-        const res = await fetch('/api/categories');
+        let res = await fetch('./data/categories.json');
+        if (!res.ok) res = await fetch('/api/categories');
         const data = await res.json();
-        if (data.success) {
-          allCategories = data.categories || [];
+        allCategories = Array.isArray(data) ? data : (data.categories || []);
+        renderCategoryTabs();
+      } catch (e) {
+        try {
+          const res = await fetch('/api/categories');
+          const data = await res.json();
+          allCategories = Array.isArray(data) ? data : (data.categories || []);
           renderCategoryTabs();
+        } catch (err) {
+          console.error('loadCategories error:', err);
         }
-      } catch (e) { console.error(e); }
+      }
     }
 
     function renderCategoryTabs() {
@@ -674,14 +702,27 @@
 
     async function loadForms() {
       try {
-        const res = await fetch('/api/forms');
+        let res = await fetch('./data/forms.json');
+        if (!res.ok) res = await fetch('/api/forms');
         const data = await res.json();
-        if (data.success) {
-          allForms = data.forms;
+        let list = Array.isArray(data) ? data : (data.forms || []);
+        list = list.filter(f => !f.hidden);
+        allForms = list;
+        renderCategoryTabs();
+        renderFilteredForms();
+      } catch (e) {
+        try {
+          const res = await fetch('/api/forms');
+          const data = await res.json();
+          let list = Array.isArray(data) ? data : (data.forms || []);
+          list = list.filter(f => !f.hidden);
+          allForms = list;
           renderCategoryTabs();
           renderFilteredForms();
+        } catch (err) {
+          console.error('loadForms error:', err);
         }
-      } catch (e) { console.error(e); }
+      }
     }
 
     function onCodeEntered(code) {
