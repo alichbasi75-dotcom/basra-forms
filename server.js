@@ -725,7 +725,99 @@ app.post('/api/admin/publish-to-cloud', async (req, res) => {
   }
 });
 
+
+// ==========================================
+// AUTOMATIC CLOUD SYNC & AUTO-UPDATE
+// ==========================================
+const CLOUD_SYNC_SOURCES = [
+  'https://basra-forms.vercel.app',
+  'https://alichbasi75-dotcom.github.io/basra-forms'
+];
+
+async function autoSyncWithCloud() {
+  console.log('[Auto-Sync] Checking for latest cloud updates from GitHub/Vercel...');
+  for (const baseUrl of CLOUD_SYNC_SOURCES) {
+    try {
+      const res = await fetch(`${baseUrl}/data/forms.json?t=${Date.now()}`, { signal: AbortSignal.timeout(6000) });
+      if (!res.ok) continue;
+      const cloudForms = await res.json();
+      if (!Array.isArray(cloudForms) || cloudForms.length === 0) continue;
+
+      const localForms = readJson('forms.json') || [];
+      const hasDifferences = (JSON.stringify(cloudForms) !== JSON.stringify(localForms));
+
+      // Download missing files
+      for (const f of cloudForms) {
+        if (f.fileName) {
+          const localUpload = path.join(UPLOADS_DIR, f.fileName);
+          if (!fs.existsSync(localUpload)) {
+            try {
+              const fileRes = await fetch(`${baseUrl}/uploads/${encodeURIComponent(f.fileName)}`, { signal: AbortSignal.timeout(15000) });
+              if (fileRes.ok) {
+                const buf = Buffer.from(await fileRes.arrayBuffer());
+                fs.writeFileSync(localUpload, buf);
+                console.log(`[Auto-Sync] Downloaded upload: ${f.fileName}`);
+              }
+            } catch (err) {}
+          }
+        }
+
+        const pages = f.pages || (f.sheetImage ? [f.sheetImage] : []);
+        for (const p of pages) {
+          const fn = path.basename(p);
+          const localSheet = path.join(SHEETS_DIR, fn);
+          if (!fs.existsSync(localSheet)) {
+            try {
+              const sheetRes = await fetch(`${baseUrl}/sheets/${encodeURIComponent(fn)}`, { signal: AbortSignal.timeout(15000) });
+              if (sheetRes.ok) {
+                const buf = Buffer.from(await sheetRes.arrayBuffer());
+                fs.writeFileSync(localSheet, buf);
+                console.log(`[Auto-Sync] Downloaded sheet: ${fn}`);
+              }
+            } catch (err) {}
+          }
+        }
+      }
+
+      // Sync categories & centers
+      try {
+        const catRes = await fetch(`${baseUrl}/data/categories.json?t=${Date.now()}`, { signal: AbortSignal.timeout(5000) });
+        if (catRes.ok) {
+          const cats = await catRes.json();
+          if (Array.isArray(cats) && cats.length > 0) writeJson('categories.json', cats);
+        }
+      } catch (e) {}
+
+      try {
+        const centersRes = await fetch(`${baseUrl}/data/centers.json?t=${Date.now()}`, { signal: AbortSignal.timeout(5000) });
+        if (centersRes.ok) {
+          const centers = await centersRes.json();
+          if (Array.isArray(centers) && centers.length > 0) writeJson('centers.json', centers);
+        }
+      } catch (e) {}
+
+      if (hasDifferences) {
+        writeJson('forms.json', cloudForms);
+        console.log(`[Auto-Sync] Successfully updated forms database (${cloudForms.length} forms) from ${baseUrl}!`);
+      }
+
+      return { success: true, updated: hasDifferences, count: cloudForms.length, source: baseUrl };
+    } catch (e) {
+      console.log(`[Auto-Sync] Cloud source ${baseUrl} skipped: ${e.message}`);
+    }
+  }
+  return { success: false, reason: 'Offline or cloud sources unreachable' };
+}
+
+// Endpoint to trigger manual or on-load sync
+app.post('/api/admin/auto-sync', async (req, res) => {
+  const result = await autoSyncWithCloud();
+  res.json(result);
+});
+
 app.listen(PORT, '0.0.0.0', () => {
+  // Auto-sync on startup in background
+  autoSyncWithCloud().catch(() => {});
   console.log(`====================================================`);
   console.log(`نظام نماذج مكتب انتخابات محافظة البصرة ومراكز التسجيل الـ 76`);
   console.log(`- بوابة مراكز التسجيل (المركز): http://localhost:${PORT}/center`);

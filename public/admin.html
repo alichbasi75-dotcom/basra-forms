@@ -2758,7 +2758,26 @@
         btn.innerHTML = '<i class="fa-solid fa-rotate-right"></i> <span>إعادة المحاولة</span>';
       }
     }
-  </script>
+  
+    // Automatically check for cloud updates on dashboard load
+    window.addEventListener('DOMContentLoaded', () => {
+      fetch('/api/admin/auto-sync', { method: 'POST' })
+        .then(res => res.json())
+        .then(data => {
+          if (data && data.updated) {
+            showAppModal({
+              title: 'تحديث تلقائي للمنظومة',
+              message: 'تم سحب وتحديث النماذج تلقائياً من السحاب إلى أحدث نسخة معتمدة بنجاح!',
+              type: 'success'
+            });
+            // Reload forms list
+            if (typeof loadForms === 'function') loadForms();
+          }
+        })
+        .catch(() => {});
+    });
+
+</script>
 </body>
 
         </html>
@@ -3104,7 +3123,26 @@
         btn.innerHTML = '<i class="fa-solid fa-rotate-right"></i> <span>إعادة المحاولة</span>';
       }
     }
-  </script>
+  
+    // Automatically check for cloud updates on dashboard load
+    window.addEventListener('DOMContentLoaded', () => {
+      fetch('/api/admin/auto-sync', { method: 'POST' })
+        .then(res => res.json())
+        .then(data => {
+          if (data && data.updated) {
+            showAppModal({
+              title: 'تحديث تلقائي للمنظومة',
+              message: 'تم سحب وتحديث النماذج تلقائياً من السحاب إلى أحدث نسخة معتمدة بنجاح!',
+              type: 'success'
+            });
+            // Reload forms list
+            if (typeof loadForms === 'function') loadForms();
+          }
+        })
+        .catch(() => {});
+    });
+
+</script>
 </body>
 
 </html>
