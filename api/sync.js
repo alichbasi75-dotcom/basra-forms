@@ -1,8 +1,8 @@
-// api/sync.js - Vercel Serverless Function for Secure Publishing
+// api/sync.js - Vercel Serverless Function for Secure Real-Time Publishing & Instant Data Fetching
 // CommonJS format matching package.json
 
 module.exports = async function handler(req, res) {
-  // Enable CORS so the desktop app can call this endpoint
+  // Enable CORS so browser apps can call this endpoint
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-admin-key');
@@ -11,22 +11,78 @@ module.exports = async function handler(req, res) {
     return res.status(200).end();
   }
 
+  const adminSecret = process.env.ADMIN_SECRET || 'BasraForms@2026';
+  const ghToken = process.env.GH_TOKEN;
+  const owner = process.env.GH_OWNER || 'alichbasi75-dotcom';
+  const repo = process.env.GH_REPO || 'basra-forms';
+
+  // Instant Real-Time Data GET API (Bypasses Vercel static build delay)
   if (req.method === 'GET') {
+    const type = req.query ? req.query.type : null;
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+
+    // Return live forms instantly (0 delay)
+    if (type === 'forms') {
+      if (global._latestForms && Array.isArray(global._latestForms)) {
+        return res.status(200).json(global._latestForms);
+      }
+      try {
+        const ghHeaders = {
+          'Accept': 'application/vnd.github.raw',
+          'User-Agent': 'Basra-Forms'
+        };
+        if (ghToken) ghHeaders['Authorization'] = `Bearer ${ghToken}`;
+
+        const ghRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/data/forms.json`, {
+          headers: ghHeaders
+        });
+        if (ghRes.ok) {
+          const liveForms = await ghRes.json();
+          global._latestForms = liveForms;
+          return res.status(200).json(liveForms);
+        }
+      } catch (e) {
+        console.error('Fetch live forms error:', e);
+      }
+    }
+
+    // Return live categories instantly (0 delay)
+    if (type === 'categories') {
+      if (global._latestCategories && Array.isArray(global._latestCategories)) {
+        return res.status(200).json(global._latestCategories);
+      }
+      try {
+        const ghHeaders = {
+          'Accept': 'application/vnd.github.raw',
+          'User-Agent': 'Basra-Forms'
+        };
+        if (ghToken) ghHeaders['Authorization'] = `Bearer ${ghToken}`;
+
+        const ghRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/data/categories.json`, {
+          headers: ghHeaders
+        });
+        if (ghRes.ok) {
+          const liveCats = await ghRes.json();
+          global._latestCategories = liveCats;
+          return res.status(200).json(liveCats);
+        }
+      } catch (e) {
+        console.error('Fetch live categories error:', e);
+      }
+    }
+
     return res.status(200).json({
       status: 'active',
       service: 'Basra Registration Centers Cloud Sync Relay',
-      version: '1.0.0'
+      version: '1.2.0'
     });
   }
 
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
-
-  const adminSecret = process.env.ADMIN_SECRET || 'BasraForms@2026';
-  const ghToken = process.env.GH_TOKEN;
-  const owner = process.env.GH_OWNER || 'alichbasi75-dotcom';
-  const repo = process.env.GH_REPO || 'basra-forms';
 
   // 1. Verify Secret Key
   const clientKey = req.headers['x-admin-key'] || (req.headers.authorization ? req.headers.authorization.replace('Bearer ', '') : '');
@@ -53,7 +109,6 @@ module.exports = async function handler(req, res) {
     async function uploadToGitHub(filePath, base64Content, commitMessage) {
       const url = `https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`;
       
-      // Check if file exists to get its SHA
       let sha = null;
       try {
         const getRes = await fetch(url, {
@@ -97,6 +152,7 @@ module.exports = async function handler(req, res) {
 
     // 2. Upload forms.json if provided
     if (forms && Array.isArray(forms)) {
+      global._latestForms = forms;
       const formsBase64 = Buffer.from(JSON.stringify(forms, null, 2), 'utf-8').toString('base64');
       await uploadToGitHub('data/forms.json', formsBase64, 'تحديث قاعدة بيانات النماذج من لوحة المسؤول');
       try {
@@ -109,6 +165,7 @@ module.exports = async function handler(req, res) {
 
     // 3. Upload categories.json if provided
     if (categories && Array.isArray(categories)) {
+      global._latestCategories = categories;
       const catBase64 = Buffer.from(JSON.stringify(categories, null, 2), 'utf-8').toString('base64');
       await uploadToGitHub('data/categories.json', catBase64, 'تحديث التصنيفات من لوحة المسؤول');
       try {
@@ -151,4 +208,4 @@ module.exports = async function handler(req, res) {
       error: error.message || 'حدث خطأ أثناء الاتصال بـ GitHub'
     });
   }
-}
+};

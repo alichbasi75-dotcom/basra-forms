@@ -1145,25 +1145,35 @@
     }
 
     // ================= CATEGORIES MANAGEMENT =================
+        // ================= CATEGORIES MANAGEMENT =================
     async function loadAdminCategories() {
       try {
-        const res = await fetch('./data/categories.json?t=' + Date.now());
-        if (res.ok) {
+        let res = null;
+        try {
+          res = await fetch('/api/sync?type=categories&t=' + Date.now(), { cache: 'no-store' });
+        } catch (e) {}
+
+        if (!res || !res.ok) {
+          res = await fetch('./data/categories.json?t=' + Date.now(), { cache: 'no-store' });
+        }
+
+        if (res && res.ok) {
           const data = await res.json();
           adminCategoriesList = Array.isArray(data) ? data : (data.categories || []);
-        } else {
-          throw new Error('Not found');
         }
       } catch (e) {
-        if (!adminCategoriesList || adminCategoriesList.length === 0) {
-          adminCategoriesList = [
-            { id: "leaves", name: "إجازات ومباشرات", icon: "fa-solid fa-calendar-check" },
-            { id: "voters", name: "شؤون الناخبين والبطاقات", icon: "fa-solid fa-id-card" },
-            { id: "legal", name: "الشؤون القانونية والمحاضر", icon: "fa-solid fa-scale-balanced" },
-            { id: "admin", name: "الإدارية والمالية والمخازن", icon: "fa-solid fa-boxes-stacked" }
-          ];
-        }
+        console.warn('Fallback loading categories:', e);
       }
+
+      if (!adminCategoriesList || adminCategoriesList.length === 0) {
+        adminCategoriesList = [
+          { id: "leaves", name: "إجازات ومباشرات", icon: "fa-solid fa-calendar-check" },
+          { id: "voters", name: "شؤون الناخبين والبطاقات", icon: "fa-solid fa-id-card" },
+          { id: "legal", name: "الشؤون القانونية والمحاضر", icon: "fa-solid fa-scale-balanced" },
+          { id: "admin", name: "الإدارية والمالية والمخازن", icon: "fa-solid fa-boxes-stacked" }
+        ];
+      }
+
       const countBadge = document.getElementById('adminCategoriesCount');
       if (countBadge) countBadge.innerText = adminCategoriesList.length;
       renderAdminCategoriesTable();
@@ -1546,10 +1556,19 @@
     }
 
     // Load forms list
+        // Load forms list with real-time cloud bypass
     async function loadAdminForms() {
       try {
-        const res = await fetch('./data/forms.json?t=' + Date.now());
-        if (res.ok) {
+        let res = null;
+        try {
+          res = await fetch('/api/sync?type=forms&t=' + Date.now(), { cache: 'no-store' });
+        } catch (e) {}
+
+        if (!res || !res.ok) {
+          res = await fetch('./data/forms.json?t=' + Date.now(), { cache: 'no-store' });
+        }
+
+        if (res && res.ok) {
           const data = await res.json();
           adminFormsList = Array.isArray(data) ? data : (data.forms || []);
         }
