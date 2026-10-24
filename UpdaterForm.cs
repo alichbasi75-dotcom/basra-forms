@@ -490,10 +490,9 @@ namespace BasraUpdater
                 lblCloudVerVal.Text = "الإصدار " + cloudVersion;
                 lblCloudVerVal.ForeColor = Color.FromArgb(16, 185, 129);
 
-                // Auto-suggest next version
                 SuggestNextVersion(cloudVersion);
             }
-            catch (Exception ex)
+            catch
             {
                 lblCloudVerVal.Text = "تعذر الاتصال (محلياً: 1.0.0)";
                 lblCloudVerVal.ForeColor = Color.FromArgb(225, 29, 72);
@@ -614,6 +613,33 @@ namespace BasraUpdater
             }
         }
 
+        private void SafeCopy(string src, string dst)
+        {
+            try
+            {
+                string fullSrc = Path.GetFullPath(src);
+                string fullDst = Path.GetFullPath(dst);
+
+                if (string.Equals(fullSrc, fullDst, StringComparison.OrdinalIgnoreCase))
+                {
+                    return; // الملف هو نفسه بالفعل، لا حاجة لنسخه فوق نفسه
+                }
+
+                string dir = Path.GetDirectoryName(fullDst);
+                if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
+                {
+                    Directory.CreateDirectory(dir);
+                }
+
+                File.Copy(fullSrc, fullDst, true);
+            }
+            catch
+            {
+                byte[] bytes = File.ReadAllBytes(src);
+                File.WriteAllBytes(dst, bytes);
+            }
+        }
+
         private void BtnPublish_Click(object sender, EventArgs e)
         {
             if (!ValidateFileMatch() || !ValidateVersionNumber()) return;
@@ -627,7 +653,7 @@ namespace BasraUpdater
                 "• الهدف المعتمد: {0}\n" +
                 "• الملف المختار: {1}\n" +
                 "• رقم الإصدار الجديد: {2}\n\n" +
-                "ملاحظة: سيتم تحديث هذا البرنامج فقط حصراً دون المساس بالبرنامج الآخر أو بقاعدة الاستمارات.",
+                "ملاحظة: سيتم تحديث هذا البرنامج فقط حصراً دون المساس بالبرنامج الآخر وبقاء الاستمارات تحت إدارة المسؤول حصراً.",
                 targetName, fname, newVer
             );
 
@@ -642,7 +668,7 @@ namespace BasraUpdater
             progressBar.Visible = true;
             progressBar.Style = ProgressBarStyle.Marquee;
 
-            lblStatus.Text = "جاري نسخ الملف المطابق إلى موقعه في المنظومة...";
+            lblStatus.Text = "جاري معالجة ونسخ الملف المطابق...";
             lblStatus.ForeColor = Color.FromArgb(2, 132, 199);
 
             try
@@ -652,16 +678,16 @@ namespace BasraUpdater
                 // Case 1: Updating ADMIN ONLY (admin.html)
                 if (rbAdmin.Checked)
                 {
-                    File.Copy(selectedFilePath, Path.Combine(workspaceDir, "admin.html"), true);
-                    File.Copy(selectedFilePath, Path.Combine(workspaceDir, "public", "admin.html"), true);
+                    SafeCopy(selectedFilePath, Path.Combine(workspaceDir, "admin.html"));
+                    SafeCopy(selectedFilePath, Path.Combine(workspaceDir, "public", "admin.html"));
                     gitAddArgs = "admin.html public/admin.html version.json";
                 }
                 // Case 2: Updating CENTERS ONLY (index.html)
                 else
                 {
-                    File.Copy(selectedFilePath, Path.Combine(workspaceDir, "index.html"), true);
-                    File.Copy(selectedFilePath, Path.Combine(workspaceDir, "public", "index.html"), true);
-                    File.Copy(selectedFilePath, Path.Combine(workspaceDir, "public", "center.html"), true);
+                    SafeCopy(selectedFilePath, Path.Combine(workspaceDir, "index.html"));
+                    SafeCopy(selectedFilePath, Path.Combine(workspaceDir, "public", "index.html"));
+                    SafeCopy(selectedFilePath, Path.Combine(workspaceDir, "public", "center.html"));
                     gitAddArgs = "index.html public/index.html public/center.html version.json";
                 }
 
@@ -691,7 +717,15 @@ namespace BasraUpdater
                 psiCommit.UseShellExecute = false;
                 Process.Start(psiCommit).WaitForExit();
 
-                // 5. Git Push
+                // 5. Git Pull Rebase before Push
+                lblStatus.Text = "جاري مزامنة الفرع السحابي...";
+                ProcessStartInfo psiPull = new ProcessStartInfo("git", "pull --rebase origin main");
+                psiPull.WorkingDirectory = workspaceDir;
+                psiPull.CreateNoWindow = true;
+                psiPull.UseShellExecute = false;
+                Process.Start(psiPull).WaitForExit();
+
+                // 6. Git Push
                 lblStatus.Text = "جاري رفع التحديث السحابي إلى GitHub و Vercel...";
                 ProcessStartInfo psiPush = new ProcessStartInfo("git", "push origin main");
                 psiPush.WorkingDirectory = workspaceDir;
