@@ -237,7 +237,7 @@
           </div>
 
           <!-- Cloud Sync Button -->
-          <button type="button" id="headerCloudSyncBtn" onclick="syncWithCloud([], { silent: false })" class="text-xs bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black px-3.5 py-2 rounded-xl border border-emerald-500 shadow-md flex items-center gap-2 transition-all active:scale-95 cursor-pointer" title="مزامنة وحفظ كافة التعديلات في السحاب لكافة المراكز الـ 76 فوراً">
+          <button type="button" id="headerCloudSyncBtn" onclick="syncWithCloud([], { manual: true, actionName: 'كافة البيانات' })" class="text-xs bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black px-3.5 py-2 rounded-xl border border-emerald-500 shadow-md flex items-center gap-2 transition-all active:scale-95 cursor-pointer" title="مزامنة وحفظ كافة التعديلات في السحاب لكافة المراكز الـ 76 فوراً">
             <i class="fa-solid fa-cloud-arrow-up text-sm"></i>
             <span>مزامنة السحاب ☁️</span>
           </button>
@@ -1649,9 +1649,13 @@
         icon: willHide ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye',
         title: willHide ? 'إخفاء النموذج عن المراكز' : 'تفعيل وإظهار النموذج للمراكز',
         message: willHide 
-          ? `هل تريد بالتأكيد إخفاء النموذج:\n"${title}"\nمؤقتاً عن واجهة جميع مراكز التسجيل الـ 76؟`
-          : `هل تريد بالتأكيد إعادة إظهار وتفعيل النموذج:\n"${title}"\nفي واجهة جميع مراكز التسجيل الـ 76؟`,
-        confirmText: willHide ? 'نعم، إخفاء النموذج' : 'نعم، إظهار وتفعيل',
+          ? `هل تريد بالتأكيد إخفاء النموذج:
+"${title}"
+مؤقتاً عن واجهة جميع مراكز التسجيل الـ 76؟`
+          : `هل تريد بالتأكيد إعادة إظهار وتفعيل النموذج:
+"${title}"
+في واجهة جميع مراكز التسجيل الـ 76؟`,
+        confirmText: willHide ? 'نعم، إخفاء ومزامنة' : 'نعم، إظهار ومزامنة',
         cancelText: 'إلغاء التراجع',
         isConfirm: true
       });
@@ -1663,17 +1667,8 @@
       updateFormsCounts();
       renderAdminFormsTable();
 
-      showAppModal({
-        type: willHide ? 'warning' : 'success',
-        icon: willHide ? 'fa-solid fa-eye-slash' : 'fa-solid fa-circle-check',
-        title: willHide ? 'تم إخفاء النموذج' : 'تم تفعيل النموذج',
-        message: willHide ? 'تم إخفاء النموذج عن المراكز ومزامنة السحاب فوراً' : 'تم إظهار النموذج ومزامنة السحاب فوراً',
-        confirmText: 'حسناً',
-        isConfirm: false
-      });
-
-      // Synchronize with cloud automatically
-      await syncWithCloud([], { silent: true });
+      // Trigger immediate automatic sync!
+      syncWithCloud([], { actionName: willHide ? `إخفاء "${title}"` : `إظهار "${title}"` });
     }
 
     // ================= ACTIVITY & AUDIT LOG FUNCTIONS =================
@@ -2530,7 +2525,9 @@
         </head>
         <body>
           ${pagesHtml}
-        </body>
+          <!-- Floating Auto-Sync Live Toast Notification -->
+  <div id="autoSyncToast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 transform opacity-0 pointer-events-none translate-y-4"></div>
+</body>
         </html>
       `);
       fdoc.close();
@@ -2566,10 +2563,54 @@
       document.getElementById('addModal').classList.add('hidden');
     }
 
-    // Cloud Synchronization Function
+        // Live Toast Notification System for Auto-Sync
+    let toastTimer = null;
+    function showSyncToast(message, type = 'info', duration = 3500) {
+      const toast = document.getElementById('autoSyncToast');
+      if (!toast) return;
+
+      if (toastTimer) clearTimeout(toastTimer);
+
+      let bg = 'bg-slate-900 border-slate-700 text-white';
+      let icon = '<i class="fa-solid fa-spinner fa-spin text-amber-400 text-base"></i>';
+
+      if (type === 'loading') {
+        bg = 'bg-slate-950/95 backdrop-blur-md border-amber-500/60 text-amber-200 shadow-2xl shadow-amber-500/25';
+        icon = '<i class="fa-solid fa-cloud-arrow-up fa-bounce text-amber-400 text-lg"></i>';
+      } else if (type === 'success') {
+        bg = 'bg-emerald-900/95 backdrop-blur-md border-emerald-400/60 text-white shadow-2xl shadow-emerald-500/30';
+        icon = '<i class="fa-solid fa-circle-check text-emerald-300 text-lg"></i>';
+      } else if (type === 'error') {
+        bg = 'bg-rose-900/95 backdrop-blur-md border-rose-400/60 text-white shadow-2xl shadow-rose-500/30';
+        icon = '<i class="fa-solid fa-triangle-exclamation text-rose-300 text-lg"></i>';
+      }
+
+      toast.innerHTML = `
+        <div class="px-5 py-3 rounded-2xl border flex items-center gap-3 text-sm font-bold shadow-2xl ${bg}">
+          ${icon}
+          <span>${message}</span>
+        </div>
+      `;
+
+      toast.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-4');
+      toast.classList.add('opacity-100', 'translate-y-0');
+
+      if (duration > 0) {
+        toastTimer = setTimeout(() => {
+          toast.classList.remove('opacity-100', 'translate-y-0');
+          toast.classList.add('opacity-0', 'pointer-events-none', 'translate-y-4');
+        }, duration);
+      }
+    }
+
+    // Cloud Synchronization Function (Executed automatically on every action)
     async function syncWithCloud(extraFiles = [], options = {}) {
       const statusPill = document.getElementById('cloudSyncStatusPill');
       const syncBtn = document.getElementById('headerCloudSyncBtn');
+      const actionName = options.actionName || 'التغييرات';
+
+      // 1. Immediately show live auto-sync notification toast
+      showSyncToast(`جاري مزامنة ${actionName} تلقائياً مع السحاب...`, 'loading', 0);
 
       if (statusPill) {
         statusPill.className = 'hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300 animate-pulse';
@@ -2613,7 +2654,11 @@
             syncBtn.disabled = false;
             syncBtn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up text-sm"></i> <span>مزامنة السحاب ☁️</span>';
           }
-          if (!options.silent) {
+
+          // Show success toast
+          showSyncToast(`تمت المزامنة بنجاح! نُشرت ${actionName} فوراً لكافة المراكز الـ 76 أونلاين 🚀`, 'success', 3500);
+
+          if (options.manual) {
             showAppModal({
               type: 'success',
               icon: 'fa-solid fa-cloud-arrow-up',
@@ -2636,15 +2681,8 @@
           syncBtn.disabled = false;
           syncBtn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up text-sm"></i> <span>إعادة المحاولة ☁️</span>';
         }
-        if (!options.silent) {
-          showAppModal({
-            type: 'warning',
-            icon: 'fa-solid fa-triangle-exclamation',
-            title: 'تنبيه المزامنة السحابية',
-            message: 'تم إجراء التعديل ولكن تعذر إرساله للسحاب: ' + err.message + '\nيمكنك الضغط على زر "مزامنة السحاب" بالأعلى لإعادة المحاولة.',
-            confirmText: 'حسناً'
-          });
-        }
+
+        showSyncToast(`تعذر إتمام المزامنة السحابية: ${err.message}`, 'error', 4500);
         return false;
       }
     }
@@ -2815,7 +2853,6 @@
       const category = document.getElementById('editCategory').value;
       const description = document.getElementById('editDesc').value.trim();
       const hidden = document.getElementById('editFormHidden').checked;
-      const statusMsg = document.getElementById('editStatusMsg');
 
       const f = adminFormsList.find(item => item.id === id);
       if (!f) return;
@@ -2828,21 +2865,12 @@
       f.hidden = hidden;
       f.updatedDate = new Date().toISOString().split('T')[0];
 
+      closeEditModal();
       updateFormsCounts();
       renderAdminFormsTable();
 
-      statusMsg.innerText = 'جاري المزامنة مع السحاب...';
-      statusMsg.className = 'text-xs p-2 rounded-lg text-center font-bold bg-amber-100 text-amber-800';
-      statusMsg.classList.remove('hidden');
-
-      await syncWithCloud([], { silent: true });
-
-      statusMsg.innerText = 'تم حفظ التعديلات ونشرها للمراكز!';
-      statusMsg.className = 'text-xs p-2 rounded-lg text-center font-bold bg-emerald-100 text-emerald-800';
-
-      setTimeout(() => {
-        closeEditModal();
-      }, 700);
+      // Trigger immediate automatic sync!
+      syncWithCloud([], { actionName: `تعديل "${title}"` });
     }
 
     // Delete Form
@@ -2854,8 +2882,10 @@
         type: 'danger',
         icon: 'fa-solid fa-trash-can',
         title: 'تأكيد حذف النموذج نهائياً',
-        message: `هل أنت متأكد من حذف:\n"${name}"؟\nسيتم حذفه من واجهة جميع المراكز الـ 76 والملف الأصلي فوراً.`,
-        confirmText: 'نعم، حذف النموذج',
+        message: `هل أنت متأكد من حذف:
+"${name}"؟
+سيتم حذفه من واجهة جميع المراكز الـ 76 أونلاين فوراً.`,
+        confirmText: 'نعم، حذف ومزامنة',
         cancelText: 'إلغاء التراجع',
         isConfirm: true
       });
@@ -2866,7 +2896,8 @@
       updateFormsCounts();
       renderAdminFormsTable();
 
-      await syncWithCloud([], { silent: false });
+      // Trigger immediate automatic sync!
+      syncWithCloud([], { actionName: `حذف "${name}"` });
     }
 
     document.addEventListener('DOMContentLoaded', checkAuth);
