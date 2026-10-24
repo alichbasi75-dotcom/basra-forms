@@ -517,7 +517,616 @@
       return p;
     }
 
-    let allCenters = [];
+    let allCenters = [
+  {
+    "id": 1,
+    "code": "1921",
+    "name": "الشعلة",
+    "fullName": "الشعلة (1921)",
+    "tamweenName": "الشعلة",
+    "tamweenCode": "921"
+  },
+  {
+    "id": 2,
+    "code": "2921",
+    "name": "الشعلة 2",
+    "fullName": "الشعلة 2 (2921)",
+    "tamweenName": "الشعلة",
+    "tamweenCode": "921"
+  },
+  {
+    "id": 3,
+    "code": "1922",
+    "name": "الحـسين",
+    "fullName": "الحـسين (1922)",
+    "tamweenName": "الحـسين",
+    "tamweenCode": "922"
+  },
+  {
+    "id": 4,
+    "code": "2922",
+    "name": "الحسين 2",
+    "fullName": "الحسين 2 (2922)",
+    "tamweenName": "الحسين",
+    "tamweenCode": "922"
+  },
+  {
+    "id": 5,
+    "code": "3922",
+    "name": "الحسين 3",
+    "fullName": "الحسين 3 (3922)",
+    "tamweenName": "الحسين",
+    "tamweenCode": "922"
+  },
+  {
+    "id": 6,
+    "code": "1923",
+    "name": "الخليج",
+    "fullName": "الخليج (1923)",
+    "tamweenName": "الخليج",
+    "tamweenCode": "923"
+  },
+  {
+    "id": 7,
+    "code": "2923",
+    "name": "الخليج 2",
+    "fullName": "الخليج 2 (2923)",
+    "tamweenName": "الخليج",
+    "tamweenCode": "923"
+  },
+  {
+    "id": 8,
+    "code": "1924",
+    "name": "السياب",
+    "fullName": "السياب (1924)",
+    "tamweenName": "السياب",
+    "tamweenCode": "924"
+  },
+  {
+    "id": 9,
+    "code": "2924",
+    "name": "السياب 2",
+    "fullName": "السياب 2 (2924)",
+    "tamweenName": "السياب",
+    "tamweenCode": "924"
+  },
+  {
+    "id": 10,
+    "code": "1925",
+    "name": "الاصـمعى",
+    "fullName": "الاصـمعى (1925)",
+    "tamweenName": "الاصـمعى",
+    "tamweenCode": "925"
+  },
+  {
+    "id": 11,
+    "code": "2925",
+    "name": "الاصمعي 2",
+    "fullName": "الاصمعي 2 (2925)",
+    "tamweenName": "الاصمعي",
+    "tamweenCode": "925"
+  },
+  {
+    "id": 12,
+    "code": "1926",
+    "name": "الموفقية",
+    "fullName": "الموفقية (1926)",
+    "tamweenName": "الموفقية",
+    "tamweenCode": "926"
+  },
+  {
+    "id": 13,
+    "code": "2926",
+    "name": "الموفقية 2",
+    "fullName": "الموفقية 2 (2926)",
+    "tamweenName": "الموفقية",
+    "tamweenCode": "926"
+  },
+  {
+    "id": 14,
+    "code": "1927",
+    "name": "الفراهيدى",
+    "fullName": "الفراهيدى (1927)",
+    "tamweenName": "الفراهيدى",
+    "tamweenCode": "927"
+  },
+  {
+    "id": 15,
+    "code": "2927",
+    "name": "الفراهيدى 2",
+    "fullName": "الفراهيدى 2 (2927)",
+    "tamweenName": "الفراهيدى",
+    "tamweenCode": "927"
+  },
+  {
+    "id": 16,
+    "code": "1928",
+    "name": "شط العرب",
+    "fullName": "شط العرب (1928)",
+    "tamweenName": "شط العرب",
+    "tamweenCode": "928"
+  },
+  {
+    "id": 17,
+    "code": "2928",
+    "name": "شط العرب 2",
+    "fullName": "شط العرب 2 (2928)",
+    "tamweenName": "شط العرب",
+    "tamweenCode": "928"
+  },
+  {
+    "id": 18,
+    "code": "3928",
+    "name": "شط العرب 3",
+    "fullName": "شط العرب 3 (3928)",
+    "tamweenName": "شط العرب",
+    "tamweenCode": "928"
+  },
+  {
+    "id": 19,
+    "code": "1929",
+    "name": "البصرة القديمة",
+    "fullName": "البصرة القديمة (1929)",
+    "tamweenName": "البصرة القديمة",
+    "tamweenCode": "929"
+  },
+  {
+    "id": 20,
+    "code": "2929",
+    "name": "البصرة القديمة 2",
+    "fullName": "البصرة القديمة 2 (2929)",
+    "tamweenName": "البصرة القديمة",
+    "tamweenCode": "929"
+  },
+  {
+    "id": 21,
+    "code": "1930",
+    "name": "العشـار",
+    "fullName": "العشـار (1930)",
+    "tamweenName": "العشـار",
+    "tamweenCode": "930"
+  },
+  {
+    "id": 22,
+    "code": "2930",
+    "name": "العشـار 2",
+    "fullName": "العشـار 2 (2930)",
+    "tamweenName": "العشـار",
+    "tamweenCode": "930"
+  },
+  {
+    "id": 23,
+    "code": "1931",
+    "name": "الجمهـورية",
+    "fullName": "الجمهـورية (1931)",
+    "tamweenName": "الجمهـورية",
+    "tamweenCode": "931"
+  },
+  {
+    "id": 24,
+    "code": "2931",
+    "name": "الجمهـورية 2",
+    "fullName": "الجمهـورية 2 (2931)",
+    "tamweenName": "الجمهـورية",
+    "tamweenCode": "931"
+  },
+  {
+    "id": 25,
+    "code": "1932",
+    "name": "المهـلب",
+    "fullName": "المهـلب (1932)",
+    "tamweenName": "المهـلب",
+    "tamweenCode": "932"
+  },
+  {
+    "id": 26,
+    "code": "2932",
+    "name": "المهـلب 2",
+    "fullName": "المهـلب 2 (2932)",
+    "tamweenName": "المهـلب",
+    "tamweenCode": "932"
+  },
+  {
+    "id": 27,
+    "code": "1933",
+    "name": "مـوسى بن نصير",
+    "fullName": "مـوسى بن نصير (1933)",
+    "tamweenName": "مـوسى بن نصير",
+    "tamweenCode": "933"
+  },
+  {
+    "id": 28,
+    "code": "2933",
+    "name": "مـوسى بن نصير 2",
+    "fullName": "مـوسى بن نصير 2 (2933)",
+    "tamweenName": "مـوسى بن نصير",
+    "tamweenCode": "933"
+  },
+  {
+    "id": 29,
+    "code": "3933",
+    "name": "مـوسى بن نصير 3",
+    "fullName": "مـوسى بن نصير 3 (3933)",
+    "tamweenName": "مـوسى بن نصير",
+    "tamweenCode": "933"
+  },
+  {
+    "id": 30,
+    "code": "1934",
+    "name": "الهادي",
+    "fullName": "الهادي (1934)",
+    "tamweenName": "الهادي",
+    "tamweenCode": "934"
+  },
+  {
+    "id": 31,
+    "code": "2934",
+    "name": "الهادي 2",
+    "fullName": "الهادي 2 (2934)",
+    "tamweenName": "الهادي",
+    "tamweenCode": "934"
+  },
+  {
+    "id": 32,
+    "code": "3934",
+    "name": "الهادي 3",
+    "fullName": "الهادي 3 (3934)",
+    "tamweenName": "الهادي",
+    "tamweenCode": "934"
+  },
+  {
+    "id": 33,
+    "code": "1935",
+    "name": "المعقـل",
+    "fullName": "المعقـل (1935)",
+    "tamweenName": "المعقـل",
+    "tamweenCode": "935"
+  },
+  {
+    "id": 34,
+    "code": "2935",
+    "name": "المعقـل 2",
+    "fullName": "المعقـل 2 (2935)",
+    "tamweenName": "المعقـل",
+    "tamweenCode": "935"
+  },
+  {
+    "id": 35,
+    "code": "1936",
+    "name": "التاميم",
+    "fullName": "التاميم (1936)",
+    "tamweenName": "التاميم",
+    "tamweenCode": "936"
+  },
+  {
+    "id": 36,
+    "code": "2936",
+    "name": "التاميم 2",
+    "fullName": "التاميم 2 (2936)",
+    "tamweenName": "التاميم",
+    "tamweenCode": "936"
+  },
+  {
+    "id": 37,
+    "code": "1937",
+    "name": "أنـس",
+    "fullName": "أنـس (1937)",
+    "tamweenName": "أنـس",
+    "tamweenCode": "937"
+  },
+  {
+    "id": 38,
+    "code": "2937",
+    "name": "أنـس 2",
+    "fullName": "أنـس 2 (2937)",
+    "tamweenName": "أنـس",
+    "tamweenCode": "937"
+  },
+  {
+    "id": 39,
+    "code": "3937",
+    "name": "أنـس 3",
+    "fullName": "أنـس 3 (3937)",
+    "tamweenName": "أنـس",
+    "tamweenCode": "937"
+  },
+  {
+    "id": 40,
+    "code": "1938",
+    "name": "الزبـير",
+    "fullName": "الزبـير (1938)",
+    "tamweenName": "الزبـير",
+    "tamweenCode": "938"
+  },
+  {
+    "id": 41,
+    "code": "2938",
+    "name": "الزبـير 2",
+    "fullName": "الزبـير 2 (2938)",
+    "tamweenName": "الزبـير",
+    "tamweenCode": "938"
+  },
+  {
+    "id": 42,
+    "code": "3938",
+    "name": "الزبـير 3",
+    "fullName": "الزبـير 3 (3938)",
+    "tamweenName": "الزبـير",
+    "tamweenCode": "938"
+  },
+  {
+    "id": 43,
+    "code": "1939",
+    "name": "خـور الزبير",
+    "fullName": "خـور الزبير (1939)",
+    "tamweenName": "خـور الزبير",
+    "tamweenCode": "939"
+  },
+  {
+    "id": 44,
+    "code": "1940",
+    "name": "أم قصـر",
+    "fullName": "أم قصـر (1940)",
+    "tamweenName": "أم قصـر",
+    "tamweenCode": "940"
+  },
+  {
+    "id": 45,
+    "code": "2940",
+    "name": "أم قصـر 2",
+    "fullName": "أم قصـر 2 (2940)",
+    "tamweenName": "أم قصـر",
+    "tamweenCode": "940"
+  },
+  {
+    "id": 46,
+    "code": "1941",
+    "name": "سـفوان",
+    "fullName": "سـفوان (1941)",
+    "tamweenName": "سـفوان",
+    "tamweenCode": "941"
+  },
+  {
+    "id": 47,
+    "code": "1942",
+    "name": "القـرنة",
+    "fullName": "القـرنة (1942)",
+    "tamweenName": "القـرنة",
+    "tamweenCode": "942"
+  },
+  {
+    "id": 48,
+    "code": "2942",
+    "name": "القـرنة 2",
+    "fullName": "القـرنة 2 (2942)",
+    "tamweenName": "القـرنة",
+    "tamweenCode": "942"
+  },
+  {
+    "id": 49,
+    "code": "3942",
+    "name": "القـرنة 3",
+    "fullName": "القـرنة 3 (3942)",
+    "tamweenName": "القـرنة",
+    "tamweenCode": "942"
+  },
+  {
+    "id": 50,
+    "code": "1943",
+    "name": "المدينـة",
+    "fullName": "المدينـة (1943)",
+    "tamweenName": "المدينـة",
+    "tamweenCode": "943"
+  },
+  {
+    "id": 51,
+    "code": "2943",
+    "name": "المدينـة 2",
+    "fullName": "المدينـة 2 (2943)",
+    "tamweenName": "المدينـة",
+    "tamweenCode": "943"
+  },
+  {
+    "id": 52,
+    "code": "1944",
+    "name": "طلحـة",
+    "fullName": "طلحـة (1944)",
+    "tamweenName": "طلحـة",
+    "tamweenCode": "944"
+  },
+  {
+    "id": 53,
+    "code": "2944",
+    "name": "طلحـة2",
+    "fullName": "طلحـة2 (2944)",
+    "tamweenName": "طلحـة",
+    "tamweenCode": "944"
+  },
+  {
+    "id": 54,
+    "code": "1945",
+    "name": "الهويـر",
+    "fullName": "الهويـر (1945)",
+    "tamweenName": "الهويـر",
+    "tamweenCode": "945"
+  },
+  {
+    "id": 55,
+    "code": "2945",
+    "name": "الهويـر 2",
+    "fullName": "الهويـر 2 (2945)",
+    "tamweenName": "الهويـر",
+    "tamweenCode": "945"
+  },
+  {
+    "id": 56,
+    "code": "1946",
+    "name": "الشـرش",
+    "fullName": "الشـرش (1946)",
+    "tamweenName": "الشـرش",
+    "tamweenCode": "946"
+  },
+  {
+    "id": 57,
+    "code": "2946",
+    "name": "الشـرش 2",
+    "fullName": "الشـرش 2 (2946)",
+    "tamweenName": "الشـرش",
+    "tamweenCode": "946"
+  },
+  {
+    "id": 58,
+    "code": "1947",
+    "name": "الهارثـة",
+    "fullName": "الهارثـة (1947)",
+    "tamweenName": "الهارثـة",
+    "tamweenCode": "947"
+  },
+  {
+    "id": 59,
+    "code": "2947",
+    "name": "الهارثـة 2",
+    "fullName": "الهارثـة 2 (2947)",
+    "tamweenName": "الهارثـة",
+    "tamweenCode": "947"
+  },
+  {
+    "id": 60,
+    "code": "3947",
+    "name": "الهارثـة 3",
+    "fullName": "الهارثـة 3 (3947)",
+    "tamweenName": "الهارثـة",
+    "tamweenCode": "947"
+  },
+  {
+    "id": 61,
+    "code": "1948",
+    "name": "دجلـة",
+    "fullName": "دجلـة (1948)",
+    "tamweenName": "دجلـة",
+    "tamweenCode": "948"
+  },
+  {
+    "id": 62,
+    "code": "2948",
+    "name": "دجلـة 2",
+    "fullName": "دجلـة 2 (2948)",
+    "tamweenName": "دجلـة",
+    "tamweenCode": "948"
+  },
+  {
+    "id": 63,
+    "code": "3948",
+    "name": "دجلـة 3",
+    "fullName": "دجلـة 3 (3948)",
+    "tamweenName": "دجلـة",
+    "tamweenCode": "948"
+  },
+  {
+    "id": 64,
+    "code": "4948",
+    "name": "دجلـة 4",
+    "fullName": "دجلـة 4 (4948)",
+    "tamweenName": "دجلـة",
+    "tamweenCode": "948"
+  },
+  {
+    "id": 65,
+    "code": "1949",
+    "name": "النصر",
+    "fullName": "النصر (1949)",
+    "tamweenName": "النصر",
+    "tamweenCode": "949"
+  },
+  {
+    "id": 66,
+    "code": "2949",
+    "name": "النصر 2",
+    "fullName": "النصر 2 (2949)",
+    "tamweenName": "النصر",
+    "tamweenCode": "949"
+  },
+  {
+    "id": 67,
+    "code": "3949",
+    "name": "النصر 3",
+    "fullName": "النصر 3 (3949)",
+    "tamweenName": "النصر",
+    "tamweenCode": "949"
+  },
+  {
+    "id": 68,
+    "code": "1950",
+    "name": "ابي الخصـيب",
+    "fullName": "ابي الخصـيب (1950)",
+    "tamweenName": "ابي الخصـيب",
+    "tamweenCode": "950"
+  },
+  {
+    "id": 69,
+    "code": "2950",
+    "name": "ابي الخصـيب 2",
+    "fullName": "ابي الخصـيب 2 (2950)",
+    "tamweenName": "ابي الخصـيب",
+    "tamweenCode": "950"
+  },
+  {
+    "id": 70,
+    "code": "1951",
+    "name": "الحسن البصـري",
+    "fullName": "الحسن البصـري (1951)",
+    "tamweenName": "الحسن البصـري",
+    "tamweenCode": "951"
+  },
+  {
+    "id": 71,
+    "code": "2951",
+    "name": "الحسن البصـري 2",
+    "fullName": "الحسن البصـري 2 (2951)",
+    "tamweenName": "الحسن البصـري",
+    "tamweenCode": "951"
+  },
+  {
+    "id": 72,
+    "code": "1952",
+    "name": "الفـاو",
+    "fullName": "الفـاو (1952)",
+    "tamweenName": "الفـاو",
+    "tamweenCode": "952"
+  },
+  {
+    "id": 73,
+    "code": "1953",
+    "name": "البصرة",
+    "fullName": "البصرة (1953)",
+    "tamweenName": "البصرة",
+    "tamweenCode": "953"
+  },
+  {
+    "id": 74,
+    "code": "2953",
+    "name": "البصرة 2",
+    "fullName": "البصرة 2 (2953)",
+    "tamweenName": "البصرة",
+    "tamweenCode": "953"
+  },
+  {
+    "id": 75,
+    "code": "1954",
+    "name": "القبلـة",
+    "fullName": "القبلـة (1954)",
+    "tamweenName": "القبلـة",
+    "tamweenCode": "954"
+  },
+  {
+    "id": 76,
+    "code": "2954",
+    "name": "القبلـة 2",
+    "fullName": "القبلـة 2 (2954)",
+    "tamweenName": "القبلـة",
+    "tamweenCode": "954"
+  }
+];
     let allForms = [];
     let activeCenter = null;
     let currentCategory = 'all';
@@ -631,7 +1240,23 @@
       renderFilteredForms();
     }
 
-    let allCategories = [];
+    let allCategories = [
+  {
+    "id": "leaves",
+    "name": "الإجازات والمباشرات وبراءة الذمة",
+    "icon": "fa-solid fa-calendar-check"
+  },
+  {
+    "id": "cards",
+    "name": "البطاقات المفقودة وبلاغات المحكمة",
+    "icon": "fa-solid fa-id-card"
+  },
+  {
+    "id": "reports",
+    "name": "التقارير وسجلات الحضور",
+    "icon": "fa-file-signature"
+  }
+];
 
     async function loadCenters() {
       try {

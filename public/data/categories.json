@@ -1,0 +1,17 @@
+[
+  {
+    "id": "leaves",
+    "name": "الإجازات والمباشرات وبراءة الذمة",
+    "icon": "fa-solid fa-calendar-check"
+  },
+  {
+    "id": "cards",
+    "name": "البطاقات المفقودة وبلاغات المحكمة",
+    "icon": "fa-solid fa-id-card"
+  },
+  {
+    "id": "reports",
+    "name": "التقارير وسجلات الحضور",
+    "icon": "fa-file-signature"
+  }
+]
