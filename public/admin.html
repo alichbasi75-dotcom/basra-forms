@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
@@ -7,7 +7,32 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.tailwindcss.com">    async function loadVersionInfo() {
+      try {
+        const res = await fetch('./version.json?t=' + Date.now());
+        if (res.ok) {
+          const vData = await res.json();
+          const verStr = vData.version ? ('الإصدار ' + vData.version) : 'الإصدار 2.0.0';
+          let dateStr = '2026-10-24';
+          if (vData.updatedAt) {
+            try {
+              const d = new Date(vData.updatedAt);
+              if (!isNaN(d.getTime())) {
+                dateStr = d.toLocaleDateString('ar-IQ', { year: 'numeric', month: 'long', day: 'numeric' });
+              }
+            } catch(e) {}
+          }
+          const vEls = [document.getElementById('adminVersionVal'), document.getElementById('footerAdminVersion')];
+          const dEls = [document.getElementById('adminDateVal'), document.getElementById('footerAdminDate')];
+          vEls.forEach(el => { if (el) el.textContent = verStr; });
+          dEls.forEach(el => { if (el) el.textContent = 'تاريخ التحديث: ' + dateStr; });
+        }
+      } catch (err) {
+        console.warn('Could not fetch version.json:', err);
+      }
+    }
+    loadVersionInfo();
+</script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <style>
     body { font-family: 'Cairo', sans-serif; }
@@ -171,12 +196,62 @@
     }
   </style>
   <!-- PDF.js for in-browser sheet rendering -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js">    async function loadVersionInfo() {
+      try {
+        const res = await fetch('./version.json?t=' + Date.now());
+        if (res.ok) {
+          const vData = await res.json();
+          const verStr = vData.version ? ('الإصدار ' + vData.version) : 'الإصدار 2.0.0';
+          let dateStr = '2026-10-24';
+          if (vData.updatedAt) {
+            try {
+              const d = new Date(vData.updatedAt);
+              if (!isNaN(d.getTime())) {
+                dateStr = d.toLocaleDateString('ar-IQ', { year: 'numeric', month: 'long', day: 'numeric' });
+              }
+            } catch(e) {}
+          }
+          const vEls = [document.getElementById('adminVersionVal'), document.getElementById('footerAdminVersion')];
+          const dEls = [document.getElementById('adminDateVal'), document.getElementById('footerAdminDate')];
+          vEls.forEach(el => { if (el) el.textContent = verStr; });
+          dEls.forEach(el => { if (el) el.textContent = 'تاريخ التحديث: ' + dateStr; });
+        }
+      } catch (err) {
+        console.warn('Could not fetch version.json:', err);
+      }
+    }
+    loadVersionInfo();
+</script>
   <script>
     if (window.pdfjsLib) {
       pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
     }
-  </script>
+      async function loadVersionInfo() {
+      try {
+        const res = await fetch('./version.json?t=' + Date.now());
+        if (res.ok) {
+          const vData = await res.json();
+          const verStr = vData.version ? ('الإصدار ' + vData.version) : 'الإصدار 2.0.0';
+          let dateStr = '2026-10-24';
+          if (vData.updatedAt) {
+            try {
+              const d = new Date(vData.updatedAt);
+              if (!isNaN(d.getTime())) {
+                dateStr = d.toLocaleDateString('ar-IQ', { year: 'numeric', month: 'long', day: 'numeric' });
+              }
+            } catch(e) {}
+          }
+          const vEls = [document.getElementById('adminVersionVal'), document.getElementById('footerAdminVersion')];
+          const dEls = [document.getElementById('adminDateVal'), document.getElementById('footerAdminDate')];
+          vEls.forEach(el => { if (el) el.textContent = verStr; });
+          dEls.forEach(el => { if (el) el.textContent = 'تاريخ التحديث: ' + dateStr; });
+        }
+      } catch (err) {
+        console.warn('Could not fetch version.json:', err);
+      }
+    }
+    loadVersionInfo();
+</script>
 </head>
 <body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col">
 
@@ -543,6 +618,25 @@
       </section>
 
     </main>
+    <!-- Admin Footer -->
+    <footer class="bg-white border-t border-slate-200 py-3 text-center text-xs text-slate-500 mt-auto">
+      <div class="max-w-7xl mx-auto px-4 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p class="font-bold text-slate-700 text-right">المفوضية العليا المستقلة للانتخابات — لوحة الإدارة والتحكم السحابية</p>
+          <p class="text-[11px] text-slate-400 mt-0.5 text-right">مكتب انتخابات محافظة البصرة — 2026</p>
+        </div>
+        <div class="flex items-center gap-2.5 font-bold text-slate-600">
+          <span class="flex items-center gap-1 bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-300 text-xs shadow-xs">
+            <i class="fa-solid fa-code-commit text-blue-600"></i>
+            <span id="footerAdminVersion">الإصدار 2.0.0</span>
+          </span>
+          <span class="flex items-center gap-1 bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-300 text-xs shadow-xs">
+            <i class="fa-regular fa-calendar-check text-emerald-600"></i>
+            <span id="footerAdminDate">تاريخ التحديث: 2026-10-24</span>
+          </span>
+        </div>
+      </div>
+    </footer>
 
   </div>
 
@@ -2946,7 +3040,32 @@
     }
 
     document.addEventListener('DOMContentLoaded', checkAuth);
-  </script>
+      async function loadVersionInfo() {
+      try {
+        const res = await fetch('./version.json?t=' + Date.now());
+        if (res.ok) {
+          const vData = await res.json();
+          const verStr = vData.version ? ('الإصدار ' + vData.version) : 'الإصدار 2.0.0';
+          let dateStr = '2026-10-24';
+          if (vData.updatedAt) {
+            try {
+              const d = new Date(vData.updatedAt);
+              if (!isNaN(d.getTime())) {
+                dateStr = d.toLocaleDateString('ar-IQ', { year: 'numeric', month: 'long', day: 'numeric' });
+              }
+            } catch(e) {}
+          }
+          const vEls = [document.getElementById('adminVersionVal'), document.getElementById('footerAdminVersion')];
+          const dEls = [document.getElementById('adminDateVal'), document.getElementById('footerAdminDate')];
+          vEls.forEach(el => { if (el) el.textContent = verStr; });
+          dEls.forEach(el => { if (el) el.textContent = 'تاريخ التحديث: ' + dateStr; });
+        }
+      } catch (err) {
+        console.warn('Could not fetch version.json:', err);
+      }
+    }
+    loadVersionInfo();
+</script>
 
   <!-- Cloud Publish Modal -->
   <div id="cloudPublishModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
@@ -3091,6 +3210,31 @@
   
 
 
+    async function loadVersionInfo() {
+      try {
+        const res = await fetch('./version.json?t=' + Date.now());
+        if (res.ok) {
+          const vData = await res.json();
+          const verStr = vData.version ? ('الإصدار ' + vData.version) : 'الإصدار 2.0.0';
+          let dateStr = '2026-10-24';
+          if (vData.updatedAt) {
+            try {
+              const d = new Date(vData.updatedAt);
+              if (!isNaN(d.getTime())) {
+                dateStr = d.toLocaleDateString('ar-IQ', { year: 'numeric', month: 'long', day: 'numeric' });
+              }
+            } catch(e) {}
+          }
+          const vEls = [document.getElementById('adminVersionVal'), document.getElementById('footerAdminVersion')];
+          const dEls = [document.getElementById('adminDateVal'), document.getElementById('footerAdminDate')];
+          vEls.forEach(el => { if (el) el.textContent = verStr; });
+          dEls.forEach(el => { if (el) el.textContent = 'تاريخ التحديث: ' + dateStr; });
+        }
+      } catch (err) {
+        console.warn('Could not fetch version.json:', err);
+      }
+    }
+    loadVersionInfo();
 </script>
 </body>
 

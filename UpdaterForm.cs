@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
@@ -680,7 +680,7 @@ namespace BasraUpdater
                 {
                     SafeCopy(selectedFilePath, Path.Combine(workspaceDir, "admin.html"));
                     SafeCopy(selectedFilePath, Path.Combine(workspaceDir, "public", "admin.html"));
-                    gitAddArgs = "admin.html public/admin.html version.json";
+                    gitAddArgs = "admin.html public/admin.html";
                 }
                 // Case 2: Updating CENTERS ONLY (index.html)
                 else
@@ -688,17 +688,20 @@ namespace BasraUpdater
                     SafeCopy(selectedFilePath, Path.Combine(workspaceDir, "index.html"));
                     SafeCopy(selectedFilePath, Path.Combine(workspaceDir, "public", "index.html"));
                     SafeCopy(selectedFilePath, Path.Combine(workspaceDir, "public", "center.html"));
-                    gitAddArgs = "index.html public/index.html public/center.html version.json";
+                    gitAddArgs = "index.html public/index.html public/center.html";
                 }
 
-                // 2. Update version.json
+                // 2. Update version.json (both root and public)
                 lblStatus.Text = "جاري تحديث رقم الإصدار في سجل المنظومة...";
                 string vJsonPath = Path.Combine(workspaceDir, "version.json");
+                string vJsonPubPath = Path.Combine(workspaceDir, "public", "version.json");
                 string vJsonContent = string.Format(
                     "{{\n  \"version\": \"{0}\",\n  \"updatedAt\": \"{1}\",\n  \"target\": \"{2}\",\n  \"file\": \"{3}\"\n}}",
                     newVer, DateTime.UtcNow.ToString("o"), targetName, fname
                 );
                 File.WriteAllText(vJsonPath, vJsonContent);
+                try { File.WriteAllText(vJsonPubPath, vJsonContent); } catch {}
+                gitAddArgs += " version.json public/version.json";
 
                 // 3. Git Add (Specific files only!)
                 lblStatus.Text = "جاري إضافة الملفات المحددة للتحديث (Git Add)...";

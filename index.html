@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
@@ -2336,7 +2336,31 @@
       });
     }
 
-    document.addEventListener('DOMContentLoaded', init);
+        async function loadVersionInfo() {
+      try {
+        const res = await fetch('./version.json?t=' + Date.now());
+        if (res.ok) {
+          const vData = await res.json();
+          const verStr = vData.version ? ('الإصدار ' + vData.version) : 'الإصدار 2.0.0';
+          let dateStr = '2026-10-24';
+          if (vData.updatedAt) {
+            try {
+              const d = new Date(vData.updatedAt);
+              if (!isNaN(d.getTime())) {
+                dateStr = d.toLocaleDateString('ar-IQ', { year: 'numeric', month: 'long', day: 'numeric' });
+              }
+            } catch(e) {}
+          }
+          const vEls = [document.getElementById('centerVersionVal'), document.getElementById('footerCenterVersion')];
+          const dEls = [document.getElementById('centerDateVal'), document.getElementById('footerCenterDate')];
+          vEls.forEach(el => { if (el) el.textContent = verStr; });
+          dEls.forEach(el => { if (el) el.textContent = 'تاريخ التحديث: ' + dateStr; });
+        }
+      } catch (err) {
+        console.warn('Could not fetch version.json:', err);
+      }
+    }
+document.addEventListener('DOMContentLoaded', () => { init(); loadVersionInfo(); });
   </script>
 </body>
 </html>
