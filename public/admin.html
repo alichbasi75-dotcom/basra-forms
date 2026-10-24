@@ -223,6 +223,11 @@
         </div>
 
         <div class="flex items-center gap-2">
+          <!-- Cloud Publish Button -->
+          <button type="button" onclick="openCloudPublishModal()" class="text-xs bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black px-3.5 py-2 rounded-xl border border-emerald-500 shadow-md flex items-center gap-2 transition-all active:scale-95 cursor-pointer" title="نشر وتحديث الاستمارات لجميع المراكز أونلاين">
+            <i class="fa-solid fa-cloud-arrow-up text-sm"></i>
+            <span>نشر للمراكز أونلاين 🚀</span>
+          </button>
           <a href="/center" target="_blank" class="text-xs bg-amber-50 hover:bg-amber-100 text-amber-800 font-bold px-3 py-2 rounded-xl border border-amber-300 flex items-center gap-1.5 transition-colors">
             <i class="fa-solid fa-external-link"></i>
             <span>معاينة واجهة المراكز</span>
@@ -2604,7 +2609,158 @@
         </head>
         <body>
           ${pagesHtml}
-        </body>
+        
+  <!-- Cloud Publish Modal -->
+  <div id="cloudPublishModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white border-2 border-slate-300 rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl text-center">
+      
+      <div class="w-16 h-16 rounded-2xl bg-emerald-500 text-white flex items-center justify-center text-3xl mx-auto mb-4 shadow-lg shadow-emerald-500/30">
+        <i class="fa-solid fa-cloud-arrow-up"></i>
+      </div>
+
+      <h3 class="text-xl font-black text-slate-900 mb-1">نشر وتحديث الاستمارات للمراكز أونلاين</h3>
+      <p class="text-xs font-bold text-slate-500 mb-6 leading-relaxed">
+        سيتم إرسال كافة النماذج والتعديلات الحالية ليتم تحديثها فوراً لكافة مراكز التسجيل الـ 76 أونلاين عبر الوسيط السحابي الآمن.
+      </p>
+
+      <div class="text-right space-y-4 mb-6">
+        <div>
+          <label class="block text-xs font-black text-slate-800 mb-1.5">رابط الوسيط السحابي (Cloud Sync URL):</label>
+          <input 
+            type="text" 
+            id="cloudSyncUrlInput" 
+            value="https://basra-forms.vercel.app/api/sync"
+            class="w-full bg-slate-50 border-2 border-slate-300 focus:border-emerald-500 rounded-xl px-3.5 py-2.5 text-xs font-mono font-bold text-slate-800 focus:outline-none"
+            dir="ltr"
+          >
+        </div>
+
+        <div>
+          <label class="block text-xs font-black text-slate-800 mb-1.5">رمز الأمان السحابي (Admin Secret Key):</label>
+          <input 
+            type="password" 
+            id="cloudSyncKeyInput" 
+            value="BasraForms@2026"
+            class="w-full bg-slate-50 border-2 border-slate-300 focus:border-emerald-500 rounded-xl px-3.5 py-2.5 text-sm font-mono font-bold text-slate-800 focus:outline-none"
+            dir="ltr"
+          >
+        </div>
+      </div>
+
+      <!-- Live Publish Progress -->
+      <div id="cloudPublishStatus" class="hidden mb-6 p-3 rounded-xl text-xs font-bold flex items-center gap-2 justify-center">
+        <!-- Status updated via JS -->
+      </div>
+
+      <div class="flex items-center gap-3">
+        <button 
+          type="button" 
+          id="startPublishBtn"
+          onclick="startCloudPublish()"
+          class="flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black py-3 px-4 rounded-xl text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/25 active:scale-95 cursor-pointer"
+        >
+          <i class="fa-solid fa-paper-plane"></i>
+          <span>نشر التحديثات الآن</span>
+        </button>
+
+        <button 
+          type="button" 
+          onclick="closeCloudPublishModal()" 
+          class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 px-4 rounded-xl text-sm transition-all border border-slate-300 cursor-pointer"
+        >
+          إلغاء
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    function openCloudPublishModal() {
+      const savedUrl = localStorage.getItem('basra_cloud_url');
+      const savedKey = localStorage.getItem('basra_cloud_key');
+      if (savedUrl) document.getElementById('cloudSyncUrlInput').value = savedUrl;
+      if (savedKey) document.getElementById('cloudSyncKeyInput').value = savedKey;
+
+      const st = document.getElementById('cloudPublishStatus');
+      st.className = 'hidden mb-6 p-3 rounded-xl text-xs font-bold';
+      st.innerHTML = '';
+
+      const btn = document.getElementById('startPublishBtn');
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> <span>نشر التحديثات الآن</span>';
+
+      document.getElementById('cloudPublishModal').classList.remove('hidden');
+    }
+
+    function closeCloudPublishModal() {
+      document.getElementById('cloudPublishModal').classList.add('hidden');
+    }
+
+    async function startCloudPublish() {
+      const cloudUrl = (document.getElementById('cloudSyncUrlInput').value || '').trim();
+      const adminKey = (document.getElementById('cloudSyncKeyInput').value || '').trim();
+
+      if (!cloudUrl || !adminKey) {
+        showAppModal({
+          title: 'تنبيه',
+          message: 'يرجى إدخال رابط الوسيط السحابي ورمز الأمان السحابي.',
+          type: 'warning'
+        });
+        return;
+      }
+
+      localStorage.setItem('basra_cloud_url', cloudUrl);
+      localStorage.setItem('basra_cloud_key', adminKey);
+
+      const st = document.getElementById('cloudPublishStatus');
+      const btn = document.getElementById('startPublishBtn');
+
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>جاري النشر السحابي...</span>';
+
+      st.className = 'mb-6 p-3 rounded-xl text-xs font-bold bg-amber-50 text-amber-800 border border-amber-300 flex items-center gap-2 justify-center';
+      st.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-amber-600 text-base"></i> <span>جاري تجميع الملفات وإرسالها للوسيط السحابي...</span>';
+
+      try {
+        const res = await fetch('/api/admin/publish-to-cloud', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cloudUrl, adminKey })
+        });
+
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+          st.className = 'mb-6 p-3 rounded-xl text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-300 flex items-center gap-2 justify-center';
+          st.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600 text-base"></i> <span>${data.message || 'تم النشر وتحديث المنظومة بنجاح لجميع المراكز!'}</span>`;
+          btn.innerHTML = '<i class="fa-solid fa-check"></i> <span>اكتمل النشر</span>';
+
+          setTimeout(() => {
+            closeCloudPublishModal();
+            showAppModal({
+              title: 'تم النشر بنجاح',
+              message: 'تم إرسال كافة التحديثات والنماذج للوسيط السحابي، والرابط أونلاين لجميع المراكز الـ 76 تم تحديثه فوراً!',
+              type: 'success'
+            });
+          }, 1500);
+
+        } else {
+          st.className = 'mb-6 p-3 rounded-xl text-xs font-bold bg-rose-50 text-rose-800 border border-rose-300 flex items-center gap-2 justify-center';
+          st.innerHTML = `<i class="fa-solid fa-circle-exclamation text-rose-600 text-base"></i> <span>خطأ: ${data.error || 'فشل النشر السحابي'}</span>`;
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fa-solid fa-rotate-right"></i> <span>إعادة المحاولة</span>';
+        }
+      } catch (err) {
+        st.className = 'mb-6 p-3 rounded-xl text-xs font-bold bg-rose-50 text-rose-800 border border-rose-300 flex items-center gap-2 justify-center';
+        st.innerHTML = `<i class="fa-solid fa-circle-exclamation text-rose-600 text-base"></i> <span>خطأ في الاتصال: ${err.message}</span>`;
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-rotate-right"></i> <span>إعادة المحاولة</span>';
+      }
+    }
+  </script>
+</body>
+
         </html>
       `);
       fdoc.close();
@@ -2799,5 +2955,156 @@
 
     document.addEventListener('DOMContentLoaded', checkAuth);
   </script>
+
+  <!-- Cloud Publish Modal -->
+  <div id="cloudPublishModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white border-2 border-slate-300 rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl text-center">
+      
+      <div class="w-16 h-16 rounded-2xl bg-emerald-500 text-white flex items-center justify-center text-3xl mx-auto mb-4 shadow-lg shadow-emerald-500/30">
+        <i class="fa-solid fa-cloud-arrow-up"></i>
+      </div>
+
+      <h3 class="text-xl font-black text-slate-900 mb-1">نشر وتحديث الاستمارات للمراكز أونلاين</h3>
+      <p class="text-xs font-bold text-slate-500 mb-6 leading-relaxed">
+        سيتم إرسال كافة النماذج والتعديلات الحالية ليتم تحديثها فوراً لكافة مراكز التسجيل الـ 76 أونلاين عبر الوسيط السحابي الآمن.
+      </p>
+
+      <div class="text-right space-y-4 mb-6">
+        <div>
+          <label class="block text-xs font-black text-slate-800 mb-1.5">رابط الوسيط السحابي (Cloud Sync URL):</label>
+          <input 
+            type="text" 
+            id="cloudSyncUrlInput" 
+            value="https://basra-forms.vercel.app/api/sync"
+            class="w-full bg-slate-50 border-2 border-slate-300 focus:border-emerald-500 rounded-xl px-3.5 py-2.5 text-xs font-mono font-bold text-slate-800 focus:outline-none"
+            dir="ltr"
+          >
+        </div>
+
+        <div>
+          <label class="block text-xs font-black text-slate-800 mb-1.5">رمز الأمان السحابي (Admin Secret Key):</label>
+          <input 
+            type="password" 
+            id="cloudSyncKeyInput" 
+            value="BasraForms@2026"
+            class="w-full bg-slate-50 border-2 border-slate-300 focus:border-emerald-500 rounded-xl px-3.5 py-2.5 text-sm font-mono font-bold text-slate-800 focus:outline-none"
+            dir="ltr"
+          >
+        </div>
+      </div>
+
+      <!-- Live Publish Progress -->
+      <div id="cloudPublishStatus" class="hidden mb-6 p-3 rounded-xl text-xs font-bold flex items-center gap-2 justify-center">
+        <!-- Status updated via JS -->
+      </div>
+
+      <div class="flex items-center gap-3">
+        <button 
+          type="button" 
+          id="startPublishBtn"
+          onclick="startCloudPublish()"
+          class="flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black py-3 px-4 rounded-xl text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/25 active:scale-95 cursor-pointer"
+        >
+          <i class="fa-solid fa-paper-plane"></i>
+          <span>نشر التحديثات الآن</span>
+        </button>
+
+        <button 
+          type="button" 
+          onclick="closeCloudPublishModal()" 
+          class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 px-4 rounded-xl text-sm transition-all border border-slate-300 cursor-pointer"
+        >
+          إلغاء
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    function openCloudPublishModal() {
+      const savedUrl = localStorage.getItem('basra_cloud_url');
+      const savedKey = localStorage.getItem('basra_cloud_key');
+      if (savedUrl) document.getElementById('cloudSyncUrlInput').value = savedUrl;
+      if (savedKey) document.getElementById('cloudSyncKeyInput').value = savedKey;
+
+      const st = document.getElementById('cloudPublishStatus');
+      st.className = 'hidden mb-6 p-3 rounded-xl text-xs font-bold';
+      st.innerHTML = '';
+
+      const btn = document.getElementById('startPublishBtn');
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> <span>نشر التحديثات الآن</span>';
+
+      document.getElementById('cloudPublishModal').classList.remove('hidden');
+    }
+
+    function closeCloudPublishModal() {
+      document.getElementById('cloudPublishModal').classList.add('hidden');
+    }
+
+    async function startCloudPublish() {
+      const cloudUrl = (document.getElementById('cloudSyncUrlInput').value || '').trim();
+      const adminKey = (document.getElementById('cloudSyncKeyInput').value || '').trim();
+
+      if (!cloudUrl || !adminKey) {
+        showAppModal({
+          title: 'تنبيه',
+          message: 'يرجى إدخال رابط الوسيط السحابي ورمز الأمان السحابي.',
+          type: 'warning'
+        });
+        return;
+      }
+
+      localStorage.setItem('basra_cloud_url', cloudUrl);
+      localStorage.setItem('basra_cloud_key', adminKey);
+
+      const st = document.getElementById('cloudPublishStatus');
+      const btn = document.getElementById('startPublishBtn');
+
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>جاري النشر السحابي...</span>';
+
+      st.className = 'mb-6 p-3 rounded-xl text-xs font-bold bg-amber-50 text-amber-800 border border-amber-300 flex items-center gap-2 justify-center';
+      st.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-amber-600 text-base"></i> <span>جاري تجميع الملفات وإرسالها للوسيط السحابي...</span>';
+
+      try {
+        const res = await fetch('/api/admin/publish-to-cloud', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cloudUrl, adminKey })
+        });
+
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+          st.className = 'mb-6 p-3 rounded-xl text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-300 flex items-center gap-2 justify-center';
+          st.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600 text-base"></i> <span>${data.message || 'تم النشر وتحديث المنظومة بنجاح لجميع المراكز!'}</span>`;
+          btn.innerHTML = '<i class="fa-solid fa-check"></i> <span>اكتمل النشر</span>';
+
+          setTimeout(() => {
+            closeCloudPublishModal();
+            showAppModal({
+              title: 'تم النشر بنجاح',
+              message: 'تم إرسال كافة التحديثات والنماذج للوسيط السحابي، والرابط أونلاين لجميع المراكز الـ 76 تم تحديثه فوراً!',
+              type: 'success'
+            });
+          }, 1500);
+
+        } else {
+          st.className = 'mb-6 p-3 rounded-xl text-xs font-bold bg-rose-50 text-rose-800 border border-rose-300 flex items-center gap-2 justify-center';
+          st.innerHTML = `<i class="fa-solid fa-circle-exclamation text-rose-600 text-base"></i> <span>خطأ: ${data.error || 'فشل النشر السحابي'}</span>`;
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fa-solid fa-rotate-right"></i> <span>إعادة المحاولة</span>';
+        }
+      } catch (err) {
+        st.className = 'mb-6 p-3 rounded-xl text-xs font-bold bg-rose-50 text-rose-800 border border-rose-300 flex items-center gap-2 justify-center';
+        st.innerHTML = `<i class="fa-solid fa-circle-exclamation text-rose-600 text-base"></i> <span>خطأ في الاتصال: ${err.message}</span>`;
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-rotate-right"></i> <span>إعادة المحاولة</span>';
+      }
+    }
+  </script>
 </body>
+
 </html>

@@ -654,6 +654,77 @@ try {
   console.error('Self-healing forms check error:', e);
 }
 
+// POST /api/admin/publish-to-cloud
+app.post('/api/admin/publish-to-cloud', async (req, res) => {
+  try {
+    const { cloudUrl, adminKey } = req.body || {};
+    const targetUrl = (cloudUrl || 'https://basra-forms.vercel.app/api/sync').trim();
+    const key = (adminKey || 'BasraForms@2026').trim();
+
+    const forms = readJson('forms.json');
+    const categories = readJson('categories.json');
+
+    const filesToSend = [];
+
+    if (fs.existsSync(UPLOADS_DIR)) {
+      const uFiles = fs.readdirSync(UPLOADS_DIR);
+      for (const fn of uFiles) {
+        const full = path.join(UPLOADS_DIR, fn);
+        const st = fs.statSync(full);
+        if (st.isFile() && st.size < 10 * 1024 * 1024) {
+          filesToSend.push({
+            path: `uploads/${fn}`,
+            contentBase64: fs.readFileSync(full).toString('base64')
+          });
+        }
+      }
+    }
+
+    if (fs.existsSync(SHEETS_DIR)) {
+      const sFiles = fs.readdirSync(SHEETS_DIR);
+      for (const fn of sFiles) {
+        if (!fn.endsWith('.png')) continue;
+        const full = path.join(SHEETS_DIR, fn);
+        const st = fs.statSync(full);
+        if (st.isFile() && st.size < 10 * 1024 * 1024) {
+          filesToSend.push({
+            path: `sheets/${fn}`,
+            contentBase64: fs.readFileSync(full).toString('base64')
+          });
+        }
+      }
+    }
+
+    const fetchRes = await fetch(targetUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-admin-key': key
+      },
+      body: JSON.stringify({
+        forms,
+        categories,
+        files: filesToSend
+      })
+    });
+
+    const result = await fetchRes.json();
+    if (!fetchRes.ok) {
+      return res.status(fetchRes.status).json(result);
+    }
+
+    return res.json({
+      success: true,
+      message: result.message || 'تم نشر وتحديث المنظومة بنجاح لجميع المراكز أونلاين!',
+      count: result.updatedItemsCount
+    });
+
+  } catch (err) {
+    console.error('Publish error:', err);
+    return res.status(500).json({ success: false, error: err.message || 'فشل الاتصال بالوسيط السحابي' });
+  }
+});
+
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`====================================================`);
   console.log(`نظام نماذج مكتب انتخابات محافظة البصرة ومراكز التسجيل الـ 76`);
