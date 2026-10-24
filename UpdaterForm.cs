@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
@@ -48,8 +48,12 @@ namespace BasraUpdater
         private ProgressBar progressBar;
         private Label lblStatus;
 
-        // State
-        private string cloudVersion = "جاري الفحص...";
+        // Independent Version Tracking for Each Program
+        private string cloudCentersVersion = "2.0.0";
+        private string cloudAdminVersion = "2.0.1";
+        private string cloudCentersUpdatedAt = "2026-10-24T16:45:00Z";
+        private string cloudAdminUpdatedAt = "2026-10-24T19:34:35Z";
+
         private string CLOUD_URL = "https://basra-forms.vercel.app/version.json";
         private string CLOUD_BACKUP = "https://alichbasi75-dotcom.github.io/basra-forms/version.json";
         private string workspaceDir = @"C:\Users\ali\.gemini\antigravity\scratch\basra_forms_system";
@@ -86,7 +90,7 @@ namespace BasraUpdater
             this.Controls.Add(lblTitle);
 
             lblSubTitle = new Label();
-            lblSubTitle.Text = "تحديث واجهة المراكز (index.html) أو واجهة المسؤول (admin.html) فقط دون لمس الاستمارات";
+            lblSubTitle.Text = "تحديث واجهة المراكز (index.html) أو واجهة المسؤول (admin.html) بإصدارات وتواريخ مستقلة تماماً";
             lblSubTitle.Font = new Font("Segoe UI", 8.5f, FontStyle.Regular);
             lblSubTitle.ForeColor = Color.FromArgb(100, 116, 139);
             lblSubTitle.Location = new Point(20, 38);
@@ -101,10 +105,10 @@ namespace BasraUpdater
             pnlCloud.BorderStyle = BorderStyle.FixedSingle;
 
             lblCurrentCloudVer = new Label();
-            lblCurrentCloudVer.Text = "الإصدار المرفوع حالياً على المنصة:";
+            lblCurrentCloudVer.Text = "إصدار بوابة المراكز الحالي على المنصة:";
             lblCurrentCloudVer.Font = new Font("Segoe UI", 9.5f, FontStyle.Bold);
-            lblCurrentCloudVer.Location = new Point(320, 12);
-            lblCurrentCloudVer.Size = new Size(270, 24);
+            lblCurrentCloudVer.Location = new Point(310, 12);
+            lblCurrentCloudVer.Size = new Size(280, 24);
             pnlCloud.Controls.Add(lblCurrentCloudVer);
 
             lblCloudVerVal = new Label();
@@ -112,7 +116,7 @@ namespace BasraUpdater
             lblCloudVerVal.Font = new Font("Segoe UI", 11f, FontStyle.Bold);
             lblCloudVerVal.ForeColor = Color.FromArgb(2, 132, 199);
             lblCloudVerVal.Location = new Point(100, 11);
-            lblCloudVerVal.Size = new Size(210, 24);
+            lblCloudVerVal.Size = new Size(205, 24);
             pnlCloud.Controls.Add(lblCloudVerVal);
 
             btnCheckCloud = new Button();
@@ -129,7 +133,7 @@ namespace BasraUpdater
 
             // 3. Step 1: Program Choice (Strictly Separate: Centers OR Admin)
             grpTarget = new GroupBox();
-            grpTarget.Text = "1. حدد البرنامج المراد تحديثه حصراً (لا يتم تحديث الاثنين معاً):";
+            grpTarget.Text = "1. حدد البرنامج المراد تحديثه حصراً (كل برنامج له إصداره المنفصل):";
             grpTarget.Font = new Font("Segoe UI", 9.5f, FontStyle.Bold);
             grpTarget.ForeColor = Color.FromArgb(30, 41, 59);
             grpTarget.Location = new Point(20, 118);
@@ -156,7 +160,7 @@ namespace BasraUpdater
             grpTarget.Controls.Add(rbAdmin);
 
             lblTargetNotice = new Label();
-            lblTargetNotice.Text = "⚠️ إشعار مهم: تحديث الاستمارات متوقف على برنامج المسؤول حصراً. برنامج التحديث مخصص لرفع كود البرنامجين فقط.";
+            lblTargetNotice.Text = "⚠️ إشعار مهم: تحديث أحد البرنامجين لا يغير إصدار البرنامج الآخر إطلاقاً، وتحديث الاستمارات يتم من لوحة المسؤول أونلاين.";
             lblTargetNotice.Font = new Font("Segoe UI", 8f, FontStyle.Bold);
             lblTargetNotice.ForeColor = Color.FromArgb(180, 83, 9);
             lblTargetNotice.Location = new Point(20, 80);
@@ -238,7 +242,7 @@ namespace BasraUpdater
 
             // 5. Step 3: New Version
             grpVer = new GroupBox();
-            grpVer.Text = "3. تعيين رقم الإصدار الجديد:";
+            grpVer.Text = "3. تعيين رقم الإصدار الجديد للبرنامج المختار:";
             grpVer.Font = new Font("Segoe UI", 9.5f, FontStyle.Bold);
             grpVer.ForeColor = Color.FromArgb(30, 41, 59);
             grpVer.Location = new Point(20, 458);
@@ -262,7 +266,7 @@ namespace BasraUpdater
             grpVer.Controls.Add(txtNewVer);
 
             lblVerHint = new Label();
-            lblVerHint.Text = "(يجب أن يكون أكبر من الإصدار السحابي)";
+            lblVerHint.Text = "(أكبر من إصدار البرنامج الحالي)";
             lblVerHint.Font = new Font("Segoe UI", 8f);
             lblVerHint.ForeColor = Color.FromArgb(148, 163, 184);
             lblVerHint.Location = new Point(15, 28);
@@ -326,17 +330,32 @@ namespace BasraUpdater
             OnTargetChanged();
         }
 
+        private string GetCurrentTargetCloudVersion()
+        {
+            return rbAdmin.Checked ? cloudAdminVersion : cloudCentersVersion;
+        }
+
         private void OnTargetChanged()
         {
+            string curVer = GetCurrentTargetCloudVersion();
+
             if (rbAdmin.Checked)
             {
+                lblCurrentCloudVer.Text = "إصدار لوحة المسؤول الحالي على المنصة:";
+                lblCloudVerVal.Text = "الإصدار " + cloudAdminVersion;
+                lblCloudVerVal.ForeColor = Color.FromArgb(180, 83, 9);
                 lblDropHint.Text = "📥 اسحب وأفلت ملف لوحة المسؤول حصراً:\n(admin.html)";
                 lblDropHint.ForeColor = Color.FromArgb(180, 83, 9);
+                SuggestNextVersion(cloudAdminVersion);
             }
             else
             {
+                lblCurrentCloudVer.Text = "إصدار بوابة المراكز الحالي على المنصة:";
+                lblCloudVerVal.Text = "الإصدار " + cloudCentersVersion;
+                lblCloudVerVal.ForeColor = Color.FromArgb(3, 105, 161);
                 lblDropHint.Text = "📥 اسحب وأفلت ملف برنامج المراكز حصراً:\n(index.html)";
                 lblDropHint.ForeColor = Color.FromArgb(3, 105, 161);
+                SuggestNextVersion(cloudCentersVersion);
             }
 
             ValidateAll();
@@ -476,28 +495,30 @@ namespace BasraUpdater
                         json = wc.DownloadString(CLOUD_BACKUP + "?t=" + DateTime.Now.Ticks);
                     }
 
-                    Match m = Regex.Match(json, "\"version\"\\s*:\\s*\"([^\"]+)\"");
-                    if (m.Success)
-                    {
-                        cloudVersion = m.Groups[1].Value;
-                    }
-                    else
-                    {
-                        cloudVersion = "1.0.0";
-                    }
+                    Match mCenters = Regex.Match(json, "\"centersVersion\"\\s*:\\s*\"([^\"]+)\"");
+                    Match mAdmin = Regex.Match(json, "\"adminVersion\"\\s*:\\s*\"([^\"]+)\"");
+                    Match mGen = Regex.Match(json, "\"version\"\\s*:\\s*\"([^\"]+)\"");
+                    Match mCDate = Regex.Match(json, "\"centersUpdatedAt\"\\s*:\\s*\"([^\"]+)\"");
+                    Match mADate = Regex.Match(json, "\"adminUpdatedAt\"\\s*:\\s*\"([^\"]+)\"");
+
+                    if (mCenters.Success) cloudCentersVersion = mCenters.Groups[1].Value;
+                    else cloudCentersVersion = "2.0.0";
+
+                    if (mAdmin.Success) cloudAdminVersion = mAdmin.Groups[1].Value;
+                    else if (mGen.Success) cloudAdminVersion = mGen.Groups[1].Value;
+                    else cloudAdminVersion = "2.0.1";
+
+                    if (mCDate.Success) cloudCentersUpdatedAt = mCDate.Groups[1].Value;
+                    if (mADate.Success) cloudAdminUpdatedAt = mADate.Groups[1].Value;
                 }
 
-                lblCloudVerVal.Text = "الإصدار " + cloudVersion;
-                lblCloudVerVal.ForeColor = Color.FromArgb(16, 185, 129);
-
-                SuggestNextVersion(cloudVersion);
+                OnTargetChanged();
             }
             catch
             {
-                lblCloudVerVal.Text = "تعذر الاتصال (محلياً: 1.0.0)";
+                lblCloudVerVal.Text = "تعذر الاتصال (محلياً)";
                 lblCloudVerVal.ForeColor = Color.FromArgb(225, 29, 72);
-                cloudVersion = "1.0.0";
-                SuggestNextVersion("1.0.0");
+                OnTargetChanged();
             }
 
             ValidateAll();
@@ -516,41 +537,44 @@ namespace BasraUpdater
                 }
                 else
                 {
-                    txtNewVer.Text = "1.0.1";
+                    txtNewVer.Text = "2.0.1";
                 }
             }
             catch
             {
-                txtNewVer.Text = "1.0.1";
+                txtNewVer.Text = "2.0.1";
             }
         }
 
         private bool ValidateVersionNumber()
         {
             string newVer = txtNewVer.Text.Trim();
+            string curTargetVer = GetCurrentTargetCloudVersion();
+            string targetName = rbAdmin.Checked ? "لوحة المسؤول" : "بوابة المراكز";
+
             if (string.IsNullOrEmpty(newVer))
             {
-                lblVersionValidation.Text = "❌ يرجى إدخال رقم الإصدار الجديد.";
+                lblVersionValidation.Text = "❌ يرجى إدخال رقم الإصدار الجديد لـ " + targetName;
                 lblVersionValidation.ForeColor = Color.FromArgb(225, 29, 72);
                 return false;
             }
 
             if (!Regex.IsMatch(newVer, @"^\d+(\.\d+)+$"))
             {
-                lblVersionValidation.Text = "❌ تنسيق رقم الإصدار غير صالح. استخدم مثلاً: 1.0.1 أو 1.1.0";
+                lblVersionValidation.Text = "❌ تنسيق رقم الإصدار غير صالح. استخدم مثلاً: 2.0.1 أو 2.1.0";
                 lblVersionValidation.ForeColor = Color.FromArgb(225, 29, 72);
                 return false;
             }
 
-            int cmp = CompareVersions(newVer, cloudVersion);
+            int cmp = CompareVersions(newVer, curTargetVer);
             if (cmp <= 0)
             {
-                lblVersionValidation.Text = string.Format("❌ يجب أن يكون الإصدار الجديد ({0}) أكبر من الإصدار الحالي ({1}).", newVer, cloudVersion);
+                lblVersionValidation.Text = string.Format("❌ يجب أن يكون الإصدار الجديد ({0}) أكبر من إصدار {1} الحالي ({2}).", newVer, targetName, curTargetVer);
                 lblVersionValidation.ForeColor = Color.FromArgb(225, 29, 72);
                 return false;
             }
 
-            lblVersionValidation.Text = string.Format("✅ رقم الإصدار صالح ومعتمد: {0} (أكبر من الإصدار الحالي {1})", newVer, cloudVersion);
+            lblVersionValidation.Text = string.Format("✅ رقم الإصدار معتمد لـ {0}: {1} (أكبر من الإصدار الحالي {2})", targetName, newVer, curTargetVer);
             lblVersionValidation.ForeColor = Color.FromArgb(16, 185, 129);
             return true;
         }
@@ -606,8 +630,8 @@ namespace BasraUpdater
                 }
                 else
                 {
-                    btnPublish.Text = "🚫 زر الرفع مقفول (رقم الإصدار غير صالح أو ليس أكبر من السحابي)";
-                    lblStatus.Text = "يرجى تحديد رقم إصدار أكبر من الإصدار السحابي الحالي للمتابعة.";
+                    btnPublish.Text = "🚫 زر الرفع مقفول (رقم الإصدار غير صالح أو ليس أكبر من إصدار هذا البرنامج)";
+                    lblStatus.Text = "يرجى تحديد رقم إصدار أكبر من إصدار هذا البرنامج الحالي للمتابعة.";
                     lblStatus.ForeColor = Color.FromArgb(217, 119, 6);
                 }
             }
@@ -652,8 +676,8 @@ namespace BasraUpdater
                 "هل أنت متأكد من رغبتك في رفع ونشر هذا التحديث السحابي؟\n\n" +
                 "• الهدف المعتمد: {0}\n" +
                 "• الملف المختار: {1}\n" +
-                "• رقم الإصدار الجديد: {2}\n\n" +
-                "ملاحظة: سيتم تحديث هذا البرنامج فقط حصراً دون المساس بالبرنامج الآخر وبقاء الاستمارات تحت إدارة المسؤول حصراً.",
+                "• رقم الإصدار الجديد لهذا البرنامج: {2}\n\n" +
+                "ملاحظة: سيتم تحديث هذا البرنامج وإصداره فقط دون المساس بإصدار البرنامج الآخر إطلاقاً.",
                 targetName, fname, newVer
             );
 
@@ -680,6 +704,8 @@ namespace BasraUpdater
                 {
                     SafeCopy(selectedFilePath, Path.Combine(workspaceDir, "admin.html"));
                     SafeCopy(selectedFilePath, Path.Combine(workspaceDir, "public", "admin.html"));
+                    cloudAdminVersion = newVer;
+                    cloudAdminUpdatedAt = DateTime.UtcNow.ToString("o");
                     gitAddArgs = "admin.html public/admin.html";
                 }
                 // Case 2: Updating CENTERS ONLY (index.html)
@@ -688,16 +714,24 @@ namespace BasraUpdater
                     SafeCopy(selectedFilePath, Path.Combine(workspaceDir, "index.html"));
                     SafeCopy(selectedFilePath, Path.Combine(workspaceDir, "public", "index.html"));
                     SafeCopy(selectedFilePath, Path.Combine(workspaceDir, "public", "center.html"));
+                    cloudCentersVersion = newVer;
+                    cloudCentersUpdatedAt = DateTime.UtcNow.ToString("o");
                     gitAddArgs = "index.html public/index.html public/center.html";
                 }
 
-                // 2. Update version.json (both root and public)
-                lblStatus.Text = "جاري تحديث رقم الإصدار في سجل المنظومة...";
+                // 2. Update version.json with independent versions for each program
+                lblStatus.Text = "جاري تحديث رقم الإصدار المستقل في سجل المنظومة...";
                 string vJsonPath = Path.Combine(workspaceDir, "version.json");
                 string vJsonPubPath = Path.Combine(workspaceDir, "public", "version.json");
                 string vJsonContent = string.Format(
-                    "{{\n  \"version\": \"{0}\",\n  \"updatedAt\": \"{1}\",\n  \"target\": \"{2}\",\n  \"file\": \"{3}\"\n}}",
-                    newVer, DateTime.UtcNow.ToString("o"), targetName, fname
+                    "{{\n  \"centersVersion\": \"{0}\",\n  \"centersUpdatedAt\": \"{1}\",\n  \"adminVersion\": \"{2}\",\n  \"adminUpdatedAt\": \"{3}\",\n  \"version\": \"{4}\",\n  \"target\": \"{5}\",\n  \"file\": \"{6}\"\n}}",
+                    cloudCentersVersion,
+                    string.IsNullOrEmpty(cloudCentersUpdatedAt) ? "2026-10-24T16:45:00Z" : cloudCentersUpdatedAt,
+                    cloudAdminVersion,
+                    string.IsNullOrEmpty(cloudAdminUpdatedAt) ? DateTime.UtcNow.ToString("o") : cloudAdminUpdatedAt,
+                    newVer,
+                    targetName,
+                    fname
                 );
                 File.WriteAllText(vJsonPath, vJsonContent);
                 try { File.WriteAllText(vJsonPubPath, vJsonContent); } catch {}
@@ -713,7 +747,7 @@ namespace BasraUpdater
 
                 // 4. Git Commit
                 lblStatus.Text = "جاري توثيق التحديث المنفصل (Git Commit)...";
-                string commitMsg = string.Format("تحديث كود {0} إلى الإصدار {1}: {2}", targetName, newVer, fname);
+                string commitMsg = string.Format("تحديث {0} إلى الإصدار {1}: {2}", targetName, newVer, fname);
                 ProcessStartInfo psiCommit = new ProcessStartInfo("git", string.Format("commit -m \"{0}\"", commitMsg));
                 psiCommit.WorkingDirectory = workspaceDir;
                 psiCommit.CreateNoWindow = true;
@@ -750,7 +784,7 @@ namespace BasraUpdater
                             "• النظام المحدث: {0}\n" +
                             "• الملف المرفوع: {1}\n" +
                             "• رقم الإصدار الجديد: {2}\n\n" +
-                            "تم تحديث المنظومة أونلاين فوراً دون التأثير على البرنامج الآخر وبقاء الاستمارات تحت إدارة المسؤول حصراً.",
+                            "تم تحديث هذا البرنامج أونلاين دون تغيير إصدار البرنامج الآخر نهائياً.",
                             targetName, fname, newVer
                         ),
                         "اكتمل التحديث السحابي بنجاح",
