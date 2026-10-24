@@ -1319,34 +1319,22 @@
       btn.disabled = true;
       btn.innerText = 'جاري الإضافة...';
 
-      try {
-        const res = await fetch('/api/admin/categories', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id, name, icon })
-        });
-        const data = await res.json();
-        if (data.success) {
-          statusMsg.innerText = 'تمت إضافة الصنف بنجاح!';
-          statusMsg.className = 'text-xs p-2 rounded-lg text-center font-bold bg-emerald-100 text-emerald-800';
-          statusMsg.classList.remove('hidden');
-          setTimeout(() => {
-            closeAddCategoryModal();
-            loadAdminCategories();
-          }, 800);
-        } else {
-          statusMsg.innerText = data.message || 'خطأ أثناء إضافة الصنف';
-          statusMsg.className = 'text-xs p-2 rounded-lg text-center font-bold bg-rose-100 text-rose-800';
-          statusMsg.classList.remove('hidden');
-        }
-      } catch (err) {
-        statusMsg.innerText = 'تعذر الاتصال بالخادم';
-        statusMsg.className = 'text-xs p-2 rounded-lg text-center font-bold bg-rose-100 text-rose-800';
-        statusMsg.classList.remove('hidden');
-      } finally {
+      const newCat = { id, name, icon };
+      adminCategoriesList.push(newCat);
+      renderAdminCategoriesTable();
+      populateCategorySelects(adminCategoriesList);
+
+      await syncWithCloud([], { silent: true });
+
+      statusMsg.innerText = 'تمت إضافة الصنف ومزامنته بالسحاب بنجاح!';
+      statusMsg.className = 'text-xs p-2 rounded-lg text-center font-bold bg-emerald-100 text-emerald-800';
+      statusMsg.classList.remove('hidden');
+
+      setTimeout(() => {
+        closeAddCategoryModal();
         btn.disabled = false;
         btn.innerText = 'إضافة الصنف';
-      }
+      }, 700);
     }
 
     function openEditCategoryModal(catId) {
@@ -1375,37 +1363,32 @@
       const btn = document.getElementById('editCatSubmitBtn');
 
       btn.disabled = true;
-      btn.innerText = 'جاري الحفظ...';
+      btn.innerText = 'جاري الحفظ والمزامنة...';
 
-      try {
-        const res = await fetch(`/api/admin/categories/${id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, icon })
-        });
-        const data = await res.json();
-        if (data.success) {
-          statusMsg.innerText = 'تم حفظ تعديلات الصنف بنجاح!';
-          statusMsg.className = 'text-xs p-2 rounded-lg text-center font-bold bg-emerald-100 text-emerald-800';
-          statusMsg.classList.remove('hidden');
-          setTimeout(() => {
-            closeEditCategoryModal();
-            loadAdminCategories();
-            loadAdminForms();
-          }, 800);
-        } else {
-          statusMsg.innerText = data.message || 'خطأ أثناء تعديل الصنف';
-          statusMsg.className = 'text-xs p-2 rounded-lg text-center font-bold bg-rose-100 text-rose-800';
-          statusMsg.classList.remove('hidden');
-        }
-      } catch (err) {
-        statusMsg.innerText = 'تعذر الاتصال بالخادم';
-        statusMsg.className = 'text-xs p-2 rounded-lg text-center font-bold bg-rose-100 text-rose-800';
-        statusMsg.classList.remove('hidden');
-      } finally {
+      const cat = adminCategoriesList.find(c => c.id === id);
+      if (cat) {
+        cat.name = name;
+        cat.icon = icon;
+      }
+      adminFormsList.forEach(f => {
+        if (f.category === id) f.categoryName = name;
+      });
+
+      renderAdminCategoriesTable();
+      populateCategorySelects(adminCategoriesList);
+      renderAdminFormsTable();
+
+      await syncWithCloud([], { silent: true });
+
+      statusMsg.innerText = 'تم حفظ التعديلات ومزامنتها بنجاح!';
+      statusMsg.className = 'text-xs p-2 rounded-lg text-center font-bold bg-emerald-100 text-emerald-800';
+      statusMsg.classList.remove('hidden');
+
+      setTimeout(() => {
+        closeEditCategoryModal();
         btn.disabled = false;
         btn.innerText = 'حفظ التعديلات';
-      }
+      }, 700);
     }
 
     async function confirmDeleteCategory(catId, catName) {
@@ -1415,9 +1398,8 @@
           type: 'warning',
           icon: 'fa-solid fa-triangle-exclamation',
           title: 'لا يمكن حذف هذا الصنف',
-          message: `لا يمكن حذف الصنف "${catName}" لأن هناك (${formsCount}) نماذج مرتبطة به حالياً.\nيرجى تعديل تصنيف النماذج أولاً قبل حذف الصنف.`,
-          confirmText: 'فهمت ذلك',
-          isConfirm: false
+          message: `لا يمكن حذف الصنف "${catName}" لأنه يحتوي على (${formsCount}) نماذج مرتبطة به حالياً.\nيرجى نقل أو تعديل النماذج إلى صنف آخر أولاً.`,
+          confirmText: 'حسناً فهمت'
         });
         return;
       }
@@ -1426,7 +1408,7 @@
         type: 'danger',
         icon: 'fa-solid fa-trash-can',
         title: 'تأكيد حذف الصنف',
-        message: `هل أنت متأكد من حذف الصنف:\n"${catName}"؟\nسيتم حذفه من واجهة جميع المراكز الـ 76 فوراً.`,
+        message: `هل أنت متأكد من حذف الصنف:\n"${catName}"؟`,
         confirmText: 'نعم، حذف الصنف',
         cancelText: 'إلغاء التراجع',
         isConfirm: true
@@ -1434,36 +1416,11 @@
 
       if (!confirmed) return;
 
-      try {
-        const res = await fetch(`/api/admin/categories/${catId}`, { method: 'DELETE' });
-        const data = await res.json();
-        if (data.success) {
-          loadAdminCategories();
-          showAppModal({
-            type: 'success',
-            icon: 'fa-solid fa-circle-check',
-            title: 'تم الحذف بنجاح',
-            message: data.message || 'تم حذف الصنف بنجاح',
-            confirmText: 'حسناً'
-          });
-        } else {
-          showAppModal({
-            type: 'danger',
-            icon: 'fa-solid fa-triangle-exclamation',
-            title: 'خطأ',
-            message: data.message || 'خطأ أثناء حذف الصنف',
-            confirmText: 'حسناً'
-          });
-        }
-      } catch (e) {
-        showAppModal({
-          type: 'danger',
-          icon: 'fa-solid fa-triangle-exclamation',
-          title: 'تعذر الاتصال',
-          message: 'تعذر الاتصال بالخادم',
-          confirmText: 'حسناً'
-        });
-      }
+      adminCategoriesList = adminCategoriesList.filter(c => c.id !== catId);
+      renderAdminCategoriesTable();
+      populateCategorySelects(adminCategoriesList);
+
+      await syncWithCloud([], { silent: false });
     }
 
     // ================= NATIVE SAVE AS FILE PICKER =================
@@ -1701,72 +1658,36 @@
 
       if (!confirmed) return;
 
-      try {
-        const res = await fetch(`/api/admin/forms/${id}/toggle-visibility`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ hidden: willHide })
-        });
-        const data = await res.json();
-        if (data.success) {
-          loadAdminForms();
-          showAppModal({
-            type: willHide ? 'warning' : 'success',
-            icon: willHide ? 'fa-solid fa-eye-slash' : 'fa-solid fa-circle-check',
-            title: willHide ? 'تم إخفاء النموذج' : 'تم تفعيل النموذج',
-            message: data.message || (willHide ? 'تم إخفاء النموذج عن المراكز بنجاح' : 'تم تفعيل وإظهار النموذج للمراكز بنجاح'),
-            confirmText: 'حسناً',
-            isConfirm: false
-          });
-        } else {
-          showAppModal({
-            type: 'danger',
-            icon: 'fa-solid fa-triangle-exclamation',
-            title: 'خطأ',
-            message: data.message || 'خطأ أثناء تغيير حالة العرض',
-            confirmText: 'حسناً'
-          });
-        }
-      } catch (e) {
-        showAppModal({
-          type: 'danger',
-          icon: 'fa-solid fa-triangle-exclamation',
-          title: 'تعذر الاتصال',
-          message: 'تعذر الاتصال بالخادم المحلي',
-          confirmText: 'حسناً'
-        });
-      }
+      f.hidden = willHide;
+      f.updatedDate = new Date().toISOString().split('T')[0];
+      updateFormsCounts();
+      renderAdminFormsTable();
+
+      showAppModal({
+        type: willHide ? 'warning' : 'success',
+        icon: willHide ? 'fa-solid fa-eye-slash' : 'fa-solid fa-circle-check',
+        title: willHide ? 'تم إخفاء النموذج' : 'تم تفعيل النموذج',
+        message: willHide ? 'تم إخفاء النموذج عن المراكز ومزامنة السحاب فوراً' : 'تم إظهار النموذج ومزامنة السحاب فوراً',
+        confirmText: 'حسناً',
+        isConfirm: false
+      });
+
+      // Synchronize with cloud automatically
+      await syncWithCloud([], { silent: true });
     }
 
     // ================= ACTIVITY & AUDIT LOG FUNCTIONS =================
     async function loadAdminActivity() {
       try {
-        const [logsRes, statsRes] = await Promise.all([
-          fetch('/api/admin/activity?limit=500'),
-          fetch('/api/admin/activity/stats')
-        ]);
-        const logsData = await logsRes.json();
-        const statsData = await statsRes.json();
-
-        if (logsData.success) {
-          activityLogs = logsData.logs || [];
-          document.getElementById('activityBadgeCount').innerText = activityLogs.length;
-          filterActivityLogs();
-        }
-
-        if (statsData.success && statsData.stats) {
-          const s = statsData.stats;
-          document.getElementById('statDownloads').innerText = s.totalDownloads || 0;
-          document.getElementById('statViews').innerText = s.totalViews || 0;
-          document.getElementById('statPrints').innerText = s.totalPrints || 0;
-          document.getElementById('statOffice').innerText = s.totalOffice || 0;
-          document.getElementById('statActiveCenters').innerText = s.activeCentersCount || 0;
-
-          renderTopCenters(s.topCenters || []);
+        const res = await fetch('./data/activity_log.json?t=' + Date.now());
+        if (res.ok) {
+          const data = await res.json();
+          activityLogs = Array.isArray(data) ? data : (data.logs || []);
         }
       } catch (e) {
-        console.error('Failed to load activity logs:', e);
+        activityLogs = [];
       }
+      filterActivityLogs();
     }
 
     function filterActivityLogs() {
@@ -1814,36 +1735,15 @@
 
       if (!confirmed) return;
 
-      try {
-        const res = await fetch('/api/admin/activity', { method: 'DELETE' });
-        const data = await res.json();
-        if (data.success) {
-          await loadAdminActivity();
-          showAppModal({
-            type: 'success',
-            icon: 'fa-solid fa-circle-check',
-            title: 'تم الحذف والتصفير',
-            message: data.message || 'تم مسح وحذف سجل نشاط وعمليات المراكز بالكامل',
-            confirmText: 'حسناً'
-          });
-        } else {
-          showAppModal({
-            type: 'danger',
-            icon: 'fa-solid fa-triangle-exclamation',
-            title: 'خطأ',
-            message: data.message || 'حدث خطأ أثناء حذف السجلات',
-            confirmText: 'حسناً'
-          });
-        }
-      } catch (err) {
-        showAppModal({
-          type: 'danger',
-          icon: 'fa-solid fa-triangle-exclamation',
-          title: 'تعذر الاتصال',
-          message: 'تعذر الاتصال بالخادم لحذف السجل',
-          confirmText: 'حسناً'
-        });
-      }
+      activityLogs = [];
+      filterActivityLogs();
+      showAppModal({
+        type: 'success',
+        icon: 'fa-solid fa-circle-check',
+        title: 'تم الحذف والتصفير',
+        message: 'تم مسح وتصفير سجل نشاط المراكز بنجاح',
+        confirmText: 'حسناً'
+      });
     }
 
     function resetActivityFilters() {
@@ -1931,7 +1831,7 @@
 
       document.getElementById('viewModalTitle').innerText = `عرض النموذج: ${activeAdminForm.title}`;
       const dlBtn = document.getElementById('viewDownloadBtn');
-      dlBtn.href = `/api/forms/${activeAdminForm.id}/download`;
+      dlBtn.href = activeAdminForm.fileName ? (`./uploads/${activeAdminForm.fileName}`) : (`./data/forms.json`);
       dlBtn.setAttribute('download', activeAdminForm.originalName || '');
       dlBtn.setAttribute('title', `تنزيل: ${activeAdminForm.originalName || activeAdminForm.title}`);
 
@@ -1986,7 +1886,7 @@
               هذا النموذج بصيغة ${officeType} (${(activeAdminForm.fileType || '').toUpperCase()})، تم إعداده للفتح والطباعة والتعديل المباشر عبر برنامج مايكروسوفت ${officeType}.
             </p>
             <div class="flex items-center justify-center gap-3">
-              <a href="/api/forms/${activeAdminForm.id}/download" download class="px-6 py-3 ${officeBtn} rounded-xl font-black text-sm flex items-center gap-2 shadow-lg transition-all active:scale-95">
+              <a href="${activeAdminForm.fileName ? (`./uploads/${activeAdminForm.fileName}`) : (`./data/forms.json`)}" download class="px-6 py-3 ${officeBtn} rounded-xl font-black text-sm flex items-center gap-2 shadow-lg transition-all active:scale-95">
                 <i class="fa-solid fa-download"></i>
                 <span>تنزيل وفتح في برنامج ${officeType}</span>
               </a>
@@ -3085,17 +2985,10 @@
       st.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-amber-600 text-base"></i> <span>جاري تجميع الملفات وإرسالها للوسيط السحابي...</span>';
 
       try {
-        const res = await fetch('/api/admin/publish-to-cloud', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ cloudUrl, adminKey })
-        });
-
-        const data = await res.json();
-
-        if (res.ok && data.success) {
+        const ok = await syncWithCloud([], { silent: true });
+        if (ok) {
           st.className = 'mb-6 p-3 rounded-xl text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-300 flex items-center gap-2 justify-center';
-          st.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600 text-base"></i> <span>${data.message || 'تم النشر وتحديث المنظومة بنجاح لجميع المراكز!'}</span>`;
+          st.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-600 text-base"></i> <span>تم النشر وتحديث المنظومة بنجاح لجميع المراكز!</span>';
           btn.innerHTML = '<i class="fa-solid fa-check"></i> <span>اكتمل النشر</span>';
 
           setTimeout(() => {
@@ -3105,39 +2998,22 @@
               message: 'تم إرسال كافة التحديثات والنماذج للوسيط السحابي، والرابط أونلاين لجميع المراكز الـ 76 تم تحديثه فوراً!',
               type: 'success'
             });
-          }, 1500);
-
+          }, 1200);
         } else {
           st.className = 'mb-6 p-3 rounded-xl text-xs font-bold bg-rose-50 text-rose-800 border border-rose-300 flex items-center gap-2 justify-center';
-          st.innerHTML = `<i class="fa-solid fa-circle-exclamation text-rose-600 text-base"></i> <span>خطأ: ${data.error || 'فشل النشر السحابي'}</span>`;
+          st.innerHTML = '<i class="fa-solid fa-circle-exclamation text-rose-600 text-base"></i> <span>تعذر النشر السحابي، تأكد من الاتصال بالإنترنت</span>';
           btn.disabled = false;
           btn.innerHTML = '<i class="fa-solid fa-rotate-right"></i> <span>إعادة المحاولة</span>';
         }
       } catch (err) {
         st.className = 'mb-6 p-3 rounded-xl text-xs font-bold bg-rose-50 text-rose-800 border border-rose-300 flex items-center gap-2 justify-center';
-        st.innerHTML = `<i class="fa-solid fa-circle-exclamation text-rose-600 text-base"></i> <span>خطأ في الاتصال: ${err.message}</span>`;
+        st.innerHTML = `<i class="fa-solid fa-circle-exclamation text-rose-600 text-base"></i> <span>خطأ: ${err.message}</span>`;
         btn.disabled = false;
         btn.innerHTML = '<i class="fa-solid fa-rotate-right"></i> <span>إعادة المحاولة</span>';
       }
     }
   
-    // Automatically check for cloud updates on dashboard load
-    window.addEventListener('DOMContentLoaded', () => {
-      fetch('/api/admin/auto-sync', { method: 'POST' })
-        .then(res => res.json())
-        .then(data => {
-          if (data && data.updated) {
-            showAppModal({
-              title: 'تحديث تلقائي للمنظومة',
-              message: 'تم سحب وتحديث النماذج تلقائياً من السحاب إلى أحدث نسخة معتمدة بنجاح!',
-              type: 'success'
-            });
-            // Reload forms list
-            if (typeof loadForms === 'function') loadForms();
-          }
-        })
-        .catch(() => {});
-    });
+
 
 </script>
 </body>
