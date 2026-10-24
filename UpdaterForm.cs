@@ -14,32 +14,35 @@ namespace BasraUpdater
         private Label lblTitle;
         private Label lblSubTitle;
 
-        // Cloud Version Panel
+        // Cloud Version Bar
         private Panel pnlCloud;
         private Label lblCurrentCloudVer;
         private Label lblCloudVerVal;
         private Button btnCheckCloud;
 
-        // File Selection Box
+        // Program Choice GroupBox
+        private GroupBox grpTarget;
+        private RadioButton rbCenters;
+        private RadioButton rbAdmin;
+        private Label lblTargetNotice;
+
+        // File Selection GroupBox
         private GroupBox grpFile;
         private Label lblFilePath;
         private TextBox txtFilePath;
         private Button btnBrowseFile;
-        private Button btnBrowseFolder;
-        private Label lblDestType;
-        private ComboBox cmbDestType;
-        private Label lblFileInfo;
         private Panel pnlDropZone;
         private Label lblDropHint;
+        private Label lblFileValidation;
 
-        // Version & Target Box
+        // Version GroupBox
         private GroupBox grpVer;
         private Label lblNewVer;
         private TextBox txtNewVer;
         private Label lblVerHint;
-        private Label lblValidationMsg;
+        private Label lblVersionValidation;
 
-        // Publish Action
+        // Publish Actions
         private Button btnPublish;
         private Button btnOpenFolder;
         private ProgressBar progressBar;
@@ -51,7 +54,6 @@ namespace BasraUpdater
         private string CLOUD_BACKUP = "https://alichbasi75-dotcom.github.io/basra-forms/version.json";
         private string workspaceDir = @"C:\Users\ali\.gemini\antigravity\scratch\basra_forms_system";
         private string selectedFilePath = "";
-        private bool isDirectory = false;
 
         public MainForm()
         {
@@ -61,8 +63,8 @@ namespace BasraUpdater
 
         private void InitializeComponent()
         {
-            this.Text = "أداة رفع وتحديث منظومة استمارات البصرة - الإصدارات المعتمدة";
-            this.Size = new Size(650, 710);
+            this.Text = "أداة تحديث ورفع منظومة استمارات البصرة (المراكز والمسؤول بشكل منفصل)";
+            this.Size = new Size(670, 750);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
@@ -76,48 +78,48 @@ namespace BasraUpdater
 
             // 1. Header
             lblTitle = new Label();
-            lblTitle.Text = "منظومة استمارات البصرة — مركز التحديث والنشر السحابي";
+            lblTitle.Text = "منظومة استمارات البصرة — أداة التحديث السحابي المنفصل";
             lblTitle.Font = new Font("Segoe UI", 12.5f, FontStyle.Bold);
             lblTitle.ForeColor = Color.FromArgb(15, 23, 42);
             lblTitle.Location = new Point(20, 12);
-            lblTitle.Size = new Size(590, 26);
+            lblTitle.Size = new Size(610, 26);
             this.Controls.Add(lblTitle);
 
             lblSubTitle = new Label();
-            lblSubTitle.Text = "اختر الملف أو الاستمارة المراد تحديثها، وحدد الإصدار الجديد لرفع التعديلات للسحاب فوراً";
+            lblSubTitle.Text = "تحديث برنامج المراكز أو برنامج المسؤول بشكل منفصل تماماً مع التحقق الإلزامي من مطابقة الملفات";
             lblSubTitle.Font = new Font("Segoe UI", 8.5f, FontStyle.Regular);
             lblSubTitle.ForeColor = Color.FromArgb(100, 116, 139);
             lblSubTitle.Location = new Point(20, 38);
-            lblSubTitle.Size = new Size(590, 20);
+            lblSubTitle.Size = new Size(610, 20);
             this.Controls.Add(lblSubTitle);
 
             // 2. Cloud Version Bar
             pnlCloud = new Panel();
-            pnlCloud.Location = new Point(20, 65);
-            pnlCloud.Size = new Size(590, 52);
+            pnlCloud.Location = new Point(20, 62);
+            pnlCloud.Size = new Size(610, 48);
             pnlCloud.BackColor = Color.FromArgb(241, 245, 249);
             pnlCloud.BorderStyle = BorderStyle.FixedSingle;
 
             lblCurrentCloudVer = new Label();
             lblCurrentCloudVer.Text = "الإصدار المرفوع حالياً على المنصة:";
             lblCurrentCloudVer.Font = new Font("Segoe UI", 9.5f, FontStyle.Bold);
-            lblCurrentCloudVer.Location = new Point(310, 14);
-            lblCurrentCloudVer.Size = new Size(260, 25);
+            lblCurrentCloudVer.Location = new Point(320, 12);
+            lblCurrentCloudVer.Size = new Size(270, 24);
             pnlCloud.Controls.Add(lblCurrentCloudVer);
 
             lblCloudVerVal = new Label();
             lblCloudVerVal.Text = "جاري الفحص...";
             lblCloudVerVal.Font = new Font("Segoe UI", 11f, FontStyle.Bold);
             lblCloudVerVal.ForeColor = Color.FromArgb(2, 132, 199);
-            lblCloudVerVal.Location = new Point(100, 13);
-            lblCloudVerVal.Size = new Size(200, 25);
+            lblCloudVerVal.Location = new Point(100, 11);
+            lblCloudVerVal.Size = new Size(210, 24);
             pnlCloud.Controls.Add(lblCloudVerVal);
 
             btnCheckCloud = new Button();
             btnCheckCloud.Text = "تحديث 🔄";
             btnCheckCloud.Font = new Font("Segoe UI", 8.5f, FontStyle.Bold);
-            btnCheckCloud.Location = new Point(10, 10);
-            btnCheckCloud.Size = new Size(80, 30);
+            btnCheckCloud.Location = new Point(10, 8);
+            btnCheckCloud.Size = new Size(80, 28);
             btnCheckCloud.BackColor = Color.White;
             btnCheckCloud.Cursor = Cursors.Hand;
             btnCheckCloud.Click += (s, e) => FetchCloudVersion();
@@ -125,56 +127,83 @@ namespace BasraUpdater
 
             this.Controls.Add(pnlCloud);
 
-            // 3. File Selection GroupBox
+            // 3. Step 1: Program Choice (Strictly Separate: Centers OR Admin)
+            grpTarget = new GroupBox();
+            grpTarget.Text = "1. حدد البرنامج المراد تحديثه حصراً (لا يتم تحديث الاثنين معاً):";
+            grpTarget.Font = new Font("Segoe UI", 9.5f, FontStyle.Bold);
+            grpTarget.ForeColor = Color.FromArgb(30, 41, 59);
+            grpTarget.Location = new Point(20, 118);
+            grpTarget.Size = new Size(610, 105);
+            grpTarget.BackColor = Color.White;
+
+            rbCenters = new RadioButton();
+            rbCenters.Text = "تحديث برنامج مراكز التسجيل فقط (بوابة المراكز الـ 76 — ملف index.html أو الاستمارات)";
+            rbCenters.Location = new Point(20, 25);
+            rbCenters.Size = new Size(570, 24);
+            rbCenters.Font = new Font("Segoe UI", 9.5f, FontStyle.Bold);
+            rbCenters.ForeColor = Color.FromArgb(3, 105, 161);
+            rbCenters.Checked = true;
+            rbCenters.CheckedChanged += (s, e) => OnTargetChanged();
+            grpTarget.Controls.Add(rbCenters);
+
+            rbAdmin = new RadioButton();
+            rbAdmin.Text = "تحديث برنامج المسؤول فقط (لوحة تحكم الإدارة السحابية — ملف admin.html حصراً)";
+            rbAdmin.Location = new Point(20, 52);
+            rbAdmin.Size = new Size(570, 24);
+            rbAdmin.Font = new Font("Segoe UI", 9.5f, FontStyle.Bold);
+            rbAdmin.ForeColor = Color.FromArgb(180, 83, 9);
+            rbAdmin.CheckedChanged += (s, e) => OnTargetChanged();
+            grpTarget.Controls.Add(rbAdmin);
+
+            lblTargetNotice = new Label();
+            lblTargetNotice.Text = "⚠️ إشعار: عند اختيار أحد البرنامجين، يلزمك البرنامج باختيار الملف المتطابق معه حصراً ولا يسمح برفع غيره.";
+            lblTargetNotice.Font = new Font("Segoe UI", 8f);
+            lblTargetNotice.ForeColor = Color.FromArgb(100, 116, 139);
+            lblTargetNotice.Location = new Point(20, 80);
+            lblTargetNotice.Size = new Size(570, 18);
+            grpTarget.Controls.Add(lblTargetNotice);
+
+            this.Controls.Add(grpTarget);
+
+            // 4. Step 2: File Selection & Matching Validation
             grpFile = new GroupBox();
-            grpFile.Text = "1. اختيار الملف أو التحديث المطلوب رفعه";
+            grpFile.Text = "2. اختيار الملف المطلوب وشرط المطابقة الإلزامي:";
             grpFile.Font = new Font("Segoe UI", 9.5f, FontStyle.Bold);
             grpFile.ForeColor = Color.FromArgb(30, 41, 59);
-            grpFile.Location = new Point(20, 128);
-            grpFile.Size = new Size(590, 260);
+            grpFile.Location = new Point(20, 230);
+            grpFile.Size = new Size(610, 220);
             grpFile.BackColor = Color.White;
 
             lblFilePath = new Label();
-            lblFilePath.Text = "مسار الملف المختار:";
+            lblFilePath.Text = "مسار الملف:";
             lblFilePath.Font = new Font("Segoe UI", 8.5f, FontStyle.Regular);
-            lblFilePath.Location = new Point(460, 28);
-            lblFilePath.Size = new Size(115, 20);
+            lblFilePath.Location = new Point(510, 28);
+            lblFilePath.Size = new Size(80, 20);
             grpFile.Controls.Add(lblFilePath);
 
             txtFilePath = new TextBox();
-            txtFilePath.Location = new Point(210, 25);
-            txtFilePath.Size = new Size(245, 26);
+            txtFilePath.Location = new Point(140, 25);
+            txtFilePath.Size = new Size(365, 26);
             txtFilePath.Font = new Font("Segoe UI", 9f);
             txtFilePath.ReadOnly = true;
             txtFilePath.BackColor = Color.FromArgb(248, 250, 252);
             grpFile.Controls.Add(txtFilePath);
 
             btnBrowseFile = new Button();
-            btnBrowseFile.Text = "اختيار ملف 📂";
+            btnBrowseFile.Text = "استعراض واختيار 📂";
             btnBrowseFile.Font = new Font("Segoe UI", 9f, FontStyle.Bold);
-            btnBrowseFile.Location = new Point(110, 23);
-            btnBrowseFile.Size = new Size(95, 30);
+            btnBrowseFile.Location = new Point(15, 23);
+            btnBrowseFile.Size = new Size(120, 30);
             btnBrowseFile.BackColor = Color.FromArgb(224, 242, 254);
             btnBrowseFile.ForeColor = Color.FromArgb(3, 105, 161);
             btnBrowseFile.Cursor = Cursors.Hand;
             btnBrowseFile.Click += BtnBrowseFile_Click;
             grpFile.Controls.Add(btnBrowseFile);
 
-            btnBrowseFolder = new Button();
-            btnBrowseFolder.Text = "مجلد كامل 📁";
-            btnBrowseFolder.Font = new Font("Segoe UI", 8.5f, FontStyle.Bold);
-            btnBrowseFolder.Location = new Point(15, 23);
-            btnBrowseFolder.Size = new Size(90, 30);
-            btnBrowseFolder.BackColor = Color.FromArgb(241, 245, 249);
-            btnBrowseFolder.ForeColor = Color.FromArgb(51, 65, 85);
-            btnBrowseFolder.Cursor = Cursors.Hand;
-            btnBrowseFolder.Click += BtnBrowseFolder_Click;
-            grpFile.Controls.Add(btnBrowseFolder);
-
-            // Drag and drop dropzone
+            // Drag and drop zone
             pnlDropZone = new Panel();
             pnlDropZone.Location = new Point(15, 62);
-            pnlDropZone.Size = new Size(560, 75);
+            pnlDropZone.Size = new Size(575, 75);
             pnlDropZone.BackColor = Color.FromArgb(248, 250, 252);
             pnlDropZone.BorderStyle = BorderStyle.FixedSingle;
             pnlDropZone.AllowDrop = true;
@@ -184,7 +213,7 @@ namespace BasraUpdater
             pnlDropZone.Click += (s, e) => BtnBrowseFile_Click(s, e);
 
             lblDropHint = new Label();
-            lblDropHint.Text = "📥 اسحب وأفلت أي ملف (استمارة Word / Excel / PDF / صفحة HTML) هنا مباشرة\nأو انقر هنا لتصفح واختيار الملف من حاسبتك";
+            lblDropHint.Text = "📥 اسحب وأفلت الملف المطابق هنا مباشرة\n(برنامج المراكز: index.html أو استمارة معتمدة | برنامج المسؤول: admin.html)";
             lblDropHint.TextAlign = ContentAlignment.MiddleCenter;
             lblDropHint.Font = new Font("Segoe UI", 9f, FontStyle.Bold);
             lblDropHint.ForeColor = Color.FromArgb(100, 116, 139);
@@ -196,93 +225,69 @@ namespace BasraUpdater
             pnlDropZone.Controls.Add(lblDropHint);
             grpFile.Controls.Add(pnlDropZone);
 
-            // File Info Label
-            lblFileInfo = new Label();
-            lblFileInfo.Text = "لم يتم اختيار أي ملف بعد (اختياري: يمكنك النشر بدون ملفات جديدة إذا أردت تحديث الإصدار فقط).";
-            lblFileInfo.Font = new Font("Segoe UI", 8.5f, FontStyle.Regular);
-            lblFileInfo.ForeColor = Color.FromArgb(100, 116, 139);
-            lblFileInfo.Location = new Point(15, 142);
-            lblFileInfo.Size = new Size(560, 36);
-            grpFile.Controls.Add(lblFileInfo);
-
-            // Destination Dropdown
-            lblDestType = new Label();
-            lblDestType.Text = "الوجهة المعتمدة للملف داخل المنظومة:";
-            lblDestType.Font = new Font("Segoe UI", 8.5f, FontStyle.Bold);
-            lblDestType.Location = new Point(310, 185);
-            lblDestType.Size = new Size(265, 20);
-            grpFile.Controls.Add(lblDestType);
-
-            cmbDestType = new ComboBox();
-            cmbDestType.DropDownStyle = ComboBoxStyle.DropDownList;
-            cmbDestType.Font = new Font("Segoe UI", 9f);
-            cmbDestType.Location = new Point(15, 210);
-            cmbDestType.Size = new Size(560, 28);
-            cmbDestType.Items.Add("استمارة معتمدة للمراكز — تُنسخ إلى مجلد uploads/ وتتاح للتحميل والطباعة فوراً");
-            cmbDestType.Items.Add("بوابة مراكز التسجيل الـ 76 — ملف index.html و center.html");
-            cmbDestType.Items.Add("لوحة تحكم المسؤول السحابية — ملف admin.html");
-            cmbDestType.Items.Add("قاعدة بيانات النماذج المعتمدة — ملف data/forms.json");
-            cmbDestType.Items.Add("قاعدة بيانات مراكز التسجيل الـ 76 — ملف data/centers.json");
-            cmbDestType.Items.Add("تصنيفات النماذج — ملف data/categories.json");
-            cmbDestType.Items.Add("صور النماذج الممسوحة — مجلد sheets/");
-            cmbDestType.Items.Add("ملف رئيسي في مجلد المنظومة الأساسي");
-            cmbDestType.SelectedIndex = 0;
-            grpFile.Controls.Add(cmbDestType);
+            // Validation Message Display Box
+            lblFileValidation = new Label();
+            lblFileValidation.Text = "⚠️ يرجى اختيار الملف المطابق للبرنامج المحدد أعلاه لتفعيل زر النشر.";
+            lblFileValidation.Font = new Font("Segoe UI", 9f, FontStyle.Bold);
+            lblFileValidation.ForeColor = Color.FromArgb(217, 119, 6);
+            lblFileValidation.Location = new Point(15, 145);
+            lblFileValidation.Size = new Size(575, 65);
+            grpFile.Controls.Add(lblFileValidation);
 
             this.Controls.Add(grpFile);
 
-            // 4. Version GroupBox
+            // 5. Step 3: New Version
             grpVer = new GroupBox();
-            grpVer.Text = "2. تعيين رقم الإصدار الجديد";
+            grpVer.Text = "3. تعيين رقم الإصدار الجديد:";
             grpVer.Font = new Font("Segoe UI", 9.5f, FontStyle.Bold);
             grpVer.ForeColor = Color.FromArgb(30, 41, 59);
-            grpVer.Location = new Point(20, 396);
-            grpVer.Size = new Size(590, 108);
+            grpVer.Location = new Point(20, 458);
+            grpVer.Size = new Size(610, 95);
             grpVer.BackColor = Color.White;
 
             lblNewVer = new Label();
             lblNewVer.Text = "رقم الإصدار الجديد المراد رفعه:";
             lblNewVer.Font = new Font("Segoe UI", 8.5f, FontStyle.Regular);
-            lblNewVer.Location = new Point(380, 28);
-            lblNewVer.Size = new Size(195, 22);
+            lblNewVer.Location = new Point(390, 26);
+            lblNewVer.Size = new Size(200, 22);
             grpVer.Controls.Add(lblNewVer);
 
             txtNewVer = new TextBox();
             txtNewVer.Font = new Font("Segoe UI", 11f, FontStyle.Bold);
-            txtNewVer.Location = new Point(220, 25);
-            txtNewVer.Size = new Size(150, 30);
+            txtNewVer.Location = new Point(230, 23);
+            txtNewVer.Size = new Size(150, 28);
             txtNewVer.TextAlign = HorizontalAlignment.Center;
             txtNewVer.RightToLeft = RightToLeft.No;
-            txtNewVer.TextChanged += (s, e) => ValidateVersion();
+            txtNewVer.TextChanged += (s, e) => ValidateAll();
             grpVer.Controls.Add(txtNewVer);
 
             lblVerHint = new Label();
             lblVerHint.Text = "(يجب أن يكون أكبر من الإصدار السحابي)";
             lblVerHint.Font = new Font("Segoe UI", 8f);
             lblVerHint.ForeColor = Color.FromArgb(148, 163, 184);
-            lblVerHint.Location = new Point(15, 30);
-            lblVerHint.Size = new Size(195, 20);
+            lblVerHint.Location = new Point(15, 28);
+            lblVerHint.Size = new Size(205, 20);
             grpVer.Controls.Add(lblVerHint);
 
-            lblValidationMsg = new Label();
-            lblValidationMsg.Text = "جاري التحقق من رقم الإصدار...";
-            lblValidationMsg.Font = new Font("Segoe UI", 9f, FontStyle.Bold);
-            lblValidationMsg.ForeColor = Color.FromArgb(217, 119, 6);
-            lblValidationMsg.Location = new Point(15, 65);
-            lblValidationMsg.Size = new Size(560, 25);
-            grpVer.Controls.Add(lblValidationMsg);
+            lblVersionValidation = new Label();
+            lblVersionValidation.Text = "جاري التحقق من رقم الإصدار...";
+            lblVersionValidation.Font = new Font("Segoe UI", 8.5f, FontStyle.Bold);
+            lblVersionValidation.ForeColor = Color.FromArgb(217, 119, 6);
+            lblVersionValidation.Location = new Point(15, 60);
+            lblVersionValidation.Size = new Size(575, 24);
+            grpVer.Controls.Add(lblVersionValidation);
 
             this.Controls.Add(grpVer);
 
-            // 5. Actions Area
+            // 6. Action Buttons
             btnPublish = new Button();
-            btnPublish.Text = "🚀 رفع ونشر التحديث إلى السحاب (Vercel & GitHub)";
+            btnPublish.Text = "🚀 رفع ونشر التحديث إلى السحاب (مقفول حتى مطابقة الملف)";
             btnPublish.Font = new Font("Segoe UI", 11f, FontStyle.Bold);
-            btnPublish.Location = new Point(20, 515);
-            btnPublish.Size = new Size(410, 48);
-            btnPublish.BackColor = Color.FromArgb(16, 185, 129);
+            btnPublish.Location = new Point(20, 563);
+            btnPublish.Size = new Size(430, 46);
+            btnPublish.BackColor = Color.FromArgb(148, 163, 184);
             btnPublish.ForeColor = Color.White;
-            btnPublish.Cursor = Cursors.Hand;
+            btnPublish.Cursor = Cursors.Default;
             btnPublish.FlatStyle = FlatStyle.Flat;
             btnPublish.FlatAppearance.BorderSize = 0;
             btnPublish.Enabled = false;
@@ -292,8 +297,8 @@ namespace BasraUpdater
             btnOpenFolder = new Button();
             btnOpenFolder.Text = "📂 مجلد المنظومة";
             btnOpenFolder.Font = new Font("Segoe UI", 9f, FontStyle.Bold);
-            btnOpenFolder.Location = new Point(440, 515);
-            btnOpenFolder.Size = new Size(170, 48);
+            btnOpenFolder.Location = new Point(460, 563);
+            btnOpenFolder.Size = new Size(170, 46);
             btnOpenFolder.BackColor = Color.FromArgb(241, 245, 249);
             btnOpenFolder.ForeColor = Color.FromArgb(51, 65, 85);
             btnOpenFolder.Cursor = Cursors.Hand;
@@ -304,19 +309,37 @@ namespace BasraUpdater
 
             // Progress Bar
             progressBar = new ProgressBar();
-            progressBar.Location = new Point(20, 575);
-            progressBar.Size = new Size(590, 18);
+            progressBar.Location = new Point(20, 617);
+            progressBar.Size = new Size(610, 16);
             progressBar.Visible = false;
             this.Controls.Add(progressBar);
 
             // Status Label
             lblStatus = new Label();
-            lblStatus.Text = "جاهز. حدد الملف المطلوب ورقم الإصدار ثم اضغط رفع ونشر التحديث.";
+            lblStatus.Text = "اختر البرنامج أولاً (المراكز أو المسؤول)، ثم اختر الملف المطابق لتفعيل الرفع.";
             lblStatus.Font = new Font("Segoe UI", 9f, FontStyle.Bold);
             lblStatus.ForeColor = Color.FromArgb(71, 85, 105);
-            lblStatus.Location = new Point(20, 600);
-            lblStatus.Size = new Size(590, 50);
+            lblStatus.Location = new Point(20, 638);
+            lblStatus.Size = new Size(610, 60);
             this.Controls.Add(lblStatus);
+
+            OnTargetChanged();
+        }
+
+        private void OnTargetChanged()
+        {
+            if (rbAdmin.Checked)
+            {
+                lblDropHint.Text = "📥 اسحب وأفلت ملف لوحة المسؤول حصراً:\n(admin.html)";
+                lblDropHint.ForeColor = Color.FromArgb(180, 83, 9);
+            }
+            else
+            {
+                lblDropHint.Text = "📥 اسحب وأفلت ملف برنامج المراكز حصراً:\n(index.html أو استمارة Word/Excel/PDF أو forms.json)";
+                lblDropHint.ForeColor = Color.FromArgb(3, 105, 161);
+            }
+
+            ValidateAll();
         }
 
         private void MainForm_DragEnter(object sender, DragEventArgs e)
@@ -332,104 +355,105 @@ namespace BasraUpdater
             string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
             if (files != null && files.Length > 0)
             {
-                SetSelectedFileOrFolder(files[0]);
+                SetSelectedFile(files[0]);
             }
         }
 
         private void BtnBrowseFile_Click(object sender, EventArgs e)
         {
             OpenFileDialog ofd = new OpenFileDialog();
-            ofd.Title = "اختر ملف التحديث المطلوب رفعه للمنظومة";
-            ofd.Filter = "كافة ملفات التحديث (*.html;*.json;*.xlsx;*.docx;*.pdf;*.png;*.exe)|*.html;*.json;*.xlsx;*.docx;*.pdf;*.png;*.exe|استمارات ونماذج (*.xlsx;*.docx;*.pdf)|*.xlsx;*.docx;*.pdf|صفحات وبرمجة المنظومة (*.html;*.json;*.js)|*.html;*.json;*.js|جميع الملفات (*.*)|*.*";
+
+            if (rbAdmin.Checked)
+            {
+                ofd.Title = "اختر ملف لوحة المسؤول حصراً (admin.html)";
+                ofd.Filter = "ملف لوحة المسؤول (admin.html)|admin.html|صفحات HTML (*.html)|*.html|جميع الملفات (*.*)|*.*";
+            }
+            else
+            {
+                ofd.Title = "اختر ملف برنامج المراكز (index.html أو استمارة معتمدة)";
+                ofd.Filter = "ملفات برنامج المراكز (index.html;*.json;*.xlsx;*.docx;*.pdf)|index.html;center.html;*.json;*.xlsx;*.docx;*.pdf|صفحات HTML (*.html)|*.html|استمارات معتمدة (*.xlsx;*.docx;*.pdf)|*.xlsx;*.docx;*.pdf|جميع الملفات (*.*)|*.*";
+            }
+
             if (ofd.ShowDialog() == DialogResult.OK)
             {
-                SetSelectedFileOrFolder(ofd.FileName);
+                SetSelectedFile(ofd.FileName);
             }
         }
 
-        private void BtnBrowseFolder_Click(object sender, EventArgs e)
-        {
-            FolderBrowserDialog fbd = new FolderBrowserDialog();
-            fbd.Description = "اختر المجلد الذي يحتوي على التحديثات";
-            if (fbd.ShowDialog() == DialogResult.OK)
-            {
-                SetSelectedFileOrFolder(fbd.SelectedPath);
-            }
-        }
-
-        private void SetSelectedFileOrFolder(string path)
+        private void SetSelectedFile(string path)
         {
             selectedFilePath = path;
             txtFilePath.Text = path;
+            ValidateAll();
+        }
 
-            if (Directory.Exists(path))
+        private bool ValidateFileMatch()
+        {
+            if (string.IsNullOrEmpty(selectedFilePath) || !File.Exists(selectedFilePath))
             {
-                isDirectory = true;
-                lblFileInfo.Text = "📁 تم اختيار مجلد تحديثات كامل: " + Path.GetFileName(path) + " (سيتم نسخ محتوياته إلى مجلد المنظومة).";
-                lblFileInfo.ForeColor = Color.FromArgb(3, 105, 161);
-                cmbDestType.SelectedIndex = 7; // Root workspace
+                lblFileValidation.Text = "⚠️ يرجى اختيار الملف المطلوب رفعه أولاً.";
+                lblFileValidation.ForeColor = Color.FromArgb(217, 119, 6);
+                return false;
             }
-            else if (File.Exists(path))
+
+            FileInfo fi = new FileInfo(selectedFilePath);
+            string fname = fi.Name.ToLower();
+            string ext = fi.Extension.ToLower();
+
+            // Case A: User chose to update ADMIN only
+            if (rbAdmin.Checked)
             {
-                isDirectory = false;
-                FileInfo fi = new FileInfo(path);
-                string ext = fi.Extension.ToLower();
-                string name = fi.Name.ToLower();
-
-                double sizeKb = fi.Length / 1024.0;
-                string sizeStr = sizeKb > 1024 ? string.Format("{0:F1} MB", sizeKb / 1024.0) : string.Format("{0:F1} KB", sizeKb);
-
-                // Smart Destination Detection
-                if (name == "admin.html")
+                if (fname == "admin.html")
                 {
-                    cmbDestType.SelectedIndex = 2; // admin.html
-                    lblFileInfo.Text = string.Format("✅ تم التعرف التلقائي: صفحة لوحة تحكم المسؤول ({0}) — سيتم تحديث رابط المسؤول أونلاين فوراً.", sizeStr);
-                    lblFileInfo.ForeColor = Color.FromArgb(16, 185, 129);
-                }
-                else if (name == "index.html" || name == "center.html")
-                {
-                    cmbDestType.SelectedIndex = 1; // index.html
-                    lblFileInfo.Text = string.Format("✅ تم التعرف التلقائي: بوابة مراكز التسجيل الـ 76 ({0}) — سيتم تحديث واجهة المراكز أونلاين فوراً.", sizeStr);
-                    lblFileInfo.ForeColor = Color.FromArgb(16, 185, 129);
-                }
-                else if (name == "forms.json")
-                {
-                    cmbDestType.SelectedIndex = 3; // forms.json
-                    lblFileInfo.Text = string.Format("✅ تم التعرف التلقائي: قاعدة بيانات النماذج ({0}) — سيتم تحديث الاستمارات المعروضة لكافة المراكز.", sizeStr);
-                    lblFileInfo.ForeColor = Color.FromArgb(16, 185, 129);
-                }
-                else if (name == "centers.json")
-                {
-                    cmbDestType.SelectedIndex = 4; // centers.json
-                    lblFileInfo.Text = string.Format("✅ تم التعرف التلقائي: قاعدة بيانات المراكز الـ 76 ({0}) — سيتم تحديث كودات وبيانات المراكز.", sizeStr);
-                    lblFileInfo.ForeColor = Color.FromArgb(16, 185, 129);
-                }
-                else if (name == "categories.json")
-                {
-                    cmbDestType.SelectedIndex = 5; // categories.json
-                    lblFileInfo.Text = string.Format("✅ تم التعرف التلقائي: تصنيفات النماذج ({0}) — سيتم تحديث تصنيفات الاستمارات.", sizeStr);
-                    lblFileInfo.ForeColor = Color.FromArgb(16, 185, 129);
-                }
-                else if (ext == ".xlsx" || ext == ".xls" || ext == ".docx" || ext == ".doc" || ext == ".pdf")
-                {
-                    cmbDestType.SelectedIndex = 0; // uploads/
-                    lblFileInfo.Text = string.Format("✅ تم التعرف التلقائي: استمارة رسمية معتمدة ({0}) — سيتم نسخها إلى uploads/ وإتاحتها للتحميل فوراً للمراكز.", sizeStr);
-                    lblFileInfo.ForeColor = Color.FromArgb(16, 185, 129);
-                }
-                else if (ext == ".png" || ext == ".jpg" || ext == ".jpeg")
-                {
-                    cmbDestType.SelectedIndex = 6; // sheets/
-                    lblFileInfo.Text = string.Format("✅ تم التعرف التلقائي: صورة معاينة استمارة ({0}) — سيتم نسخها إلى sheets/.", sizeStr);
-                    lblFileInfo.ForeColor = Color.FromArgb(16, 185, 129);
+                    lblFileValidation.Text = string.Format("✅ تطابق تام ومؤكد: تم اختيار ملف لوحة المسؤول المعتمد ({0}) بنجاح.\nسيتم تحديث كود لوحة المسؤول السحابية حصراً دون لمس برنامج المراكز.", fi.Name);
+                    lblFileValidation.ForeColor = Color.FromArgb(16, 185, 129);
+                    return true;
                 }
                 else
                 {
-                    cmbDestType.SelectedIndex = 7; // Root
-                    lblFileInfo.Text = string.Format("📄 ملف تم اختياره: {0} ({1}). يرجى التأكد من الوجهة المحددة أدناه.", fi.Name, sizeStr);
-                    lblFileInfo.ForeColor = Color.FromArgb(51, 65, 85);
+                    lblFileValidation.Text = string.Format("🚫 غير مسموح وعدم تطابق! لقد اخترت (تحديث برنامج المسؤول فقط)،\nولكن الملف المختار هو: \"{0}\".\nيجب عليك حصراً اختيار ملف لوحة المسؤول (admin.html).", fi.Name);
+                    lblFileValidation.ForeColor = Color.FromArgb(225, 29, 72);
+                    return false;
                 }
             }
-            ValidateVersion();
+
+            // Case B: User chose to update CENTERS only
+            if (rbCenters.Checked)
+            {
+                if (fname == "admin.html")
+                {
+                    lblFileValidation.Text = "🚫 غير مسموح وعدم تطابق! لقد اخترت (تحديث برنامج المراكز فقط)،\nولكن الملف المختار هو ملف المسؤول (admin.html).\nإذا كنت تريد تحديث المسؤول يرجى تحديد خيار المسؤول أعلاه أولاً.";
+                    lblFileValidation.ForeColor = Color.FromArgb(225, 29, 72);
+                    return false;
+                }
+
+                if (fname == "index.html" || fname == "center.html")
+                {
+                    lblFileValidation.Text = string.Format("✅ تطابق تام ومؤكد: تم اختيار صفحة بوابة مراكز التسجيل الـ 76 ({0}).\nسيتم تحديث واجهة المراكز أونلاين حصراً دون لمس لوحة المسؤول.", fi.Name);
+                    lblFileValidation.ForeColor = Color.FromArgb(16, 185, 129);
+                    return true;
+                }
+                else if (fname == "forms.json" || fname == "centers.json" || fname == "categories.json")
+                {
+                    lblFileValidation.Text = string.Format("✅ تطابق تام: تم اختيار قاعدة بيانات المراكز ({0}).\nسيتم تحديث بيانات المراكز أونلاين فوراً.", fi.Name);
+                    lblFileValidation.ForeColor = Color.FromArgb(16, 185, 129);
+                    return true;
+                }
+                else if (ext == ".xlsx" || ext == ".docx" || ext == ".pdf" || ext == ".png" || ext == ".jpg")
+                {
+                    lblFileValidation.Text = string.Format("✅ تطابق تام: تم اختيار استمارة/ملف معتمد للمراكز ({0}).\nسيتم نسخه لمجلد النماذج ورفعه للمراكز الـ 76 أونلاين.", fi.Name);
+                    lblFileValidation.ForeColor = Color.FromArgb(16, 185, 129);
+                    return true;
+                }
+                else
+                {
+                    lblFileValidation.Text = string.Format("⚠️ تنبيه: الملف \"{0}\" غير معتاد لبرنامج المراكز. الملف المعتمد هو index.html أو ملفات الاستمارات.", fi.Name);
+                    lblFileValidation.ForeColor = Color.FromArgb(217, 119, 6);
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private void FetchCloudVersion()
@@ -482,7 +506,7 @@ namespace BasraUpdater
                         lblCloudVerVal.ForeColor = Color.FromArgb(100, 116, 139);
                         AutoSuggestNextVersion("2.0.0");
                     }
-                    ValidateVersion();
+                    ValidateAll();
                 });
             });
         }
@@ -526,24 +550,22 @@ namespace BasraUpdater
             return 0;
         }
 
-        private void ValidateVersion()
+        private bool ValidateVersionNumber()
         {
             string inputVer = txtNewVer.Text.Trim();
 
             if (string.IsNullOrEmpty(inputVer))
             {
-                lblValidationMsg.Text = "يرجى كتابة رقم الإصدار الجديد (مثال: 2.0.1 أو 2.1.0).";
-                lblValidationMsg.ForeColor = Color.FromArgb(217, 119, 6);
-                btnPublish.Enabled = false;
-                return;
+                lblVersionValidation.Text = "يرجى كتابة رقم الإصدار الجديد (مثال: 2.0.1 أو 2.1.0).";
+                lblVersionValidation.ForeColor = Color.FromArgb(217, 119, 6);
+                return false;
             }
 
             if (!Regex.IsMatch(inputVer, @"^[vV]?\d+(\.\d+)+$"))
             {
-                lblValidationMsg.Text = "صيغة الإصدار غير صالحة. اكتب أرقاماً مفصولة بنقاط (مثل: 2.0.1).";
-                lblValidationMsg.ForeColor = Color.FromArgb(225, 29, 72);
-                btnPublish.Enabled = false;
-                return;
+                lblVersionValidation.Text = "صيغة الإصدار غير صالحة. اكتب أرقاماً مفصولة بنقاط (مثل: 2.0.1).";
+                lblVersionValidation.ForeColor = Color.FromArgb(225, 29, 72);
+                return false;
             }
 
             try
@@ -551,172 +573,165 @@ namespace BasraUpdater
                 int cmp = CompareVersions(inputVer, cloudVersion);
                 if (cmp <= 0)
                 {
-                    lblValidationMsg.Text = string.Format("🚫 غير مسموح: الإصدار ({0}) يجب أن يكون أكبر من الإصدار السحابي الحالي ({1}).", inputVer, cloudVersion);
-                    lblValidationMsg.ForeColor = Color.FromArgb(225, 29, 72);
-                    btnPublish.Enabled = false;
+                    lblVersionValidation.Text = string.Format("🚫 غير مسموح: الإصدار ({0}) يجب أن يكون أكبر من الإصدار السحابي ({1}).", inputVer, cloudVersion);
+                    lblVersionValidation.ForeColor = Color.FromArgb(225, 29, 72);
+                    return false;
                 }
                 else
                 {
-                    lblValidationMsg.Text = string.Format("✅ الإصدار صالح ({0} > {1}). النظام جاهز للرفع والتحديث.", inputVer, cloudVersion);
-                    lblValidationMsg.ForeColor = Color.FromArgb(16, 185, 129);
-                    btnPublish.Enabled = true;
+                    lblVersionValidation.Text = string.Format("✅ الإصدار صالح ({0} > {1}).", inputVer, cloudVersion);
+                    lblVersionValidation.ForeColor = Color.FromArgb(16, 185, 129);
+                    return true;
                 }
             }
             catch
             {
-                lblValidationMsg.Text = "خطأ في مقارنة الإصدارات.";
-                lblValidationMsg.ForeColor = Color.FromArgb(225, 29, 72);
-                btnPublish.Enabled = false;
+                lblVersionValidation.Text = "خطأ في مقارنة الإصدارات.";
+                lblVersionValidation.ForeColor = Color.FromArgb(225, 29, 72);
+                return false;
             }
         }
 
-        private void CopyDirectory(string sourceDir, string destDir)
+        private void ValidateAll()
         {
-            Directory.CreateDirectory(destDir);
-            foreach (string file in Directory.GetFiles(sourceDir))
+            bool fileOk = ValidateFileMatch();
+            bool verOk = ValidateVersionNumber();
+
+            if (fileOk && verOk)
             {
-                string destFile = Path.Combine(destDir, Path.GetFileName(file));
-                File.Copy(file, destFile, true);
+                string targetName = rbAdmin.Checked ? "برنامج المسؤول فقط" : "برنامج المراكز فقط";
+                btnPublish.Enabled = true;
+                btnPublish.BackColor = Color.FromArgb(16, 185, 129);
+                btnPublish.Cursor = Cursors.Hand;
+                btnPublish.Text = "🚀 رفع ونشر التحديث الآن (" + targetName + ")";
+                lblStatus.Text = "جاهز للنشر: الملف مطابق تماماً للبرنامج المختار ورقم الإصدار معتمد.";
+                lblStatus.ForeColor = Color.FromArgb(16, 185, 129);
             }
-            foreach (string subDir in Directory.GetDirectories(sourceDir))
+            else
             {
-                string destSub = Path.Combine(destDir, Path.GetFileName(subDir));
-                CopyDirectory(subDir, destSub);
+                btnPublish.Enabled = false;
+                btnPublish.BackColor = Color.FromArgb(148, 163, 184);
+                btnPublish.Cursor = Cursors.Default;
+                if (!fileOk)
+                {
+                    btnPublish.Text = "🚫 زر الرفع مقفول (الملف المختار غير مطابق للبرنامج المحدد)";
+                    lblStatus.Text = "لا يمكن المتابعة: يجب اختيار الملف المطابق للبرنامج المحدد أعلاه حصراً.";
+                    lblStatus.ForeColor = Color.FromArgb(225, 29, 72);
+                }
+                else
+                {
+                    btnPublish.Text = "🚫 زر الرفع مقفول (رقم الإصدار غير صالح أو ليس أكبر من السحابي)";
+                    lblStatus.Text = "يرجى تحديد رقم إصدار أكبر من الإصدار السحابي الحالي للمتابعة.";
+                    lblStatus.ForeColor = Color.FromArgb(217, 119, 6);
+                }
             }
         }
 
         private void BtnPublish_Click(object sender, EventArgs e)
         {
-            string newVer = txtNewVer.Text.Trim();
-            string destText = cmbDestType.SelectedItem != null ? cmbDestType.SelectedItem.ToString() : "";
-            string fileNameOnly = !string.IsNullOrEmpty(selectedFilePath) ? Path.GetFileName(selectedFilePath) : "بدون ملفات إضافية";
+            if (!ValidateFileMatch() || !ValidateVersionNumber()) return;
 
-            string msg = string.Format(
-                "هل أنت متأكد من رغبتك في رفع ونشر هذا التحديث إلى السحاب؟\n\n" +
-                "• رقم الإصدار الجديد: {0}\n" +
+            string targetName = rbAdmin.Checked ? "برنامج المسؤول فقط (لوحة الإدارة)" : "برنامج مراكز التسجيل فقط (بوابة المراكز)";
+            string newVer = txtNewVer.Text.Trim();
+            string fname = Path.GetFileName(selectedFilePath);
+
+            string confirmMsg = string.Format(
+                "هل أنت متأكد من رغبتك في رفع ونشر هذا التحديث السحابي؟\n\n" +
+                "• الهدف المعتمد: {0}\n" +
                 "• الملف المختار: {1}\n" +
-                "• الوجهة المحددة: {2}\n\n" +
-                "سيتم نشر التحديث تلقائياً وتحديث بوابة المراكز الـ 76 ولوحة المسؤول أونلاين فوراً.",
-                newVer, fileNameOnly, destText
+                "• رقم الإصدار الجديد: {2}\n\n" +
+                "ملاحظة: سيتم تحديث هذا البرنامج فقط حصراً دون المساس بالبرنامج الآخر.",
+                targetName, fname, newVer
             );
 
-            DialogResult confirm = MessageBox.Show(msg, "تأكيد رفع ونشر التحديث السحابي", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-            if (confirm != DialogResult.Yes) return;
+            DialogResult res = MessageBox.Show(confirmMsg, "تأكيد النشر السحابي المنفصل", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            if (res != DialogResult.Yes) return;
 
             btnPublish.Enabled = false;
             btnBrowseFile.Enabled = false;
-            btnBrowseFolder.Enabled = false;
+            rbCenters.Enabled = false;
+            rbAdmin.Enabled = false;
             txtNewVer.Enabled = false;
-            cmbDestType.Enabled = false;
             progressBar.Visible = true;
             progressBar.Style = ProgressBarStyle.Marquee;
 
-            lblStatus.Text = "جاري معالجة الملفات المحددة...";
+            lblStatus.Text = "جاري نسخ الملف المطابق إلى موقعه في المنظومة...";
             lblStatus.ForeColor = Color.FromArgb(2, 132, 199);
 
             try
             {
-                // 1. Process File/Folder Copy if selected
-                if (!string.IsNullOrEmpty(selectedFilePath))
+                string gitAddArgs = "";
+
+                // Case 1: Updating ADMIN ONLY
+                if (rbAdmin.Checked)
                 {
-                    if (isDirectory && Directory.Exists(selectedFilePath))
+                    // Copy to admin.html and public/admin.html
+                    File.Copy(selectedFilePath, Path.Combine(workspaceDir, "admin.html"), true);
+                    File.Copy(selectedFilePath, Path.Combine(workspaceDir, "public", "admin.html"), true);
+                    gitAddArgs = "admin.html public/admin.html version.json";
+                }
+                // Case 2: Updating CENTERS ONLY
+                else
+                {
+                    string ext = Path.GetExtension(selectedFilePath).ToLower();
+                    string name = Path.GetFileName(selectedFilePath).ToLower();
+
+                    if (name == "index.html" || name == "center.html")
                     {
-                        lblStatus.Text = "جاري نسخ مجلد التحديثات إلى مجلد المنظومة...";
-                        CopyDirectory(selectedFilePath, workspaceDir);
+                        File.Copy(selectedFilePath, Path.Combine(workspaceDir, "index.html"), true);
+                        File.Copy(selectedFilePath, Path.Combine(workspaceDir, "public", "index.html"), true);
+                        File.Copy(selectedFilePath, Path.Combine(workspaceDir, "public", "center.html"), true);
+                        gitAddArgs = "index.html public/index.html public/center.html version.json";
                     }
-                    else if (File.Exists(selectedFilePath))
+                    else if (name == "forms.json" || name == "centers.json" || name == "categories.json")
                     {
-                        string fname = Path.GetFileName(selectedFilePath);
-                        lblStatus.Text = "جاري نسخ الملف: " + fname + " إلى موقعه المعتمد...";
-
-                        int destIdx = cmbDestType.SelectedIndex;
-                        switch (destIdx)
-                        {
-                            case 0: // uploads/
-                                string upDir = Path.Combine(workspaceDir, "uploads");
-                                string pubUpDir = Path.Combine(workspaceDir, "public", "uploads");
-                                if (!Directory.Exists(upDir)) Directory.CreateDirectory(upDir);
-                                if (!Directory.Exists(pubUpDir)) Directory.CreateDirectory(pubUpDir);
-                                File.Copy(selectedFilePath, Path.Combine(upDir, fname), true);
-                                File.Copy(selectedFilePath, Path.Combine(pubUpDir, fname), true);
-                                break;
-
-                            case 1: // index.html / center.html
-                                File.Copy(selectedFilePath, Path.Combine(workspaceDir, "index.html"), true);
-                                File.Copy(selectedFilePath, Path.Combine(workspaceDir, "public", "index.html"), true);
-                                File.Copy(selectedFilePath, Path.Combine(workspaceDir, "public", "center.html"), true);
-                                break;
-
-                            case 2: // admin.html
-                                File.Copy(selectedFilePath, Path.Combine(workspaceDir, "admin.html"), true);
-                                File.Copy(selectedFilePath, Path.Combine(workspaceDir, "public", "admin.html"), true);
-                                break;
-
-                            case 3: // data/forms.json
-                                string dataDir = Path.Combine(workspaceDir, "data");
-                                string pubDataDir = Path.Combine(workspaceDir, "public", "data");
-                                if (!Directory.Exists(dataDir)) Directory.CreateDirectory(dataDir);
-                                if (!Directory.Exists(pubDataDir)) Directory.CreateDirectory(pubDataDir);
-                                File.Copy(selectedFilePath, Path.Combine(dataDir, "forms.json"), true);
-                                File.Copy(selectedFilePath, Path.Combine(pubDataDir, "forms.json"), true);
-                                break;
-
-                            case 4: // data/centers.json
-                                string dDir = Path.Combine(workspaceDir, "data");
-                                string pdDir = Path.Combine(workspaceDir, "public", "data");
-                                File.Copy(selectedFilePath, Path.Combine(dDir, "centers.json"), true);
-                                File.Copy(selectedFilePath, Path.Combine(pdDir, "centers.json"), true);
-                                break;
-
-                            case 5: // data/categories.json
-                                string catDir = Path.Combine(workspaceDir, "data");
-                                string pubCatDir = Path.Combine(workspaceDir, "public", "data");
-                                File.Copy(selectedFilePath, Path.Combine(catDir, "categories.json"), true);
-                                File.Copy(selectedFilePath, Path.Combine(pubCatDir, "categories.json"), true);
-                                break;
-
-                            case 6: // sheets/
-                                string shDir = Path.Combine(workspaceDir, "sheets");
-                                string pubShDir = Path.Combine(workspaceDir, "public", "sheets");
-                                if (!Directory.Exists(shDir)) Directory.CreateDirectory(shDir);
-                                if (!Directory.Exists(pubShDir)) Directory.CreateDirectory(pubShDir);
-                                File.Copy(selectedFilePath, Path.Combine(shDir, fname), true);
-                                File.Copy(selectedFilePath, Path.Combine(pubShDir, fname), true);
-                                break;
-
-                            default: // Root
-                                File.Copy(selectedFilePath, Path.Combine(workspaceDir, fname), true);
-                                break;
-                        }
+                        File.Copy(selectedFilePath, Path.Combine(workspaceDir, "data", name), true);
+                        File.Copy(selectedFilePath, Path.Combine(workspaceDir, "public", "data", name), true);
+                        gitAddArgs = "data/" + name + " public/data/" + name + " version.json";
+                    }
+                    else if (ext == ".xlsx" || ext == ".docx" || ext == ".pdf")
+                    {
+                        string up1 = Path.Combine(workspaceDir, "uploads", Path.GetFileName(selectedFilePath));
+                        string up2 = Path.Combine(workspaceDir, "public", "uploads", Path.GetFileName(selectedFilePath));
+                        File.Copy(selectedFilePath, up1, true);
+                        File.Copy(selectedFilePath, up2, true);
+                        gitAddArgs = "uploads/ public/uploads/ version.json";
+                    }
+                    else
+                    {
+                        File.Copy(selectedFilePath, Path.Combine(workspaceDir, Path.GetFileName(selectedFilePath)), true);
+                        gitAddArgs = Path.GetFileName(selectedFilePath) + " version.json";
                     }
                 }
 
                 // 2. Update version.json
-                lblStatus.Text = "جاري تحديث رقم الإصدار في المنظومة...";
+                lblStatus.Text = "جاري تحديث رقم الإصدار في سجل المنظومة...";
                 string vJsonPath = Path.Combine(workspaceDir, "version.json");
                 string vJsonContent = string.Format(
-                    "{{\n  \"version\": \"{0}\",\n  \"updatedAt\": \"{1}\",\n  \"file\": \"{2}\"\n}}",
-                    newVer, DateTime.UtcNow.ToString("o"), fileNameOnly
+                    "{{\n  \"version\": \"{0}\",\n  \"updatedAt\": \"{1}\",\n  \"target\": \"{2}\",\n  \"file\": \"{3}\"\n}}",
+                    newVer, DateTime.UtcNow.ToString("o"), targetName, fname
                 );
                 File.WriteAllText(vJsonPath, vJsonContent);
 
-                // 3. Git Add, Commit and Push
-                lblStatus.Text = "جاري تجهيز التحديثات وإضافتها إلى مستودع السحاب (Git Add)...";
-
-                ProcessStartInfo psiAdd = new ProcessStartInfo("git", "add -A");
+                // 3. Git Add (Specific files only!)
+                lblStatus.Text = "جاري إضافة الملفات المحددة للتحديث (Git Add)...";
+                ProcessStartInfo psiAdd = new ProcessStartInfo("git", "add " + gitAddArgs);
                 psiAdd.WorkingDirectory = workspaceDir;
                 psiAdd.CreateNoWindow = true;
                 psiAdd.UseShellExecute = false;
                 Process.Start(psiAdd).WaitForExit();
 
-                lblStatus.Text = "جاري توثيق التحديث (Git Commit)...";
-                ProcessStartInfo psiCommit = new ProcessStartInfo("git", string.Format("commit -m \"تحديث سحابي إصدار {0}: {1}\"", newVer, fileNameOnly));
+                // 4. Git Commit
+                lblStatus.Text = "جاري توثيق التحديث المنفصل (Git Commit)...";
+                string commitMsg = string.Format("تحديث {0} إلى الإصدار {1}: {2}", targetName, newVer, fname);
+                ProcessStartInfo psiCommit = new ProcessStartInfo("git", string.Format("commit -m \"{0}\"", commitMsg));
                 psiCommit.WorkingDirectory = workspaceDir;
                 psiCommit.CreateNoWindow = true;
                 psiCommit.UseShellExecute = false;
                 Process.Start(psiCommit).WaitForExit();
 
-                lblStatus.Text = "جاري إرسال التحديث إلى GitHub و Vercel (Git Push)...";
+                // 5. Git Push
+                lblStatus.Text = "جاري رفع التحديث السحابي إلى GitHub و Vercel...";
                 ProcessStartInfo psiPush = new ProcessStartInfo("git", "push origin main");
                 psiPush.WorkingDirectory = workspaceDir;
                 psiPush.CreateNoWindow = true;
@@ -728,18 +743,19 @@ namespace BasraUpdater
 
                 if (pPush.ExitCode == 0)
                 {
-                    lblStatus.Text = string.Format("اكتمل الرفع بنجاح! الإصدار الجديد ({0}) منشور الآن لكافة المراكز أونلاين 🚀", newVer);
+                    lblStatus.Text = string.Format("اكتمل الرفع بنجاح! تم تحديث {0} إلى الإصدار ({1}) أونلاين 🚀", targetName, newVer);
                     lblStatus.ForeColor = Color.FromArgb(16, 185, 129);
 
                     MessageBox.Show(
                         string.Format(
                             "تم رفع ونشر التحديث السحابي بنجاح تام! 🚀\n\n" +
-                            "• الإصدار الجديد: {0}\n" +
-                            "• الملف المرفوع: {1}\n\n" +
-                            "تم تحديث منصة السحاب أونلاين لجميع مراكز التسجيل الـ 76 ولوحة المسؤول.",
-                            newVer, fileNameOnly
+                            "• النظام المحدث: {0}\n" +
+                            "• الملف المرفوع: {1}\n" +
+                            "• رقم الإصدار الجديد: {2}\n\n" +
+                            "تم تحديث المنظومة أونلاين فوراً دون التأثير على البرنامج الآخر.",
+                            targetName, fname, newVer
                         ),
-                        "تم التحديث السحابي بنجاح",
+                        "اكتمل التحديث السحابي بنجاح",
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Information
                     );
@@ -748,7 +764,7 @@ namespace BasraUpdater
                 }
                 else
                 {
-                    lblStatus.Text = "حدث خطأ أثناء الاتصال بالسحاب. يرجى التحقق من الإنترنت.";
+                    lblStatus.Text = "حدث خطأ أثناء الاتصال بالسحاب. تأكد من اتصال الإنترنت.";
                     lblStatus.ForeColor = Color.FromArgb(225, 29, 72);
                     MessageBox.Show("تعذر إتمام عملية الرفع السحابي. يرجى التأكد من اتصال الإنترنت وإعادة المحاولة.", "خطأ في الرفع", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
@@ -763,10 +779,10 @@ namespace BasraUpdater
             finally
             {
                 btnBrowseFile.Enabled = true;
-                btnBrowseFolder.Enabled = true;
+                rbCenters.Enabled = true;
+                rbAdmin.Enabled = true;
                 txtNewVer.Enabled = true;
-                cmbDestType.Enabled = true;
-                ValidateVersion();
+                ValidateAll();
             }
         }
 
