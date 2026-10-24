@@ -1,0 +1,3145 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>لوحة تحكم المسؤول | مكتب انتخابات محافظة البصرة</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    body { font-family: 'Cairo', sans-serif; }
+    
+    /* Interactive Sheet Canvas */
+    .sheet-wrapper {
+      position: relative;
+      width: 100%;
+      max-width: 820px;
+      margin: 0 auto 24px auto;
+      background: #fff;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      overflow: visible;
+      transition: width 0.15s ease-out;
+    }
+    .sheet-bg {
+      width: 100%;
+      height: auto;
+      display: block;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    /* Scroll area with high visibility horizontal and vertical scrollbars for wide files */
+    #sheetScrollArea {
+      overflow-x: auto !important;
+      overflow-y: auto !important;
+      scroll-behavior: smooth;
+    }
+    #sheetScrollArea::-webkit-scrollbar {
+      width: 12px;
+      height: 14px;
+    }
+    #sheetScrollArea::-webkit-scrollbar-track {
+      background: #cbd5e1;
+      border-radius: 8px;
+    }
+    #sheetScrollArea::-webkit-scrollbar-thumb {
+      background: #475569;
+      border-radius: 8px;
+      border: 3px solid #cbd5e1;
+    }
+    #sheetScrollArea::-webkit-scrollbar-thumb:hover {
+      background: #1e293b;
+    }
+
+    /* Draggable & Resizable Box */
+    .drag-box {
+      position: absolute;
+      border: 1.5px dashed transparent;
+      background: transparent !important;
+      box-shadow: none;
+      z-index: 30;
+      border-radius: 4px;
+      display: flex;
+      min-width: 30px;
+      min-height: 22px;
+      touch-action: none;
+      transition: border-color 0.15s ease, background 0.15s ease;
+    }
+    .drag-box:hover,
+    .drag-box.is-focused,
+    .drag-box.active {
+      border: 1.5px dashed #2563eb;
+      background: rgba(255, 255, 255, 0.08) !important;
+    }
+
+    /* Floating action bar ABOVE the text box */
+    .drag-bar {
+      position: absolute;
+      top: -24px;
+      right: 0;
+      background: #1e3a8a;
+      color: #fff;
+      padding: 1px 6px;
+      font-size: 11px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      cursor: grab;
+      user-select: none;
+      border-radius: 4px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.15s ease;
+      height: 22px;
+      white-space: nowrap;
+      z-index: 40;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+    }
+    .drag-box:hover .drag-bar,
+    .drag-box.is-focused .drag-bar,
+    .drag-box.active .drag-bar {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .drag-bar:active {
+      cursor: grabbing;
+      background: #d97706;
+    }
+
+    .drag-textarea {
+      flex: 1;
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: transparent !important;
+      padding: 1px 3px;
+      font-family: 'Cairo', 'Traditional Arabic', serif;
+      font-size: 16px;
+      font-weight: 800;
+      color: #000;
+      resize: none;
+      outline: none;
+      line-height: 1.25;
+      overflow: hidden;
+      direction: rtl;
+      text-align: right;
+    }
+    .drag-textarea::placeholder {
+      color: rgba(100, 116, 139, 0.6);
+      font-size: 13px;
+      font-weight: normal;
+    }
+    .drag-box:not(:hover):not(.is-focused) .drag-textarea::placeholder {
+      color: transparent;
+    }
+
+    .resize-handle {
+      position: absolute;
+      bottom: -4px;
+      left: -4px;
+      width: 14px;
+      height: 14px;
+      background: #2563eb;
+      cursor: sw-resize;
+      border-top-right-radius: 4px;
+      border-bottom-left-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 8px;
+      user-select: none;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.15s ease;
+      z-index: 35;
+    }
+    .drag-box:hover .resize-handle,
+    .drag-box.is-focused .resize-handle,
+    .drag-box.active .resize-handle {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .drag-box:hover .resize-handle {
+      background: #f59e0b;
+    }
+  </style>
+  <!-- PDF.js for in-browser sheet rendering -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script>
+    if (window.pdfjsLib) {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    }
+  </script>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col">
+
+  <!-- Admin Login View -->
+  <div id="loginView" class="min-h-screen flex items-center justify-center p-4">
+    <div class="bg-white border-2 border-slate-200 rounded-3xl p-8 max-w-sm w-full shadow-xl text-center">
+      
+      <div class="w-16 h-16 rounded-2xl bg-blue-100 text-blue-600 flex items-center justify-center text-3xl mx-auto mb-4">
+        <i class="fa-solid fa-lock"></i>
+      </div>
+
+      <h2 class="text-xl font-black text-slate-900 mb-1">دخول مسؤول مكتب البصرة</h2>
+      <p class="text-xs text-slate-500 mb-6">خاص بإدارة النماذج ومتابعة تنزيلات ونشاط المراكز الـ 76</p>
+
+      <form onsubmit="handleLogin(event)" class="space-y-4">
+        <div>
+          <input type="password" id="adminPwd" placeholder="كلمة المرور..." required class="w-full bg-slate-50 border-2 border-slate-300 focus:border-blue-500 rounded-xl px-4 py-3 text-center text-sm font-bold text-slate-900 focus:outline-none">
+          <div class="text-[11px] text-slate-400 mt-1">الافتراضية: <code class="font-mono text-blue-600">basra2026</code></div>
+        </div>
+
+        <div id="loginErrMsg" class="hidden text-xs text-rose-600 bg-rose-50 border border-rose-200 p-2 rounded-lg font-bold"></div>
+
+        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-3 px-4 rounded-xl text-sm transition-all shadow-md">
+          دخول لوحة التحكم
+        </button>
+      </form>
+
+      <div class="mt-6 pt-4 border-t border-slate-100">
+        <a href="/center" class="text-xs font-bold text-amber-600 hover:underline">
+          <i class="fa-solid fa-arrow-right ml-1"></i> الانتقال إلى رابط المراكز
+        </a>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Admin Dashboard View -->
+  <div id="dashboardView" class="hidden min-h-screen flex flex-col">
+    
+    <!-- Header -->
+    <header class="bg-white border-b-2 border-slate-200 shadow-sm sticky top-0 z-30">
+      <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center text-xl shadow">
+            <i class="fa-solid fa-user-shield"></i>
+          </div>
+          <div>
+            <h1 class="text-base sm:text-lg font-black text-slate-900">لوحة تحكم المسؤول — مكتب انتخابات محافظة البصرة</h1>
+            <p class="text-xs text-slate-500">إدارة النماذج المعتمدة 2026 ومتابعة نشاط مراكز التسجيل الـ 76</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <!-- Live Cloud Sync Status Pill -->
+          <div id="cloudSyncStatusPill" class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 shadow-sm">
+            <i class="fa-solid fa-cloud-check text-emerald-600"></i>
+            <span>متصل بالسحاب ومزامن</span>
+          </div>
+
+          <!-- Cloud Sync Button -->
+          <button type="button" id="headerCloudSyncBtn" onclick="syncWithCloud([], { silent: false })" class="text-xs bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black px-3.5 py-2 rounded-xl border border-emerald-500 shadow-md flex items-center gap-2 transition-all active:scale-95 cursor-pointer" title="مزامنة وحفظ كافة التعديلات في السحاب لكافة المراكز الـ 76 فوراً">
+            <i class="fa-solid fa-cloud-arrow-up text-sm"></i>
+            <span>مزامنة السحاب ☁️</span>
+          </button>
+
+          <!-- Centers Direct Link -->
+          <a href="./index.html" target="_blank" class="text-xs bg-blue-50 hover:bg-blue-100 text-blue-800 font-bold px-3 py-2 rounded-xl border border-blue-300 flex items-center gap-1.5 transition-colors" title="فتح واجهة مراكز التسجيل الـ 76">
+            <i class="fa-solid fa-building-columns"></i>
+            <span>رابط المراكز (الـ 76)</span>
+          </a>
+
+          <!-- Logout Button -->
+          <button onclick="handleLogout()" class="text-xs bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold px-3 py-2 rounded-xl border border-rose-200 flex items-center gap-1.5 transition-colors" title="تسجيل الخروج من لوحة الإدارة">
+            <i class="fa-solid fa-power-off"></i>
+            <span>خروج</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 py-6 flex-1 w-full">
+      
+      <!-- Top Navigation Tabs (إدارة النماذج / إدارة الأصناف / سجل نشاط المراكز الـ 76) -->
+      <div class="flex flex-wrap items-center gap-2 mb-6 border-b-2 border-slate-200 pb-3">
+        <button id="tabFormsBtn" onclick="switchAdminTab('forms')" class="px-5 py-2.5 rounded-2xl font-black text-sm bg-blue-600 text-white shadow-md transition-all flex items-center gap-2">
+          <i class="fa-solid fa-folder-open"></i>
+          <span>إدارة النماذج المعتمدة (<span id="adminTotalCount">22</span>)</span>
+        </button>
+
+        <button id="tabCategoriesBtn" onclick="switchAdminTab('categories')" class="px-5 py-2.5 rounded-2xl font-black text-sm bg-slate-200 hover:bg-slate-300 text-slate-700 transition-all flex items-center gap-2">
+          <i class="fa-solid fa-tags text-amber-600"></i>
+          <span>إدارة الأصناف والتصنيفات (<span id="adminCategoriesCount">4</span>)</span>
+        </button>
+
+        <button id="tabActivityBtn" onclick="switchAdminTab('activity')" class="px-5 py-2.5 rounded-2xl font-black text-sm bg-slate-200 hover:bg-slate-300 text-slate-700 transition-all flex items-center gap-2">
+          <i class="fa-solid fa-chart-line text-blue-600"></i>
+          <span>سجل نشاط وتنزيلات المراكز الـ 76</span>
+          <span id="activityBadgeCount" class="bg-blue-600 text-white text-[11px] px-2 py-0.5 rounded-full font-bold">0</span>
+        </button>
+      </div>
+
+      <!-- ================= SECTION 1: FORMS MANAGEMENT TAB ================= -->
+      <section id="adminFormsTabSection">
+        <!-- Top Actions Bar -->
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 mb-6">
+          <div>
+            <button onclick="openAddModal()" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-500 text-white font-black text-sm py-3 px-5 rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20 transition-all active:scale-95">
+              <i class="fa-solid fa-plus-circle text-base"></i>
+              <span>إضافة نموذج جديد وتعميمه على المراكز</span>
+            </button>
+          </div>
+
+          <div class="text-xs text-slate-500 bg-white border border-slate-200 px-4 py-2.5 rounded-xl shadow-sm flex items-center gap-2">
+            <i class="fa-solid fa-shield-halved text-blue-600"></i>
+            <span>النماذج الحالية مصفاة ومطابقة لملفات مكتب البصرة 2026 الأصلية</span>
+          </div>
+        </div>
+
+        <!-- تصفية العرض: الكل / الظاهرة فقط / المخفية فقط -->
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-4 bg-slate-100/90 p-2 sm:p-2.5 rounded-2xl border border-slate-200">
+          <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
+            <span class="text-xs font-bold text-slate-500 mr-1 flex items-center gap-1">
+              <i class="fa-solid fa-filter text-blue-600"></i>
+              <span>تصفية العرض:</span>
+            </span>
+
+            <button type="button" onclick="setFormsVisibilityFilter('all')" id="filterBtnAll" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-black transition-all bg-blue-600 text-white shadow-sm flex items-center gap-1.5">
+              <span>عرض الكل</span>
+              <span id="countAllForms" class="bg-white/20 text-white px-2 py-0.5 rounded-full text-[11px] font-mono">0</span>
+            </button>
+
+            <button type="button" onclick="setFormsVisibilityFilter('visible')" id="filterBtnVisible" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span>
+              <span>الظاهرة للمراكز فقط</span>
+              <span id="countVisibleForms" class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full text-[11px] font-mono font-bold">0</span>
+            </button>
+
+            <button type="button" onclick="setFormsVisibilityFilter('hidden')" id="filterBtnHidden" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block"></span>
+              <span>المخفية فقط</span>
+              <span id="countHiddenForms" class="bg-rose-100 text-rose-800 px-2 py-0.5 rounded-full text-[11px] font-mono font-bold">0</span>
+            </button>
+          </div>
+
+          <!-- دلالات الألوان في الجدول -->
+          <div class="flex items-center gap-3 text-xs font-bold text-slate-700 px-2">
+            <span class="flex items-center gap-1.5">
+              <span class="w-4 h-4 rounded-md bg-emerald-200 border-2 border-emerald-600 inline-block shadow-sm"></span>
+              <span>أخضر: ظاهر للمراكز</span>
+            </span>
+            <span class="flex items-center gap-1.5">
+              <span class="w-4 h-4 rounded-md bg-red-200 border-2 border-red-600 inline-block shadow-sm"></span>
+              <span>أحمر: مخفي ومتوقف مؤقتاً</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- Forms Table -->
+        <div class="bg-white border-2 border-slate-200 rounded-3xl overflow-hidden shadow-sm">
+          <div class="overflow-x-auto">
+            <table class="w-full text-right text-xs sm:text-sm">
+              <thead class="bg-slate-50 border-b border-slate-200 text-slate-600 font-black">
+                <tr>
+                  <th class="p-3.5">اسم النموذج المعتمد</th>
+                  <th class="p-3.5">الصيغة</th>
+                  <th class="p-3.5">التصنيف</th>
+                  <th class="p-3.5">الحجم</th>
+                  <th class="p-3.5">التنزيلات</th>
+                  <th class="p-3.5 text-center">العمليات والتحكم</th>
+                </tr>
+              </thead>
+              <tbody id="adminFormsBody" class="divide-y divide-slate-100">
+                <!-- Rendered via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SECTION 2: CATEGORIES MANAGEMENT TAB ================= -->
+      <section id="adminCategoriesTabSection" class="hidden space-y-6">
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+          <div>
+            <button onclick="openAddCategoryModal()" class="w-full sm:w-auto bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-sm py-3 px-5 rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 transition-all active:scale-95">
+              <i class="fa-solid fa-plus-circle text-base"></i>
+              <span>إضافة صنف وتصنيف جديد</span>
+            </button>
+          </div>
+          <div class="text-xs text-slate-500 bg-white border border-slate-200 px-4 py-2.5 rounded-xl shadow-sm flex items-center gap-2">
+            <i class="fa-solid fa-tags text-amber-600"></i>
+            <span>تتيح لك إدارة الأصناف تعديل وإضافة وحذف تصنيفات النماذج التي تظهر في الواجهة الرئيسية للمراكز</span>
+          </div>
+        </div>
+
+        <div class="bg-white border-2 border-slate-200 rounded-3xl overflow-hidden shadow-sm">
+          <div class="overflow-x-auto">
+            <table class="w-full text-right text-xs sm:text-sm">
+              <thead class="bg-slate-50 border-b border-slate-200 text-slate-600 font-black">
+                <tr>
+                  <th class="p-4">اسم الصنف والتصنيف</th>
+                  <th class="p-4 text-center">عدد النماذج المرتبطة</th>
+                  <th class="p-4 text-center">العمليات</th>
+                </tr>
+              </thead>
+              <tbody id="adminCategoriesBody" class="divide-y divide-slate-100">
+                <!-- Rendered via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SECTION 3: CENTERS ACTIVITY & AUDIT LOG TAB ================= -->
+      <section id="adminActivityTabSection" class="hidden space-y-6">
+        
+        <!-- Metrics Summary Cards -->
+        <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+          <!-- Total Downloads -->
+          <div class="bg-white border-2 border-emerald-100 rounded-2xl p-4 shadow-sm flex items-center gap-3">
+            <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl shrink-0">
+              <i class="fa-solid fa-download"></i>
+            </div>
+            <div>
+              <div class="text-xs font-bold text-slate-500">إجمالي التنزيلات</div>
+              <div id="statDownloads" class="text-xl sm:text-2xl font-black text-emerald-700">0</div>
+            </div>
+          </div>
+
+          <!-- Total Views -->
+          <div class="bg-white border-2 border-blue-100 rounded-2xl p-4 shadow-sm flex items-center gap-3">
+            <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl shrink-0">
+              <i class="fa-regular fa-eye"></i>
+            </div>
+            <div>
+              <div class="text-xs font-bold text-slate-500">إجمالي العرض</div>
+              <div id="statViews" class="text-xl sm:text-2xl font-black text-blue-700">0</div>
+            </div>
+          </div>
+
+          <!-- Total Prints -->
+          <div class="bg-white border-2 border-purple-100 rounded-2xl p-4 shadow-sm flex items-center gap-3">
+            <div class="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-xl shrink-0">
+              <i class="fa-solid fa-print"></i>
+            </div>
+            <div>
+              <div class="text-xs font-bold text-slate-500">عمليات الطباعة</div>
+              <div id="statPrints" class="text-xl sm:text-2xl font-black text-purple-700">0</div>
+            </div>
+          </div>
+
+          <!-- Total Office Opens -->
+          <div class="bg-white border-2 border-amber-100 rounded-2xl p-4 shadow-sm flex items-center gap-3">
+            <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl shrink-0">
+              <i class="fa-solid fa-file-export"></i>
+            </div>
+            <div>
+              <div class="text-xs font-bold text-slate-500">فتح عبر Office</div>
+              <div id="statOffice" class="text-xl sm:text-2xl font-black text-amber-700">0</div>
+            </div>
+          </div>
+
+          <!-- Active Centers -->
+          <div class="col-span-2 sm:col-span-1 bg-white border-2 border-blue-200 bg-blue-50/40 rounded-2xl p-4 shadow-sm flex items-center gap-3">
+            <div class="w-12 h-12 rounded-xl bg-blue-600 text-white flex items-center justify-center text-xl shrink-0">
+              <i class="fa-solid fa-building-columns"></i>
+            </div>
+            <div>
+              <div class="text-xs font-bold text-slate-600">المراكز المتفاعلة</div>
+              <div class="text-xl sm:text-2xl font-black text-blue-900"><span id="statActiveCenters">0</span> <span class="text-xs text-slate-500 font-normal">/ 76</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filter & Search Controls -->
+        <div class="bg-white border-2 border-slate-200 rounded-2xl p-4 shadow-sm space-y-3">
+          <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+            
+            <div class="flex flex-1 flex-wrap items-center gap-2">
+              <!-- Filter by Center -->
+              <div class="w-full sm:w-64">
+                <label class="block text-[11px] font-bold text-slate-500 mb-1">تصفية حسب مركز التسجيل (76 مركز):</label>
+                <select id="activityCenterFilter" onchange="filterActivityLogs()" class="w-full bg-slate-50 border-2 border-slate-200 focus:border-blue-500 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 focus:outline-none">
+                  <option value="all">كل مراكز التسجيل (الـ 76)</option>
+                  <!-- Populated dynamically via JS -->
+                </select>
+              </div>
+
+              <!-- Filter by Action -->
+              <div class="w-full sm:w-48">
+                <label class="block text-[11px] font-bold text-slate-500 mb-1">نوع الإجراء:</label>
+                <select id="activityActionFilter" onchange="filterActivityLogs()" class="w-full bg-slate-50 border-2 border-slate-200 focus:border-blue-500 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 focus:outline-none">
+                  <option value="all">جميع العمليات</option>
+                  <option value="download">📥 تنزيل النموذج الأصلي</option>
+                  <option value="view">👁️ عرض ومعاينة النموذج</option>
+                  <option value="print">🖨️ طباعة النموذج A4</option>
+                  <option value="office">📄 فتح عبر تطبيق Office</option>
+                </select>
+              </div>
+
+              <!-- Search Text Input -->
+              <div class="flex-1 min-w-[200px]">
+                <label class="block text-[11px] font-bold text-slate-500 mb-1">بحث سريع:</label>
+                <input type="text" id="activitySearchInput" oninput="filterActivityLogs()" placeholder="ابحث برقم المركز، اسم المركز، أو اسم النموذج..." class="w-full bg-slate-50 border-2 border-slate-200 focus:border-blue-500 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none">
+              </div>
+            </div>
+
+            <!-- Action buttons -->
+            <div class="flex items-end gap-2 pt-2 sm:pt-4">
+              <button onclick="loadAdminActivity()" class="bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5 border border-blue-200 transition-colors" title="تحديث السجل الآن">
+                <i class="fa-solid fa-arrows-rotate"></i>
+                <span>تحديث</span>
+              </button>
+              <button onclick="clearActivityLogsTable()" class="bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5 border border-rose-200 transition-colors shadow-sm" title="حذف وتصفير جميع بيانات وسجلات الجدول بالكامل">
+                <i class="fa-solid fa-trash-can"></i>
+                <span>حذف الجدول</span>
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Activity Audit Table -->
+        <div class="bg-white border-2 border-slate-200 rounded-3xl overflow-hidden shadow-sm">
+          <div class="p-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <i class="fa-solid fa-clock-rotate-left text-blue-600 text-base"></i>
+              <h3 class="font-black text-slate-900 text-sm sm:text-base">سجل العمليات والتدقيق لمراكز التسجيل</h3>
+            </div>
+            <div class="text-xs font-bold text-slate-500">
+              عدد السجلات المعروضة: <span id="filteredLogsCount" class="text-blue-700 font-black">0</span>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto max-h-[550px] overflow-y-auto">
+            <table class="w-full text-right text-xs sm:text-sm">
+              <thead class="bg-slate-100 border-b border-slate-200 text-slate-700 font-black sticky top-0 z-10 shadow-sm">
+                <tr>
+                  <th class="p-3.5">الوقت والتاريخ (بغداد)</th>
+                  <th class="p-3.5">رمز المركز</th>
+                  <th class="p-3.5">اسم مركز التسجيل</th>
+                  <th class="p-3.5">النموذج المعني</th>
+                  <th class="p-3.5 text-center">نوع الإجراء</th>
+                </tr>
+              </thead>
+              <tbody id="activityLogsBody" class="divide-y divide-slate-100">
+                <!-- Populated via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Top Active Centers Leaderboard -->
+        <div class="bg-white border-2 border-slate-200 rounded-3xl p-5 shadow-sm">
+          <h4 class="font-black text-slate-900 text-sm mb-3 flex items-center gap-2">
+            <i class="fa-solid fa-ranking-star text-amber-500"></i>
+            <span>ترتيب المراكز الأكثر تفاعلاً وتنزيلاً للنماذج الرسمية</span>
+          </h4>
+          <div id="topCentersContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+            <!-- Populated via JS -->
+          </div>
+        </div>
+
+      </section>
+
+    </main>
+
+  </div>
+
+  <!-- Interactive Form Viewer with Multi-page scrolling & Draggable Text Boxes (مطابق لما يراه موظف المركز) -->
+  <div id="viewModal" class="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-sm hidden flex items-center justify-center p-2 sm:p-3">
+    <div class="bg-white border-2 border-slate-300 rounded-3xl max-w-5xl w-full h-[96vh] flex flex-col overflow-hidden shadow-2xl">
+      
+      <!-- Top Action Toolbar -->
+      <div class="bg-blue-600 text-white px-4 py-3 flex flex-wrap items-center justify-between gap-3 border-b border-blue-700">
+        
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-white text-blue-700 flex items-center justify-center text-sm shadow">
+            <i class="fa-solid fa-file-invoice"></i>
+          </div>
+          <div>
+            <h3 id="viewModalTitle" class="text-sm sm:text-base font-black line-clamp-1">عرض النموذج الأصلي</h3>
+            <p class="text-[11px] font-bold text-blue-100">معاينة النموذج الرسمي الأصلي مع إمكانية الكتابة والتمرير لكل الصفحات</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          
+          <!-- 🔄 تدوير الصورة والتحكم بالتكبير والتصغير -->
+          <div class="flex items-center bg-slate-900/30 rounded-xl p-0.5 gap-1 text-white text-xs font-bold border border-slate-900/20">
+            <button type="button" onclick="rotateCurrentSheetAdmin()" id="rotateSheetBtnAdmin" class="px-3 py-1.5 rounded-lg bg-white/20 hover:bg-white/30 text-white font-black flex items-center gap-1.5 transition-all shadow-sm active:scale-95" title="تدوير الصفحة / الصورة 90 درجة">
+              <i class="fa-solid fa-rotate text-amber-300 text-sm"></i>
+              <span>تدوير الصورة</span>
+              <span id="rotationAngleBadgeAdmin" class="text-[10px] bg-amber-400 text-slate-950 font-mono font-bold px-1 rounded hidden">90°</span>
+            </button>
+            <button type="button" onclick="adjustSheetZoomAdmin(-150)" class="w-7 h-7 rounded-lg bg-white/20 hover:bg-white/30 flex items-center justify-center font-black text-sm" title="تصغير العرض">-</button>
+            <span id="zoomPercentBadgeAdmin" class="text-[11px] font-mono px-1 font-bold text-white">100%</span>
+            <button type="button" onclick="adjustSheetZoomAdmin(150)" class="w-7 h-7 rounded-lg bg-white/20 hover:bg-white/30 flex items-center justify-center font-black text-sm" title="تكبير العرض">+</button>
+          </div>
+
+          <!-- ➕ زر إضافة مربع نص -->
+          <button id="addBoxModalBtnAdmin" onclick="addDraggableBoxToCurrentPage()" class="bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs sm:text-sm px-4 py-2 rounded-xl flex items-center gap-2 shadow-md transition-all active:scale-95">
+            <i class="fa-solid fa-plus-circle text-base"></i>
+            <span>إضافة مربع نص جديد</span>
+          </button>
+
+          <!-- 🖨️ طباعة النموذج A4 لجميع الصفحات -->
+          <button onclick="printAllPagesWithBoxes()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs sm:text-sm px-4 py-2 rounded-xl flex items-center gap-2 shadow-md transition-all active:scale-95">
+            <i class="fa-solid fa-print text-base"></i>
+            <span>طباعة النموذج A4</span>
+          </button>
+
+          <!-- 📥 تنزيل الملف الأصلي باختيار موقع الحفظ -->
+          <button type="button" id="viewDownloadBtn" onclick="handleAdminModalDownload()" class="bg-white hover:bg-slate-100 text-slate-800 font-bold text-xs px-3 py-2 rounded-xl flex items-center gap-1.5 shadow-sm border border-slate-300" title="تنزيل الملف واختيار موقع الحفظ">
+            <i class="fa-solid fa-download text-blue-600"></i>
+            <span>تنزيل</span>
+          </button>
+
+          <!-- إغلاق النافذة -->
+          <button type="button" onclick="closeViewModal()" class="bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white font-black text-xs sm:text-sm px-4 py-2 rounded-xl flex items-center gap-1.5 shadow-md hover:shadow-lg transition-all active:scale-95 border border-red-400/40 cursor-pointer" title="إغلاق النافذة">
+            <i class="fa-solid fa-xmark text-base"></i>
+            <span>إغلاق</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick Guidance Bar -->
+      <div class="bg-blue-50 border-b border-blue-200 px-4 py-1.5 text-xs text-blue-900 flex items-center justify-between">
+        <div class="flex items-center gap-2 font-bold" id="adminModalTipContainer">
+          <i class="fa-solid fa-lightbulb text-amber-500" id="adminModalTipIcon"></i>
+          <span id="adminModalTipText">💡 يمكنك التمرير لجميع الصفحات، وإضافة وسحب مربعات النص بحرية وطباعتها بدقة 100%.</span>
+          <span id="adminScrollNoticeBadge" class="hidden bg-blue-100 text-blue-800 border border-blue-300 px-2 py-0.5 rounded-lg font-bold text-[11px]"><i class="fa-solid fa-arrows-left-right ml-1"></i> شريط التمرير العرضي مفعّل بالأسفل</span>
+        </div>
+        <div class="flex items-center gap-3 text-[11px] text-slate-600">
+          <span>عدد الصفحات: <strong id="pagesCountBadge" class="text-blue-700 font-bold">1</strong></span>
+          <span id="adminBoxesCountWrap">عدد المربعات المضافة: <strong id="boxesCountBadge" class="text-blue-700 font-bold">0</strong></span>
+        </div>
+      </div>
+
+      <!-- Interactive Multi-page Canvas Area -->
+      <div class="flex-1 bg-slate-200 overflow-auto p-4 flex flex-col items-center select-none" id="sheetScrollArea">
+        <!-- Rendered page wrappers dynamically via JS -->
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Add New Form Modal -->
+  <div id="addModal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden flex items-center justify-center p-3 sm:p-4">
+    <div class="bg-white border border-slate-300 rounded-3xl max-w-lg w-full shadow-2xl flex flex-col max-h-[85vh] overflow-hidden my-auto">
+      <div class="bg-blue-600 text-white p-4 flex items-center justify-between shrink-0">
+        <h3 class="font-black text-sm sm:text-base flex items-center gap-2">
+          <i class="fa-solid fa-plus-circle"></i>
+          إضافة نموذج جديد وتعميمه على المراكز
+        </h3>
+        <button type="button" onclick="closeAddModal()" class="bg-red-500 hover:bg-red-600 text-white font-black text-xs px-3.5 py-1.5 rounded-xl flex items-center gap-1.5 shadow transition-all active:scale-95 border border-red-300" title="إغلاق">
+          <i class="fa-solid fa-xmark text-sm"></i>
+          <span>إغلاق</span>
+        </button>
+      </div>
+
+      <form id="addForm" onsubmit="submitAddForm(event)" class="flex flex-col flex-1 min-h-0">
+        <div class="p-5 space-y-4 text-xs sm:text-sm overflow-y-auto flex-1">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">اسم النموذج أو الكتاب الرسمي *</label>
+            <input type="text" id="addTitle" required placeholder="مثال: استمارة طلب إجازة اعتيادية جديدة" class="w-full bg-slate-50 border-2 border-slate-200 focus:border-blue-500 rounded-xl px-3 py-2 text-slate-900 font-semibold focus:outline-none">
+          </div>
+
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">التصنيف التابع له *</label>
+            <select id="addCategory" required class="w-full bg-slate-50 border-2 border-slate-200 focus:border-blue-500 rounded-xl px-3 py-2 text-slate-900 font-semibold focus:outline-none">
+              <option value="leaves">الإجازات والدوام والمباشرات</option>
+              <option value="cards">البطاقات المفقودة وبلاغات المحكمة</option>
+              <option value="reports">التقارير وسجلات الحضور</option>
+              <option value="samples">عينات توضيحية استرشادية</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">ملاحظة أو توجيه بسيط للموظف</label>
+            <input type="text" id="addDesc" placeholder="مثال: ترسل بالبريد الرسمي لمكتب انتخابات البصرة" class="w-full bg-slate-50 border-2 border-slate-200 focus:border-blue-500 rounded-xl px-3 py-2 text-slate-900 focus:outline-none">
+          </div>
+
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">اختر ملف النموذج (Word / Excel / PDF / صورة) *</label>
+            <input type="file" id="addFile" required accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg" class="w-full bg-slate-50 border-2 border-dashed border-slate-300 rounded-xl p-3 text-slate-700 text-xs">
+          </div>
+
+          <div id="addStatusMsg" class="hidden text-xs p-2 rounded-lg text-center font-bold"></div>
+        </div>
+
+        <div class="p-4 bg-slate-50 border-t border-slate-200 flex justify-end gap-2 shrink-0">
+          <button type="button" onclick="closeAddModal()" class="px-5 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl font-bold transition-all">إلغاء</button>
+          <button type="submit" id="addSubmitBtn" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-black shadow-md transition-all active:scale-95">حفظ وإضافة</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit Form Modal -->
+  <div id="editModal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden flex items-center justify-center p-3 sm:p-4">
+    <div class="bg-white border border-slate-300 rounded-3xl max-w-lg w-full shadow-2xl flex flex-col max-h-[85vh] overflow-hidden my-auto">
+      <div class="bg-amber-500 text-slate-950 p-4 flex items-center justify-between shrink-0">
+        <h3 class="font-black text-sm sm:text-base flex items-center gap-2">
+          <i class="fa-solid fa-pen-to-square"></i>
+          تعديل بيانات النموذج
+        </h3>
+        <button type="button" onclick="closeEditModal()" class="bg-red-600 hover:bg-red-700 text-white font-black text-xs px-3.5 py-1.5 rounded-xl flex items-center gap-1.5 shadow transition-all active:scale-95 border border-red-400" title="إغلاق">
+          <i class="fa-solid fa-xmark text-sm"></i>
+          <span>إغلاق</span>
+        </button>
+      </div>
+
+      <form id="editForm" onsubmit="submitEditForm(event)" class="flex flex-col flex-1 min-h-0">
+        <div class="p-5 space-y-4 text-xs sm:text-sm overflow-y-auto flex-1">
+          <input type="hidden" id="editFormId">
+
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">اسم النموذج *</label>
+            <input type="text" id="editTitle" required class="w-full bg-slate-50 border-2 border-slate-200 focus:border-amber-500 rounded-xl px-3 py-2 text-slate-900 font-semibold focus:outline-none">
+          </div>
+
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">التصنيف *</label>
+            <select id="editCategory" required class="w-full bg-slate-50 border-2 border-slate-200 focus:border-amber-500 rounded-xl px-3 py-2 text-slate-900 font-semibold focus:outline-none">
+              <option value="leaves">الإجازات والدوام والمباشرات</option>
+              <option value="cards">البطاقات المفقودة وبلاغات المحكمة</option>
+              <option value="reports">التقارير وسجلات الحضور</option>
+              <option value="samples">عينات توضيحية استرشادية</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">الملاحظة أو الوصف</label>
+            <input type="text" id="editDesc" class="w-full bg-slate-50 border-2 border-slate-200 focus:border-amber-500 rounded-xl px-3 py-2 text-slate-900 focus:outline-none">
+          </div>
+
+          <!-- خيار إخفاء النموذج مؤقتاً عن المراكز -->
+          <div class="bg-amber-50/80 border-2 border-amber-200 rounded-2xl p-3.5 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <span class="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 border border-amber-200 flex items-center justify-center text-lg shrink-0">
+                <i class="fa-solid fa-eye-slash"></i>
+              </span>
+              <div>
+                <div class="font-bold text-slate-900 text-xs sm:text-sm">إخفاء النموذج عن المراكز مؤقتاً</div>
+                <div class="text-[11px] text-slate-500">في حال توقف العمل به مؤقتاً، سيتم حجب ظهوره في شاشات المراكز الـ 76</div>
+              </div>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" id="editFormHidden" class="sr-only peer">
+              <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600"></div>
+            </label>
+          </div>
+
+          <div id="editStatusMsg" class="hidden text-xs p-2 rounded-lg text-center font-bold"></div>
+        </div>
+
+        <div class="p-4 bg-slate-50 border-t border-slate-200 flex justify-end gap-2 shrink-0">
+          <button type="button" onclick="closeEditModal()" class="px-5 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl font-bold transition-all">إلغاء</button>
+          <button type="submit" id="editSubmitBtn" class="px-6 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-xl font-black shadow-md transition-all active:scale-95">حفظ التعديلات</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Add Category Modal -->
+  <div id="addCategoryModal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden flex items-center justify-center p-3 sm:p-4">
+    <div class="bg-white border border-slate-300 rounded-3xl max-w-md w-full shadow-2xl flex flex-col max-h-[85vh] overflow-hidden my-auto">
+      <div class="bg-amber-500 text-slate-950 p-4 flex items-center justify-between shrink-0">
+        <h3 class="font-black text-sm sm:text-base flex items-center gap-2">
+          <i class="fa-solid fa-tags"></i>
+          إضافة صنف وتصنيف جديد
+        </h3>
+        <button type="button" onclick="closeAddCategoryModal()" class="bg-red-600 hover:bg-red-700 text-white font-black text-xs px-3.5 py-1.5 rounded-xl flex items-center gap-1.5 shadow transition-all active:scale-95 border border-red-400" title="إغلاق">
+          <i class="fa-solid fa-xmark text-sm"></i>
+          <span>إغلاق</span>
+        </button>
+      </div>
+
+      <form id="addCategoryForm" onsubmit="submitAddCategory(event)" class="flex flex-col flex-1 min-h-0">
+        <div class="p-5 space-y-4 text-xs sm:text-sm overflow-y-auto flex-1">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">اسم الصنف أو التبويب *</label>
+            <input type="text" id="addCategoryName" required placeholder="مثال: المخازن والتجهيزات اللوجستية" class="w-full bg-slate-50 border-2 border-slate-200 focus:border-amber-500 rounded-xl px-3 py-2 text-slate-900 font-semibold focus:outline-none">
+          </div>
+
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">الرمز المعرّف (ID بالإنجليزي أو يُترك تلقائياً)</label>
+            <input type="text" id="addCategoryId" placeholder="مثال: logistics (أو اتركه فارغاً لتوليده تلقائياً)" class="w-full bg-slate-50 border-2 border-slate-200 focus:border-amber-500 rounded-xl px-3 py-2 text-slate-900 font-mono text-xs focus:outline-none">
+          </div>
+
+          <!-- اختيار أيقونة الصنف بصرياً بشكلها -->
+          <div>
+            <label class="block font-bold text-slate-700 mb-1 flex items-center justify-between">
+              <span>شكل أيقونة الصنف *</span>
+              <span class="text-[11px] text-slate-400 font-normal">اختر من القائمة المعتمدة</span>
+            </label>
+            <input type="hidden" id="addCategoryIcon" value="fa-solid fa-folder">
+            
+            <div>
+              <button type="button" onclick="toggleAddIconMenu()" id="addIconMenuBtn" class="w-full bg-slate-50 hover:bg-slate-100 border-2 border-slate-200 focus:border-amber-500 rounded-2xl px-3.5 py-2.5 flex items-center justify-between transition-all">
+                <div class="flex items-center gap-3">
+                  <span class="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 border border-amber-200 flex items-center justify-center text-xl shadow-sm shrink-0">
+                    <i id="addIconCurrentSymbol" class="fa-solid fa-folder"></i>
+                  </span>
+                  <div class="text-right">
+                    <div class="font-bold text-slate-900 text-sm">الشكل المختار حالياً</div>
+                    <div class="text-[11px] text-slate-400">انقر هنا لتغيير شكل الأيقونة</div>
+                  </div>
+                </div>
+                <div class="flex items-center gap-1.5 text-xs text-amber-700 font-bold bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm shrink-0">
+                  <span>اختيار شكل</span>
+                  <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                </div>
+              </button>
+
+              <!-- القائمة المنسدلة للأشكال المعتمدة - مدمجة بسلاسة داخل النموذج -->
+              <div id="addIconDropdownMenu" class="hidden mt-2 bg-amber-50/70 border-2 border-amber-200 rounded-2xl p-3 shadow-inner">
+                <div class="text-[11px] font-bold text-slate-600 mb-2 px-1 flex items-center justify-between">
+                  <span>انقر على شكل الأيقونة لاعتمادها:</span>
+                  <span class="text-amber-700 font-mono text-[10px] bg-amber-100 px-2 py-0.5 rounded-full font-bold">24 شكلاً معتمداً</span>
+                </div>
+                <div id="addIconGridList" class="grid grid-cols-6 gap-2 max-h-36 overflow-y-auto p-1 bg-white rounded-xl border border-amber-100 shadow-sm">
+                  <!-- Rendered dynamically -->
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="addCatStatusMsg" class="hidden text-xs p-2 rounded-lg text-center font-bold"></div>
+        </div>
+
+        <!-- أزرار العمليات ثابتة دائماً في أسفل النافذة وتظهر كاملة 100% -->
+        <div class="p-4 bg-slate-50 border-t border-slate-200 flex justify-end gap-2 shrink-0">
+          <button type="button" onclick="closeAddCategoryModal()" class="px-5 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl font-bold transition-all">إلغاء</button>
+          <button type="submit" id="addCatSubmitBtn" class="px-6 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-xl font-black shadow-md transition-all active:scale-95">إضافة الصنف</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit Category Modal -->
+  <div id="editCategoryModal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden flex items-center justify-center p-3 sm:p-4">
+    <div class="bg-white border border-slate-300 rounded-3xl max-w-md w-full shadow-2xl flex flex-col max-h-[85vh] overflow-hidden my-auto">
+      <div class="bg-blue-600 text-white p-4 flex items-center justify-between shrink-0">
+        <h3 class="font-black text-sm sm:text-base flex items-center gap-2">
+          <i class="fa-solid fa-pen-to-square"></i>
+          تعديل الصنف
+        </h3>
+        <button type="button" onclick="closeEditCategoryModal()" class="bg-red-500 hover:bg-red-600 text-white font-black text-xs px-3.5 py-1.5 rounded-xl flex items-center gap-1.5 shadow transition-all active:scale-95 border border-red-300" title="إغلاق">
+          <i class="fa-solid fa-xmark text-sm"></i>
+          <span>إغلاق</span>
+        </button>
+      </div>
+
+      <form id="editCategoryForm" onsubmit="submitEditCategory(event)" class="flex flex-col flex-1 min-h-0">
+        <div class="p-5 space-y-4 text-xs sm:text-sm overflow-y-auto flex-1">
+          <!-- الرمز المعرف مخفي لأنه ثابت ولا داعي لظهوره -->
+          <input type="hidden" id="editCategoryId">
+
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">اسم الصنف أو التبويب *</label>
+            <input type="text" id="editCategoryName" required class="w-full bg-slate-50 border-2 border-slate-200 focus:border-blue-500 rounded-xl px-3 py-2 text-slate-900 font-semibold focus:outline-none">
+          </div>
+
+          <!-- قائمة منسدلة بالأشكال الرسومية المحددة للأيقونة -->
+          <div>
+            <label class="block font-bold text-slate-700 mb-1 flex items-center justify-between">
+              <span>شكل أيقونة الصنف *</span>
+              <span class="text-[11px] text-slate-400 font-normal">اختر من القائمة المعتمدة</span>
+            </label>
+            <input type="hidden" id="editCategoryIcon" value="fa-solid fa-folder">
+            
+            <div>
+              <!-- الزر المنسدل الرئيسي -->
+              <button type="button" onclick="toggleEditIconMenu()" id="editIconMenuBtn" class="w-full bg-slate-50 hover:bg-slate-100 border-2 border-slate-200 focus:border-blue-500 rounded-2xl px-3.5 py-2.5 flex items-center justify-between transition-all">
+                <div class="flex items-center gap-3">
+                  <span class="w-10 h-10 rounded-xl bg-blue-100 text-blue-700 border border-blue-200 flex items-center justify-center text-xl shadow-sm shrink-0">
+                    <i id="editIconCurrentSymbol" class="fa-solid fa-folder"></i>
+                  </span>
+                  <div class="text-right">
+                    <div class="font-bold text-slate-900 text-sm">الشكل المختار حالياً</div>
+                    <div class="text-[11px] text-slate-400">انقر هنا لتغيير شكل الأيقونة</div>
+                  </div>
+                </div>
+                <div class="flex items-center gap-1.5 text-xs text-blue-700 font-bold bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm shrink-0">
+                  <span>اختيار شكل</span>
+                  <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                </div>
+              </button>
+
+              <!-- القائمة المنسدلة للأشكال المحددة - مدمجة بسلاسة داخل النموذج حتى لا تغطي أزرار الحفظ -->
+              <div id="editIconDropdownMenu" class="hidden mt-2 bg-blue-50/70 border-2 border-blue-200 rounded-2xl p-3 shadow-inner">
+                <div class="text-[11px] font-bold text-slate-600 mb-2 px-1 flex items-center justify-between">
+                  <span>انقر على شكل الأيقونة لاعتمادها:</span>
+                  <span class="text-blue-700 font-mono text-[10px] bg-blue-100 px-2 py-0.5 rounded-full font-bold">24 شكلاً معتمداً</span>
+                </div>
+                <div id="editIconGridList" class="grid grid-cols-6 gap-2 max-h-36 overflow-y-auto p-1 bg-white rounded-xl border border-blue-100 shadow-sm">
+                  <!-- Rendered dynamically -->
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="editCatStatusMsg" class="hidden text-xs p-2 rounded-lg text-center font-bold"></div>
+        </div>
+
+        <!-- أزرار العمليات ثابتة دائماً في أسفل النافذة وتظهر كاملة 100% -->
+        <div class="p-4 bg-slate-50 border-t border-slate-200 flex justify-end gap-2 shrink-0">
+          <button type="button" onclick="closeEditCategoryModal()" class="px-5 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl font-bold transition-all">إلغاء</button>
+          <button type="submit" id="editCatSubmitBtn" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-black shadow-md transition-all active:scale-95">حفظ التعديلات</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Elegant Expressive Universal Modal (بديل رسائل وتأكيدات المتصفح الافتراضية) -->
+  <div id="appUniversalModal" class="fixed inset-0 z-[9999] bg-slate-950/80 backdrop-blur-md hidden flex items-center justify-center p-4 transition-all duration-300">
+    <div id="appModalBox" class="bg-white rounded-3xl shadow-2xl max-w-md w-full border-2 border-slate-200 overflow-hidden transform transition-all duration-300 scale-95 opacity-0 flex flex-col text-center relative">
+      
+      <!-- Top Colored Accent Strip -->
+      <div id="appModalStrip" class="h-3 w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700"></div>
+      
+      <!-- Top Close Button (Enlarged, modern, clear) -->
+      <button type="button" onclick="closeAppModal(false)" class="absolute top-5 left-5 w-8 h-8 rounded-full bg-slate-100 hover:bg-rose-100 text-slate-400 hover:text-rose-600 flex items-center justify-center transition-all shadow-sm border border-slate-200 hover:border-rose-300 active:scale-95 cursor-pointer" title="إغلاق">
+        <i class="fa-solid fa-xmark text-sm font-black"></i>
+      </button>
+
+      <div class="p-6 sm:p-7">
+        <!-- Glowing Expressive Icon Badge -->
+        <div id="appModalIconWrapper" class="w-20 h-20 rounded-3xl mx-auto mb-4 flex items-center justify-center text-4xl shadow-xl transition-all">
+          <i id="appModalIcon" class="fa-solid fa-circle-question"></i>
+        </div>
+
+        <!-- Title -->
+        <h3 id="appModalTitle" class="text-lg sm:text-xl font-black text-slate-900 mb-2 leading-tight"></h3>
+        
+        <!-- Message Content Box -->
+        <div class="bg-slate-50 border border-slate-200/90 rounded-2xl p-4 my-3 text-slate-800 text-sm font-bold leading-relaxed whitespace-pre-line text-center shadow-inner" id="appModalMessage"></div>
+
+        <!-- Action Buttons -->
+        <div class="flex items-center justify-center gap-3 mt-5" id="appModalButtons">
+          <button type="button" id="appModalCancelBtn" onclick="closeAppModal(false)" class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-black text-xs sm:text-sm border border-slate-300 transition-all active:scale-95 shadow-sm cursor-pointer">
+            إلغاء التراجع
+          </button>
+          <button type="button" id="appModalConfirmBtn" onclick="closeAppModal(true)" class="px-6 py-2.5 text-white rounded-xl font-black text-xs sm:text-sm transition-all active:scale-95 shadow-md flex items-center gap-2 cursor-pointer">
+            <span>تأكيد</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let appModalResolve = null;
+
+    function showAppModal({
+      title = 'تنبيه',
+      message = '',
+      type = 'info', // 'warning', 'success', 'danger', 'info'
+      icon = null,
+      confirmText = 'حسناً',
+      cancelText = 'إلغاء',
+      isConfirm = false
+    } = {}) {
+      return new Promise((resolve) => {
+        appModalResolve = resolve;
+
+        const modal = document.getElementById('appUniversalModal');
+        const box = document.getElementById('appModalBox');
+        const strip = document.getElementById('appModalStrip');
+        const iconWrap = document.getElementById('appModalIconWrapper');
+        const iconEl = document.getElementById('appModalIcon');
+        const titleEl = document.getElementById('appModalTitle');
+        const msgEl = document.getElementById('appModalMessage');
+        const confirmBtn = document.getElementById('appModalConfirmBtn');
+        const cancelBtn = document.getElementById('appModalCancelBtn');
+
+        titleEl.innerText = title;
+        msgEl.innerText = message;
+
+        if (type === 'warning') {
+          strip.className = 'h-3 w-full bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600';
+          iconWrap.className = 'w-20 h-20 rounded-3xl mx-auto mb-4 flex items-center justify-center text-4xl shadow-xl bg-amber-100 text-amber-600 border-2 border-amber-300 shadow-amber-500/25';
+          iconEl.className = icon || 'fa-solid fa-triangle-exclamation';
+          confirmBtn.className = 'px-6 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 font-black text-xs sm:text-sm rounded-xl shadow-lg shadow-amber-500/30 transition-all active:scale-95 flex items-center gap-2 cursor-pointer';
+        } else if (type === 'success') {
+          strip.className = 'h-3 w-full bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600';
+          iconWrap.className = 'w-20 h-20 rounded-3xl mx-auto mb-4 flex items-center justify-center text-4xl shadow-xl bg-emerald-100 text-emerald-600 border-2 border-emerald-300 shadow-emerald-500/25';
+          iconEl.className = icon || 'fa-solid fa-circle-check';
+          confirmBtn.className = 'px-6 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-black text-xs sm:text-sm rounded-xl shadow-lg shadow-emerald-600/30 transition-all active:scale-95 flex items-center gap-2 cursor-pointer';
+        } else if (type === 'danger') {
+          strip.className = 'h-3 w-full bg-gradient-to-r from-rose-600 via-red-600 to-rose-700';
+          iconWrap.className = 'w-20 h-20 rounded-3xl mx-auto mb-4 flex items-center justify-center text-4xl shadow-xl bg-rose-100 text-rose-600 border-2 border-rose-300 shadow-rose-500/25';
+          iconEl.className = icon || 'fa-solid fa-trash-can';
+          confirmBtn.className = 'px-6 py-2.5 bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700 text-white font-black text-xs sm:text-sm rounded-xl shadow-lg shadow-rose-600/30 transition-all active:scale-95 flex items-center gap-2 cursor-pointer';
+        } else {
+          strip.className = 'h-3 w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700';
+          iconWrap.className = 'w-20 h-20 rounded-3xl mx-auto mb-4 flex items-center justify-center text-4xl shadow-xl bg-blue-100 text-blue-600 border-2 border-blue-300 shadow-blue-500/25';
+          iconEl.className = icon || 'fa-solid fa-circle-info';
+          confirmBtn.className = 'px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-black text-xs sm:text-sm rounded-xl shadow-lg shadow-blue-600/30 transition-all active:scale-95 flex items-center gap-2 cursor-pointer';
+        }
+
+        confirmBtn.innerHTML = `<span>${confirmText}</span>`;
+        cancelBtn.innerText = cancelText;
+
+        if (isConfirm) {
+          cancelBtn.classList.remove('hidden');
+        } else {
+          cancelBtn.classList.add('hidden');
+        }
+
+        modal.classList.remove('hidden');
+        requestAnimationFrame(() => {
+          box.classList.remove('scale-95', 'opacity-0');
+          box.classList.add('scale-100', 'opacity-100');
+        });
+      });
+    }
+
+    function closeAppModal(result) {
+      const modal = document.getElementById('appUniversalModal');
+      const box = document.getElementById('appModalBox');
+      if (!modal || modal.classList.contains('hidden')) return;
+
+      box.classList.remove('scale-100', 'opacity-100');
+      box.classList.add('scale-95', 'opacity-0');
+      setTimeout(() => {
+        modal.classList.add('hidden');
+        if (appModalResolve) {
+          appModalResolve(Boolean(result));
+          appModalResolve = null;
+        }
+      }, 180);
+    }
+
+    // Override native alert to use our beautiful modal
+    window.alert = function(msg) {
+      showAppModal({
+        title: 'تنبيه النظام',
+        message: String(msg),
+        type: 'info',
+        confirmText: 'حسناً',
+        isConfirm: false
+      });
+    };
+
+    let adminToken = sessionStorage.getItem('basra_admin_auth') || '';
+    let adminFormsList = [];
+    let adminCategoriesList = [];
+    let allCentersList = [];
+    let activityLogs = [];
+    let currentAdminTab = 'forms';
+
+    function checkAuth() {
+      renderIconGrids();
+      const scrollArea = document.getElementById('sheetScrollArea');
+      if (scrollArea && !scrollArea._listenerAttached) {
+        scrollArea._listenerAttached = true;
+        scrollArea.addEventListener('pointerdown', (e) => {
+          if (!e.target.closest('.drag-box') && !e.target.closest('button')) {
+            document.querySelectorAll('.drag-box').forEach(b => b.classList.remove('is-focused'));
+          }
+        });
+      }
+
+      // Close icon dropdowns on outside click
+      if (!window._iconMenuOutsideClickListenerAttached) {
+        window._iconMenuOutsideClickListenerAttached = true;
+        document.addEventListener('click', (e) => {
+          const editMenu = document.getElementById('editIconDropdownMenu');
+          const editBtn = document.getElementById('editIconMenuBtn');
+          if (editMenu && !editMenu.classList.contains('hidden')) {
+            if (!editMenu.contains(e.target) && !editBtn.contains(e.target)) {
+              editMenu.classList.add('hidden');
+            }
+          }
+          const addMenu = document.getElementById('addIconDropdownMenu');
+          const addBtn = document.getElementById('addIconMenuBtn');
+          if (addMenu && !addMenu.classList.contains('hidden')) {
+            if (!addMenu.contains(e.target) && !addBtn.contains(e.target)) {
+              addMenu.classList.add('hidden');
+            }
+          }
+        });
+      }
+
+      if (adminToken) {
+        document.getElementById('loginView').classList.add('hidden');
+        document.getElementById('dashboardView').classList.remove('hidden');
+        loadAllCenters();
+        loadAdminForms();
+        loadAdminCategories();
+        loadAdminActivity();
+      } else {
+        document.getElementById('loginView').classList.remove('hidden');
+        document.getElementById('dashboardView').classList.add('hidden');
+      }
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      const pwd = (document.getElementById('adminPwd').value || '').trim();
+      const err = document.getElementById('loginErrMsg');
+
+      // Support authorized admin credentials
+      if (pwd === 'basra2026' || pwd === 'BasraForms@2026' || pwd === 'admin2026') {
+        adminToken = 'admin_session_' + Date.now();
+        sessionStorage.setItem('basra_admin_auth', adminToken);
+        localStorage.setItem('basra_admin_auth', adminToken);
+        localStorage.setItem('basra_cloud_key', 'BasraForms@2026');
+        err.classList.add('hidden');
+        checkAuth();
+      } else {
+        err.innerText = 'رمز المرور غير صحيح، يرجى المحاولة مجدداً';
+        err.classList.remove('hidden');
+      }
+    }
+
+    function handleLogout() {
+      adminToken = '';
+      sessionStorage.removeItem('basra_admin_auth');
+      checkAuth();
+    }
+
+    // Switch between Forms Management, Categories Management, and Activity Audit tabs
+    function switchAdminTab(tab) {
+      currentAdminTab = tab;
+      const tabFormsBtn = document.getElementById('tabFormsBtn');
+      const tabCatBtn = document.getElementById('tabCategoriesBtn');
+      const tabActBtn = document.getElementById('tabActivityBtn');
+      const secForms = document.getElementById('adminFormsTabSection');
+      const secCat = document.getElementById('adminCategoriesTabSection');
+      const secAct = document.getElementById('adminActivityTabSection');
+
+      const activeClass = 'px-5 py-2.5 rounded-2xl font-black text-sm bg-blue-600 text-white shadow-md transition-all flex items-center gap-2';
+      const inactiveClass = 'px-5 py-2.5 rounded-2xl font-black text-sm bg-slate-200 hover:bg-slate-300 text-slate-700 transition-all flex items-center gap-2';
+
+      secForms.classList.add('hidden');
+      secCat.classList.add('hidden');
+      secAct.classList.add('hidden');
+      tabFormsBtn.className = inactiveClass;
+      tabCatBtn.className = inactiveClass;
+      tabActBtn.className = inactiveClass;
+
+      if (tab === 'forms') {
+        tabFormsBtn.className = activeClass;
+        secForms.classList.remove('hidden');
+      } else if (tab === 'categories') {
+        tabCatBtn.className = 'px-5 py-2.5 rounded-2xl font-black text-sm bg-amber-500 text-slate-950 shadow-md transition-all flex items-center gap-2';
+        secCat.classList.remove('hidden');
+        loadAdminCategories();
+      } else {
+        tabActBtn.className = activeClass;
+        secAct.classList.remove('hidden');
+        loadAdminActivity();
+      }
+    }
+
+    // ================= CATEGORIES MANAGEMENT =================
+    async function loadAdminCategories() {
+      try {
+        const res = await fetch('./data/categories.json?t=' + Date.now());
+        if (res.ok) {
+          const data = await res.json();
+          adminCategoriesList = Array.isArray(data) ? data : (data.categories || []);
+        } else {
+          throw new Error('Not found');
+        }
+      } catch (e) {
+        if (!adminCategoriesList || adminCategoriesList.length === 0) {
+          adminCategoriesList = [
+            { id: "leaves", name: "إجازات ومباشرات", icon: "fa-solid fa-calendar-check" },
+            { id: "voters", name: "شؤون الناخبين والبطاقات", icon: "fa-solid fa-id-card" },
+            { id: "legal", name: "الشؤون القانونية والمحاضر", icon: "fa-solid fa-scale-balanced" },
+            { id: "admin", name: "الإدارية والمالية والمخازن", icon: "fa-solid fa-boxes-stacked" }
+          ];
+        }
+      }
+      const countBadge = document.getElementById('adminCategoriesCount');
+      if (countBadge) countBadge.innerText = adminCategoriesList.length;
+      renderAdminCategoriesTable();
+      populateCategorySelects(adminCategoriesList);
+    }
+
+    function renderAdminCategoriesTable() {
+      const tbody = document.getElementById('adminCategoriesBody');
+      if (!tbody) return;
+      if (adminCategoriesList.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" class="p-6 text-center text-slate-400">لا توجد أصناف مضافة حالياً</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = adminCategoriesList.map(cat => {
+        const formsCount = adminFormsList.filter(f => f.category === cat.id).length;
+        const rawIcon = cat.icon || 'fa-solid fa-folder';
+        const iconClass = rawIcon.includes('fa-solid') || rawIcon.includes('fa-regular') ? rawIcon : ('fa-solid ' + rawIcon);
+        const iconPreview = `<i class="${iconClass} text-amber-600 text-base"></i>`;
+
+        return `
+          <tr class="hover:bg-slate-50 transition-colors">
+            <td class="p-4 font-bold text-slate-900 flex items-center gap-2.5">
+              <span class="w-8 h-8 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center">${iconPreview}</span>
+              <span>${cat.name}</span>
+            </td>
+            <td class="p-4 text-center font-bold">
+              <span class="px-2.5 py-1 rounded-full text-xs font-black ${formsCount > 0 ? 'bg-blue-100 text-blue-800' : 'bg-slate-100 text-slate-500'}">
+                ${formsCount} نموذج
+              </span>
+            </td>
+            <td class="p-4 text-center">
+              <div class="flex items-center justify-center gap-1.5">
+                <button onclick="openEditCategoryModal('${cat.id}')" class="p-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-xl border border-blue-200 font-bold text-xs flex items-center gap-1" title="تعديل الصنف">
+                  <i class="fa-solid fa-pen-to-square"></i>
+                  <span>تعديل</span>
+                </button>
+                <button onclick="confirmDeleteCategory('${cat.id}', '${cat.name}')" class="p-2 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl border border-rose-200 font-bold text-xs flex items-center gap-1" title="حذف الصنف">
+                  <i class="fa-solid fa-trash-can"></i>
+                  <span>حذف</span>
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function populateCategorySelects(categories) {
+      const addSelect = document.getElementById('addCategory');
+      const editSelect = document.getElementById('editCategory');
+      const optionsHtml = categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+      if (addSelect) addSelect.innerHTML = optionsHtml;
+      if (editSelect) editSelect.innerHTML = optionsHtml;
+    }
+
+    // قائمة بالأشكال الرسومية المعتمدة لاختيار أيقونة الصنف بصرياً
+    const OFFICIAL_ICONS_LIST = [
+      { class: 'fa-solid fa-folder', name: 'مجلد' },
+      { class: 'fa-solid fa-folder-open', name: 'مجلد مفتوح' },
+      { class: 'fa-solid fa-file-lines', name: 'استمارة' },
+      { class: 'fa-solid fa-file-signature', name: 'توقيع رسمي' },
+      { class: 'fa-solid fa-id-card', name: 'بطاقة ناخب' },
+      { class: 'fa-solid fa-address-card', name: 'هوية وتعريف' },
+      { class: 'fa-solid fa-calendar-check', name: 'دوام وإجازة' },
+      { class: 'fa-solid fa-clipboard-list', name: 'سجل وقائمة' },
+      { class: 'fa-solid fa-clipboard-check', name: 'تدقيق وتأكيد' },
+      { class: 'fa-solid fa-boxes-stacked', name: 'تجهيزات ومواد' },
+      { class: 'fa-solid fa-warehouse', name: 'مخازن' },
+      { class: 'fa-solid fa-scale-balanced', name: 'قانونية وعدالة' },
+      { class: 'fa-solid fa-gavel', name: 'محكمة وبلاغ' },
+      { class: 'fa-solid fa-shield-halved', name: 'أمن وحماية' },
+      { class: 'fa-solid fa-building-columns', name: 'مقر ومؤسسة' },
+      { class: 'fa-solid fa-stamp', name: 'ختم وتوثيق' },
+      { class: 'fa-solid fa-chart-pie', name: 'إحصائيات' },
+      { class: 'fa-solid fa-chart-line', name: 'متابعة وأداء' },
+      { class: 'fa-solid fa-envelope-open-text', name: 'مخاطبات وبريد' },
+      { class: 'fa-solid fa-box-archive', name: 'أرشيف وحفظ' },
+      { class: 'fa-solid fa-book-bookmark', name: 'دليل وتعليمات' },
+      { class: 'fa-solid fa-hospital-user', name: 'إجازة مرضية' },
+      { class: 'fa-solid fa-user-check', name: 'مباشرة موظف' },
+      { class: 'fa-solid fa-tags', name: 'تصنيف عام' }
+    ];
+
+    function renderIconGrids() {
+      const editGrid = document.getElementById('editIconGridList');
+      const addGrid = document.getElementById('addIconGridList');
+
+      if (editGrid) {
+        editGrid.innerHTML = OFFICIAL_ICONS_LIST.map(item => `
+          <button type="button" onclick="selectEditCategoryIcon('${item.class}')" class="h-10 rounded-xl bg-slate-50 hover:bg-blue-100 hover:border-blue-400 border border-slate-200 flex items-center justify-center text-slate-700 hover:text-blue-700 transition-all text-lg shadow-sm" title="${item.name}">
+            <i class="${item.class}"></i>
+          </button>
+        `).join('');
+      }
+
+      if (addGrid) {
+        addGrid.innerHTML = OFFICIAL_ICONS_LIST.map(item => `
+          <button type="button" onclick="selectAddCategoryIcon('${item.class}')" class="h-10 rounded-xl bg-slate-50 hover:bg-amber-100 hover:border-amber-400 border border-slate-200 flex items-center justify-center text-slate-700 hover:text-amber-800 transition-all text-lg shadow-sm" title="${item.name}">
+            <i class="${item.class}"></i>
+          </button>
+        `).join('');
+      }
+    }
+
+    function toggleEditIconMenu() {
+      const menu = document.getElementById('editIconDropdownMenu');
+      if (menu) menu.classList.toggle('hidden');
+    }
+
+    function selectEditCategoryIcon(iconClass) {
+      const iconInput = document.getElementById('editCategoryIcon');
+      if (iconInput) iconInput.value = iconClass;
+      const symbolEl = document.getElementById('editIconCurrentSymbol');
+      if (symbolEl) symbolEl.className = iconClass;
+      const menu = document.getElementById('editIconDropdownMenu');
+      if (menu) menu.classList.add('hidden');
+    }
+
+    function toggleAddIconMenu() {
+      const menu = document.getElementById('addIconDropdownMenu');
+      if (menu) menu.classList.toggle('hidden');
+    }
+
+    function selectAddCategoryIcon(iconClass) {
+      const iconInput = document.getElementById('addCategoryIcon');
+      if (iconInput) iconInput.value = iconClass;
+      const symbolEl = document.getElementById('addIconCurrentSymbol');
+      if (symbolEl) symbolEl.className = iconClass;
+      const menu = document.getElementById('addIconDropdownMenu');
+      if (menu) menu.classList.add('hidden');
+    }
+
+    function openAddCategoryModal() {
+      document.getElementById('addCategoryForm').reset();
+      selectAddCategoryIcon('fa-solid fa-folder');
+      const menu = document.getElementById('addIconDropdownMenu');
+      if (menu) menu.classList.add('hidden');
+      document.getElementById('addCatStatusMsg').classList.add('hidden');
+      document.getElementById('addCategoryModal').classList.remove('hidden');
+    }
+    function closeAddCategoryModal() {
+      document.getElementById('addCategoryModal').classList.add('hidden');
+    }
+
+    async function submitAddCategory(e) {
+      e.preventDefault();
+      const name = document.getElementById('addCategoryName').value.trim();
+      let id = document.getElementById('addCategoryId').value.trim();
+      const icon = document.getElementById('addCategoryIcon').value.trim() || 'fa-solid fa-folder';
+      const statusMsg = document.getElementById('addCatStatusMsg');
+      const btn = document.getElementById('addCatSubmitBtn');
+
+      if (!name) return;
+      if (!id) {
+        id = 'cat_' + Date.now().toString(36);
+      } else {
+        id = id.toLowerCase().replace(/[^a-z0-9_-]/g, '_');
+      }
+
+      btn.disabled = true;
+      btn.innerText = 'جاري الإضافة...';
+
+      try {
+        const res = await fetch('/api/admin/categories', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id, name, icon })
+        });
+        const data = await res.json();
+        if (data.success) {
+          statusMsg.innerText = 'تمت إضافة الصنف بنجاح!';
+          statusMsg.className = 'text-xs p-2 rounded-lg text-center font-bold bg-emerald-100 text-emerald-800';
+          statusMsg.classList.remove('hidden');
+          setTimeout(() => {
+            closeAddCategoryModal();
+            loadAdminCategories();
+          }, 800);
+        } else {
+          statusMsg.innerText = data.message || 'خطأ أثناء إضافة الصنف';
+          statusMsg.className = 'text-xs p-2 rounded-lg text-center font-bold bg-rose-100 text-rose-800';
+          statusMsg.classList.remove('hidden');
+        }
+      } catch (err) {
+        statusMsg.innerText = 'تعذر الاتصال بالخادم';
+        statusMsg.className = 'text-xs p-2 rounded-lg text-center font-bold bg-rose-100 text-rose-800';
+        statusMsg.classList.remove('hidden');
+      } finally {
+        btn.disabled = false;
+        btn.innerText = 'إضافة الصنف';
+      }
+    }
+
+    function openEditCategoryModal(catId) {
+      const cat = adminCategoriesList.find(c => c.id === catId);
+      if (!cat) return;
+      document.getElementById('editCategoryId').value = cat.id;
+      document.getElementById('editCategoryName').value = cat.name;
+      const rawIcon = cat.icon || 'fa-solid fa-folder';
+      const iconClass = rawIcon.includes('fa-solid') || rawIcon.includes('fa-regular') ? rawIcon : ('fa-solid ' + rawIcon);
+      selectEditCategoryIcon(iconClass);
+      const menu = document.getElementById('editIconDropdownMenu');
+      if (menu) menu.classList.add('hidden');
+      document.getElementById('editCatStatusMsg').classList.add('hidden');
+      document.getElementById('editCategoryModal').classList.remove('hidden');
+    }
+    function closeEditCategoryModal() {
+      document.getElementById('editCategoryModal').classList.add('hidden');
+    }
+
+    async function submitEditCategory(e) {
+      e.preventDefault();
+      const id = document.getElementById('editCategoryId').value;
+      const name = document.getElementById('editCategoryName').value.trim();
+      const icon = document.getElementById('editCategoryIcon').value.trim() || 'fa-solid fa-folder';
+      const statusMsg = document.getElementById('editCatStatusMsg');
+      const btn = document.getElementById('editCatSubmitBtn');
+
+      btn.disabled = true;
+      btn.innerText = 'جاري الحفظ...';
+
+      try {
+        const res = await fetch(`/api/admin/categories/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, icon })
+        });
+        const data = await res.json();
+        if (data.success) {
+          statusMsg.innerText = 'تم حفظ تعديلات الصنف بنجاح!';
+          statusMsg.className = 'text-xs p-2 rounded-lg text-center font-bold bg-emerald-100 text-emerald-800';
+          statusMsg.classList.remove('hidden');
+          setTimeout(() => {
+            closeEditCategoryModal();
+            loadAdminCategories();
+            loadAdminForms();
+          }, 800);
+        } else {
+          statusMsg.innerText = data.message || 'خطأ أثناء تعديل الصنف';
+          statusMsg.className = 'text-xs p-2 rounded-lg text-center font-bold bg-rose-100 text-rose-800';
+          statusMsg.classList.remove('hidden');
+        }
+      } catch (err) {
+        statusMsg.innerText = 'تعذر الاتصال بالخادم';
+        statusMsg.className = 'text-xs p-2 rounded-lg text-center font-bold bg-rose-100 text-rose-800';
+        statusMsg.classList.remove('hidden');
+      } finally {
+        btn.disabled = false;
+        btn.innerText = 'حفظ التعديلات';
+      }
+    }
+
+    async function confirmDeleteCategory(catId, catName) {
+      const formsCount = adminFormsList.filter(f => f.category === catId).length;
+      if (formsCount > 0) {
+        showAppModal({
+          type: 'warning',
+          icon: 'fa-solid fa-triangle-exclamation',
+          title: 'لا يمكن حذف هذا الصنف',
+          message: `لا يمكن حذف الصنف "${catName}" لأن هناك (${formsCount}) نماذج مرتبطة به حالياً.\nيرجى تعديل تصنيف النماذج أولاً قبل حذف الصنف.`,
+          confirmText: 'فهمت ذلك',
+          isConfirm: false
+        });
+        return;
+      }
+
+      const confirmed = await showAppModal({
+        type: 'danger',
+        icon: 'fa-solid fa-trash-can',
+        title: 'تأكيد حذف الصنف',
+        message: `هل أنت متأكد من حذف الصنف:\n"${catName}"؟\nسيتم حذفه من واجهة جميع المراكز الـ 76 فوراً.`,
+        confirmText: 'نعم، حذف الصنف',
+        cancelText: 'إلغاء التراجع',
+        isConfirm: true
+      });
+
+      if (!confirmed) return;
+
+      try {
+        const res = await fetch(`/api/admin/categories/${catId}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (data.success) {
+          loadAdminCategories();
+          showAppModal({
+            type: 'success',
+            icon: 'fa-solid fa-circle-check',
+            title: 'تم الحذف بنجاح',
+            message: data.message || 'تم حذف الصنف بنجاح',
+            confirmText: 'حسناً'
+          });
+        } else {
+          showAppModal({
+            type: 'danger',
+            icon: 'fa-solid fa-triangle-exclamation',
+            title: 'خطأ',
+            message: data.message || 'خطأ أثناء حذف الصنف',
+            confirmText: 'حسناً'
+          });
+        }
+      } catch (e) {
+        showAppModal({
+          type: 'danger',
+          icon: 'fa-solid fa-triangle-exclamation',
+          title: 'تعذر الاتصال',
+          message: 'تعذر الاتصال بالخادم',
+          confirmText: 'حسناً'
+        });
+      }
+    }
+
+    // ================= NATIVE SAVE AS FILE PICKER =================
+    async function downloadFileWithPicker(downloadUrl, originalFileName) {
+      if (window.showSaveFilePicker) {
+        try {
+          const dotIdx = originalFileName.lastIndexOf('.');
+          const ext = dotIdx !== -1 ? originalFileName.substring(dotIdx).toLowerCase() : '';
+
+          let mime = 'application/octet-stream';
+          if (ext === '.docx') mime = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+          else if (ext === '.doc') mime = 'application/msword';
+          else if (ext === '.xlsx') mime = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+          else if (ext === '.xls') mime = 'application/vnd.ms-excel';
+          else if (ext === '.pdf') mime = 'application/pdf';
+          else if (ext === '.jpg' || ext === '.jpeg') mime = 'image/jpeg';
+          else if (ext === '.png') mime = 'image/png';
+
+          const fileHandle = await window.showSaveFilePicker({
+            suggestedName: originalFileName,
+            types: [{
+              description: 'ملف النموذج الأصلي',
+              accept: { [mime]: [ext] }
+            }]
+          });
+
+          const res = await fetch(downloadUrl);
+          const blob = await res.blob();
+          const writable = await fileHandle.createWritable();
+          await writable.write(blob);
+          await writable.close();
+          return;
+        } catch (err) {
+          if (err.name === 'AbortError') return; // User cancelled
+          console.warn('showSaveFilePicker fallback:', err);
+        }
+      }
+
+      // Fallback
+      const a = document.createElement('a');
+      a.href = downloadUrl;
+      a.download = originalFileName;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    }
+
+    function downloadAdminFormFile(formId) {
+      const f = adminFormsList.find(item => item.id === formId);
+      if (!f) return;
+      const downloadUrl = f.fileName ? ('./uploads/' + f.fileName) : ('./data/forms.json');
+      downloadFileWithPicker(downloadUrl, f.originalName || `${f.title}.${f.fileType}`);
+    }
+
+    function handleAdminModalDownload() {
+      if (!activeAdminForm) return;
+      const downloadUrl = activeAdminForm.fileName ? ('./uploads/' + activeAdminForm.fileName) : ('./data/forms.json');
+      downloadFileWithPicker(downloadUrl, activeAdminForm.originalName || `${activeAdminForm.title}.${activeAdminForm.fileType}`);
+    }
+
+    // Load 76 centers for filters and dropdowns
+    async function loadAllCenters() {
+      try {
+        const res = await fetch('./data/centers.json?t=' + Date.now());
+        if (res.ok) {
+          const data = await res.json();
+          allCentersList = Array.isArray(data) ? data : (data.centers || []);
+        }
+      } catch (e) {}
+      const select = document.getElementById('activityCenterFilter');
+      if (select && allCentersList && allCentersList.length > 0) {
+        select.innerHTML = '<option value="all">كل مراكز التسجيل (الـ 76)</option>' +
+          allCentersList.map(c => `<option value="${c.code}">${c.code} - مركز تسجيل ${c.name} ${c.tamweenName ? '(' + c.tamweenName + ')' : ''}</option>`).join('');
+      }
+    }
+
+    // فلترة عرض النماذج: الكل (افتراضي) / الظاهرة فقط / المخفية فقط
+    let currentFormsVisibilityFilter = 'all';
+
+    function setFormsVisibilityFilter(filter) {
+      currentFormsVisibilityFilter = filter;
+      updateFilterButtonsUI();
+      renderAdminFormsTable();
+    }
+
+    function updateFilterButtonsUI() {
+      const btnAll = document.getElementById('filterBtnAll');
+      const btnVis = document.getElementById('filterBtnVisible');
+      const btnHid = document.getElementById('filterBtnHidden');
+
+      const activeAll = 'px-4 py-2 rounded-xl text-xs sm:text-sm font-black transition-all bg-blue-600 text-white shadow-sm flex items-center gap-1.5';
+      const activeVis = 'px-4 py-2 rounded-xl text-xs sm:text-sm font-black transition-all bg-emerald-600 text-white shadow-sm flex items-center gap-1.5';
+      const activeHid = 'px-4 py-2 rounded-xl text-xs sm:text-sm font-black transition-all bg-rose-600 text-white shadow-sm flex items-center gap-1.5';
+      const inactive = 'px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 flex items-center gap-1.5';
+
+      if (btnAll) btnAll.className = (currentFormsVisibilityFilter === 'all') ? activeAll : inactive;
+      if (btnVis) btnVis.className = (currentFormsVisibilityFilter === 'visible') ? activeVis : inactive;
+      if (btnHid) btnHid.className = (currentFormsVisibilityFilter === 'hidden') ? activeHid : inactive;
+    }
+
+    function updateFormsCounts() {
+      const totalCount = adminFormsList.length;
+      const hiddenCount = adminFormsList.filter(f => f.hidden).length;
+      const visibleCount = totalCount - hiddenCount;
+
+      const totalBadge = document.getElementById('adminTotalCount');
+      if (totalBadge) totalBadge.innerText = totalCount;
+
+      const countAll = document.getElementById('countAllForms');
+      const countVis = document.getElementById('countVisibleForms');
+      const countHid = document.getElementById('countHiddenForms');
+      if (countAll) countAll.innerText = totalCount;
+      if (countVis) countVis.innerText = visibleCount;
+      if (countHid) countHid.innerText = hiddenCount;
+    }
+
+    // Load forms list
+    async function loadAdminForms() {
+      try {
+        const res = await fetch('./data/forms.json?t=' + Date.now());
+        if (res.ok) {
+          const data = await res.json();
+          adminFormsList = Array.isArray(data) ? data : (data.forms || []);
+        }
+      } catch (e) {
+        console.warn('Fallback loading forms:', e);
+      }
+      updateFormsCounts();
+      updateFilterButtonsUI();
+      renderAdminFormsTable();
+    }
+
+    function renderAdminFormsTable() {
+      const tbody = document.getElementById('adminFormsBody');
+      if (!tbody) return;
+
+      let filteredForms = adminFormsList;
+      if (currentFormsVisibilityFilter === 'visible') {
+        filteredForms = adminFormsList.filter(f => !f.hidden);
+      } else if (currentFormsVisibilityFilter === 'hidden') {
+        filteredForms = adminFormsList.filter(f => f.hidden);
+      }
+
+      if (filteredForms.length === 0) {
+        let emptyMsg = 'لا توجد نماذج مضافة';
+        if (currentFormsVisibilityFilter === 'hidden') emptyMsg = 'لا توجد نماذج مخفية حالياً (جميع النماذج معروضة للمراكز)';
+        else if (currentFormsVisibilityFilter === 'visible') emptyMsg = 'لا توجد نماذج معروضة حالياً';
+        tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-500 font-bold">${emptyMsg}</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filteredForms.map(f => {
+        let typeBadge = '';
+        const isOffice = f.isOffice || ['docx', 'doc', 'xlsx', 'xls'].includes(f.fileType);
+
+        if (f.fileType === 'docx' || f.fileType === 'doc') typeBadge = '<span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded font-bold text-xs">Word</span>';
+        else if (f.fileType === 'xlsx') typeBadge = '<span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-bold text-xs">Excel</span>';
+        else if (f.fileType === 'image') typeBadge = '<span class="bg-purple-100 text-purple-800 px-2 py-0.5 rounded font-bold text-xs">صورة JPG</span>';
+        else typeBadge = '<span class="bg-rose-100 text-rose-800 px-2 py-0.5 rounded font-bold text-xs">PDF</span>';
+
+        const isHidden = Boolean(f.hidden);
+        // تلوين الصف بلون أغمق وأوضح: أحمر للمخفي وأخضر للظاهر في المراكز
+        const rowClass = isHidden 
+          ? 'bg-red-100/90 hover:bg-red-200 border-r-[6px] border-r-red-600 border-b border-red-200' 
+          : 'bg-emerald-100 hover:bg-emerald-200/90 border-r-[6px] border-r-emerald-600 border-b border-emerald-200';
+
+        const toggleBtn = isHidden
+          ? `<button onclick="toggleFormVisibility('${f.id}', false)" class="px-2.5 py-1.5 bg-white hover:bg-slate-100 text-slate-800 rounded-xl font-bold text-xs flex items-center gap-1.5 border border-slate-300 shadow-sm transition-all active:scale-95" title="إلغاء الإخفاء وإظهار النموذج للمراكز"><i class="fa-solid fa-eye text-blue-600"></i><span>إظهار</span></button>`
+          : `<button onclick="toggleFormVisibility('${f.id}', true)" class="px-2.5 py-1.5 bg-white hover:bg-slate-100 text-slate-800 rounded-xl font-bold text-xs flex items-center gap-1.5 border border-slate-300 shadow-sm transition-all active:scale-95" title="إخفاء هذا النموذج مؤقتاً عن جميع مراكز التسجيل"><i class="fa-solid fa-eye-slash text-slate-600"></i><span>إخفاء</span></button>`;
+
+        return `
+          <tr class="${rowClass} transition-colors">
+            <td class="p-3.5">
+              <div class="font-bold text-slate-950 flex items-center gap-2">
+                <span>${f.title}</span>
+                ${isHidden 
+                  ? '<span class="text-[10px] bg-red-700 text-white px-2 py-0.5 rounded-full font-black flex items-center gap-1 shadow-sm"><i class="fa-solid fa-eye-slash text-[9px]"></i> مخفي مؤقتاً</span>' 
+                  : '<span class="text-[10px] bg-emerald-700 text-white px-2 py-0.5 rounded-full font-black flex items-center gap-1 shadow-sm"><i class="fa-solid fa-check text-[9px]"></i> متاح للمراكز</span>'}
+              </div>
+              <div class="text-xs text-slate-600 line-clamp-1 mt-0.5 font-medium">${f.description || ''}</div>
+            </td>
+            <td class="p-3.5">${typeBadge}</td>
+            <td class="p-3.5 text-slate-800 font-bold">${f.categoryName || f.category}</td>
+            <td class="p-3.5 text-slate-700 font-mono text-xs font-bold">${f.fileSize}</td>
+            <td class="p-3.5 font-black text-slate-900">${f.downloads || 0}</td>
+            <td class="p-3.5">
+              <div class="flex items-center justify-center gap-1.5">
+                
+                <!-- 👁️ خيار عرض ومعاينة النموذج -->
+                <button onclick="adminViewForm('${f.id}')" class="px-2.5 py-1.5 ${isOffice ? 'bg-amber-100 hover:bg-amber-200 text-amber-950 border-amber-300' : 'bg-blue-100 hover:bg-blue-200 text-blue-950 border-blue-300'} rounded-xl font-bold flex items-center gap-1 text-xs border shadow-sm" title="عرض النموذج">
+                  <i class="fa-regular fa-eye"></i>
+                  <span>${isOffice ? 'معاينة / فتح' : 'عرض وكتابة'}</span>
+                </button>
+
+                <!-- 📥 تنزيل باختيار موقع الحفظ -->
+                <button type="button" onclick="downloadAdminFormFile('${f.id}')" class="p-1.5 bg-white hover:bg-slate-100 text-slate-800 rounded-xl border border-slate-300 shadow-sm" title="تنزيل الملف واختيار موقع الحفظ باسم: ${f.originalName || f.title}">
+                  <i class="fa-solid fa-download"></i>
+                </button>
+
+                <!-- 👁️/🚫 زر التبديل السريع: إخفاء / إظهار -->
+                ${toggleBtn}
+
+                <!-- ✏️ تعديل -->
+                <button onclick="openEditModal('${f.id}')" class="p-1.5 bg-white hover:bg-amber-100 text-amber-800 rounded-xl font-bold border border-slate-300 shadow-sm" title="تعديل">
+                  <i class="fa-solid fa-pen-to-square"></i>
+                </button>
+
+                <!-- 🗑️ حذف -->
+                <button onclick="confirmDelete('${f.id}')" class="p-1.5 bg-white hover:bg-rose-100 text-rose-700 rounded-xl font-bold border border-slate-300 shadow-sm" title="حذف">
+                  <i class="fa-solid fa-trash-can"></i>
+                </button>
+
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    async function toggleFormVisibility(id, willHide) {
+      const f = adminFormsList.find(item => item.id === id);
+      const title = f ? f.title : 'هذا النموذج';
+
+      const confirmed = await showAppModal({
+        type: willHide ? 'warning' : 'success',
+        icon: willHide ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye',
+        title: willHide ? 'إخفاء النموذج عن المراكز' : 'تفعيل وإظهار النموذج للمراكز',
+        message: willHide 
+          ? `هل تريد بالتأكيد إخفاء النموذج:\n"${title}"\nمؤقتاً عن واجهة جميع مراكز التسجيل الـ 76؟`
+          : `هل تريد بالتأكيد إعادة إظهار وتفعيل النموذج:\n"${title}"\nفي واجهة جميع مراكز التسجيل الـ 76؟`,
+        confirmText: willHide ? 'نعم، إخفاء النموذج' : 'نعم، إظهار وتفعيل',
+        cancelText: 'إلغاء التراجع',
+        isConfirm: true
+      });
+
+      if (!confirmed) return;
+
+      try {
+        const res = await fetch(`/api/admin/forms/${id}/toggle-visibility`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ hidden: willHide })
+        });
+        const data = await res.json();
+        if (data.success) {
+          loadAdminForms();
+          showAppModal({
+            type: willHide ? 'warning' : 'success',
+            icon: willHide ? 'fa-solid fa-eye-slash' : 'fa-solid fa-circle-check',
+            title: willHide ? 'تم إخفاء النموذج' : 'تم تفعيل النموذج',
+            message: data.message || (willHide ? 'تم إخفاء النموذج عن المراكز بنجاح' : 'تم تفعيل وإظهار النموذج للمراكز بنجاح'),
+            confirmText: 'حسناً',
+            isConfirm: false
+          });
+        } else {
+          showAppModal({
+            type: 'danger',
+            icon: 'fa-solid fa-triangle-exclamation',
+            title: 'خطأ',
+            message: data.message || 'خطأ أثناء تغيير حالة العرض',
+            confirmText: 'حسناً'
+          });
+        }
+      } catch (e) {
+        showAppModal({
+          type: 'danger',
+          icon: 'fa-solid fa-triangle-exclamation',
+          title: 'تعذر الاتصال',
+          message: 'تعذر الاتصال بالخادم المحلي',
+          confirmText: 'حسناً'
+        });
+      }
+    }
+
+    // ================= ACTIVITY & AUDIT LOG FUNCTIONS =================
+    async function loadAdminActivity() {
+      try {
+        const [logsRes, statsRes] = await Promise.all([
+          fetch('/api/admin/activity?limit=500'),
+          fetch('/api/admin/activity/stats')
+        ]);
+        const logsData = await logsRes.json();
+        const statsData = await statsRes.json();
+
+        if (logsData.success) {
+          activityLogs = logsData.logs || [];
+          document.getElementById('activityBadgeCount').innerText = activityLogs.length;
+          filterActivityLogs();
+        }
+
+        if (statsData.success && statsData.stats) {
+          const s = statsData.stats;
+          document.getElementById('statDownloads').innerText = s.totalDownloads || 0;
+          document.getElementById('statViews').innerText = s.totalViews || 0;
+          document.getElementById('statPrints').innerText = s.totalPrints || 0;
+          document.getElementById('statOffice').innerText = s.totalOffice || 0;
+          document.getElementById('statActiveCenters').innerText = s.activeCentersCount || 0;
+
+          renderTopCenters(s.topCenters || []);
+        }
+      } catch (e) {
+        console.error('Failed to load activity logs:', e);
+      }
+    }
+
+    function filterActivityLogs() {
+      const centerFilter = document.getElementById('activityCenterFilter').value;
+      const actionFilter = document.getElementById('activityActionFilter').value;
+      const query = (document.getElementById('activitySearchInput').value || '').trim().toLowerCase();
+
+      const filtered = activityLogs.filter(item => {
+        if (centerFilter !== 'all' && item.centerCode !== centerFilter) return false;
+        if (actionFilter !== 'all' && item.action !== actionFilter) return false;
+        if (query) {
+          const cCode = (item.centerCode || '').toLowerCase();
+          const cName = (item.centerName || '').toLowerCase();
+          const fTitle = (item.formTitle || '').toLowerCase();
+          return cCode.includes(query) || cName.includes(query) || fTitle.includes(query);
+        }
+        return true;
+      });
+
+      document.getElementById('filteredLogsCount').innerText = filtered.length;
+      renderActivityTable(filtered);
+    }
+
+    async function clearActivityLogsTable() {
+      if (!activityLogs || activityLogs.length === 0) {
+        showAppModal({
+          type: 'info',
+          icon: 'fa-solid fa-circle-info',
+          title: 'تنبيه',
+          message: 'جدول سجل نشاط المراكز فارغ بالفعل!',
+          confirmText: 'حسناً'
+        });
+        return;
+      }
+
+      const confirmed = await showAppModal({
+        type: 'danger',
+        icon: 'fa-solid fa-trash-can',
+        title: 'تأكيد حذف وتصفير سجل العمليات',
+        message: `هل أنت متأكد من حذف وتصفير جدول سجل نشاط المراكز بالكامل؟\n\nسيتم مسح جميع السجلات البالغ عددها (${activityLogs.length}) سجلاً.\nلا يمكن التراجع عن هذه العملية!`,
+        confirmText: 'نعم، حذف وتصفير الجدول',
+        cancelText: 'إلغاء التراجع',
+        isConfirm: true
+      });
+
+      if (!confirmed) return;
+
+      try {
+        const res = await fetch('/api/admin/activity', { method: 'DELETE' });
+        const data = await res.json();
+        if (data.success) {
+          await loadAdminActivity();
+          showAppModal({
+            type: 'success',
+            icon: 'fa-solid fa-circle-check',
+            title: 'تم الحذف والتصفير',
+            message: data.message || 'تم مسح وحذف سجل نشاط وعمليات المراكز بالكامل',
+            confirmText: 'حسناً'
+          });
+        } else {
+          showAppModal({
+            type: 'danger',
+            icon: 'fa-solid fa-triangle-exclamation',
+            title: 'خطأ',
+            message: data.message || 'حدث خطأ أثناء حذف السجلات',
+            confirmText: 'حسناً'
+          });
+        }
+      } catch (err) {
+        showAppModal({
+          type: 'danger',
+          icon: 'fa-solid fa-triangle-exclamation',
+          title: 'تعذر الاتصال',
+          message: 'تعذر الاتصال بالخادم لحذف السجل',
+          confirmText: 'حسناً'
+        });
+      }
+    }
+
+    function resetActivityFilters() {
+      document.getElementById('activityCenterFilter').value = 'all';
+      document.getElementById('activityActionFilter').value = 'all';
+      document.getElementById('activitySearchInput').value = '';
+      filterActivityLogs();
+    }
+
+    function renderActivityTable(logs) {
+      const tbody = document.getElementById('activityLogsBody');
+      if (logs.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="5" class="p-8 text-center text-slate-400">
+              <i class="fa-solid fa-inbox text-3xl mb-2 block text-slate-300"></i>
+              لا توجد سجلات نشاط مطابقة حالياً
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = logs.map(item => {
+        let actionBadge = '';
+        if (item.action === 'download') {
+          actionBadge = '<span class="bg-emerald-100 text-emerald-800 border border-emerald-300 px-2.5 py-1 rounded-lg text-xs font-black inline-flex items-center gap-1"><i class="fa-solid fa-download"></i> تنزيل ملف</span>';
+        } else if (item.action === 'view') {
+          actionBadge = '<span class="bg-blue-100 text-blue-800 border border-blue-300 px-2.5 py-1 rounded-lg text-xs font-black inline-flex items-center gap-1"><i class="fa-regular fa-eye"></i> عرض ومعاينة</span>';
+        } else if (item.action === 'print') {
+          actionBadge = '<span class="bg-purple-100 text-purple-800 border border-purple-300 px-2.5 py-1 rounded-lg text-xs font-black inline-flex items-center gap-1"><i class="fa-solid fa-print"></i> طباعة A4</span>';
+        } else if (item.action === 'office') {
+          actionBadge = '<span class="bg-amber-100 text-amber-800 border border-amber-300 px-2.5 py-1 rounded-lg text-xs font-black inline-flex items-center gap-1"><i class="fa-solid fa-file-export"></i> فتح عبر Office</span>';
+        } else {
+          actionBadge = `<span class="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-lg text-xs font-bold">${item.action}</span>`;
+        }
+
+        return `
+          <tr class="hover:bg-slate-50 transition-colors">
+            <td class="p-3.5 text-slate-500 font-mono text-xs whitespace-nowrap">${item.timestamp || '—'}</td>
+            <td class="p-3.5 font-bold font-mono text-blue-700 text-xs">${item.centerCode || 'غير محدد'}</td>
+            <td class="p-3.5 font-bold text-slate-900">${item.centerName || 'مركز غير مسجل'}</td>
+            <td class="p-3.5 text-slate-800 font-medium">${item.formTitle || '—'}</td>
+            <td class="p-3.5 text-center">${actionBadge}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderTopCenters(topCenters) {
+      const container = document.getElementById('topCentersContainer');
+      if (!topCenters || topCenters.length === 0) {
+        container.innerHTML = '<div class="col-span-3 text-center text-slate-400 py-4 text-xs">لا تتوفر إحصائيات مراكز كافية بعد</div>';
+        return;
+      }
+
+      container.innerHTML = topCenters.map((c, idx) => `
+        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-3 flex items-center justify-between">
+          <div class="flex items-center gap-2.5">
+            <div class="w-7 h-7 rounded-lg ${idx === 0 ? 'bg-amber-500 text-white font-black' : 'bg-slate-200 text-slate-700 font-bold'} flex items-center justify-center text-xs">
+              ${idx + 1}
+            </div>
+            <div>
+              <div class="text-xs font-black text-slate-900">مركز ${c.name}</div>
+              <div class="text-[11px] font-mono text-slate-500">رمز: ${c.code}</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 text-xs">
+            <span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-bold" title="تنزيلات">${c.downloads} 📥</span>
+            <span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded font-bold" title="عرض">${c.views} 👁️</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // ================= MULTI-PAGE FORM VIEWER FOR ADMIN =================
+    let activeAdminForm = null;
+    let boxIdCounter = 0;
+
+    function adminViewForm(formId) {
+      activeAdminForm = adminFormsList.find(item => item.id === formId);
+      if (!activeAdminForm) return;
+
+      const isOffice = activeAdminForm.isOffice || ['docx', 'doc', 'xlsx', 'xls'].includes(activeAdminForm.fileType);
+
+      document.getElementById('viewModalTitle').innerText = `عرض النموذج: ${activeAdminForm.title}`;
+      const dlBtn = document.getElementById('viewDownloadBtn');
+      dlBtn.href = `/api/forms/${activeAdminForm.id}/download`;
+      dlBtn.setAttribute('download', activeAdminForm.originalName || '');
+      dlBtn.setAttribute('title', `تنزيل: ${activeAdminForm.originalName || activeAdminForm.title}`);
+
+      const addBoxBtn = document.getElementById('addBoxModalBtnAdmin');
+      const boxesCountWrap = document.getElementById('adminBoxesCountWrap');
+      const tipText = document.getElementById('adminModalTipText');
+      const tipIcon = document.getElementById('adminModalTipIcon');
+
+      if (isOffice) {
+        if (addBoxBtn) addBoxBtn.classList.add('hidden');
+        if (boxesCountWrap) boxesCountWrap.classList.add('hidden');
+        if (tipIcon) tipIcon.className = 'fa-solid fa-file-circle-check text-blue-600';
+        if (tipText) tipText.innerText = 'هذا النموذج للعرض والمعاينة والطباعة المباشرة بدون كتابة. يمكنك التمرير لكافة الصفحات وطباعتها أو تنزيل الملف الأصلي.';
+      } else {
+        if (addBoxBtn) addBoxBtn.classList.remove('hidden');
+        if (boxesCountWrap) boxesCountWrap.classList.remove('hidden');
+        if (tipIcon) tipIcon.className = 'fa-solid fa-lightbulb text-amber-500';
+        if (tipText) tipText.innerText = '💡 يمكنك التمرير لجميع الصفحات، وإضافة وسحب مربعات النص بحرية وطباعتها بدقة 100%.';
+      }
+
+      // Determine pages
+      let pages = [];
+      if (activeAdminForm.pages && activeAdminForm.pages.length > 0) {
+        pages = activeAdminForm.pages;
+      } else if (activeAdminForm.sheetImage) {
+        pages = [activeAdminForm.sheetImage];
+      } else if (activeAdminForm.fileType === 'image' || ['.png', '.jpg', '.jpeg', '.webp'].some(ext => (activeAdminForm.fileName || '').toLowerCase().endsWith(ext))) {
+        pages = ['/uploads/' + activeAdminForm.fileName];
+      } else if (!isOffice) {
+        pages = [`/sheets/${activeAdminForm.id}_sheet.png`];
+      }
+
+      const scrollArea = document.getElementById('sheetScrollArea');
+      scrollArea.innerHTML = '';
+      boxIdCounter = 0;
+
+      // If it's an office file with no rendered page images yet, show an elegant Office Card
+      if (pages.length === 0 && isOffice) {
+        const isWord = ['docx', 'doc'].includes(activeAdminForm.fileType);
+        const iconClass = isWord ? 'fa-file-word text-blue-600' : 'fa-file-excel text-emerald-600';
+        const officeBg = isWord ? 'bg-blue-50 border-blue-200' : 'bg-emerald-50 border-emerald-200';
+        const officeBtn = isWord ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-emerald-600 hover:bg-emerald-700 text-white';
+        const officeType = isWord ? 'Word' : 'Excel';
+
+        scrollArea.innerHTML = `
+          <div class="my-auto py-16 px-6 max-w-lg mx-auto text-center ${officeBg} border-2 rounded-3xl shadow-xl">
+            <div class="w-24 h-24 rounded-3xl bg-white shadow-lg mx-auto flex items-center justify-center text-5xl mb-5">
+              <i class="fa-solid ${iconClass}"></i>
+            </div>
+            <h4 class="text-xl font-black text-slate-900 mb-2">${activeAdminForm.title}</h4>
+            <p class="text-xs font-bold text-slate-600 mb-6 leading-relaxed">
+              هذا النموذج بصيغة ${officeType} (${(activeAdminForm.fileType || '').toUpperCase()})، تم إعداده للفتح والطباعة والتعديل المباشر عبر برنامج مايكروسوفت ${officeType}.
+            </p>
+            <div class="flex items-center justify-center gap-3">
+              <a href="/api/forms/${activeAdminForm.id}/download" download class="px-6 py-3 ${officeBtn} rounded-xl font-black text-sm flex items-center gap-2 shadow-lg transition-all active:scale-95">
+                <i class="fa-solid fa-download"></i>
+                <span>تنزيل وفتح في برنامج ${officeType}</span>
+              </a>
+            </div>
+          </div>
+        `;
+        document.getElementById('pagesCountBadge').innerText = '1';
+        document.getElementById('viewModal').classList.remove('hidden');
+        return;
+      }
+
+      document.getElementById('pagesCountBadge').innerText = pages.length;
+
+      pages.forEach((pageSrc, pageIdx) => {
+        const pNum = pageIdx + 1;
+        const pageWrapper = document.createElement('div');
+        pageWrapper.className = 'sheet-wrapper';
+        pageWrapper.id = `sheetWrapper_${pNum}`;
+        pageWrapper.setAttribute('data-page', pNum);
+
+        let pageHeaderHtml = '';
+        if (pages.length > 1) {
+          if (!isOffice) {
+            pageHeaderHtml = `
+              <div class="bg-slate-800 text-white text-xs font-bold px-3 py-1.5 rounded-t flex items-center justify-between">
+                <span>صفحة ${pNum} من ${pages.length}</span>
+                <button type="button" onclick="addDraggableBox('', 35, 30, 140, 30, ${pNum})" class="bg-amber-500 hover:bg-amber-400 text-slate-950 px-2.5 py-0.5 rounded text-xs font-black">
+                  + إضافة نص في هذه الصفحة
+                </button>
+              </div>
+            `;
+          } else {
+            pageHeaderHtml = `
+              <div class="bg-slate-800 text-white text-xs font-bold px-3 py-1.5 rounded-t flex items-center justify-between">
+                <span>صفحة ${pNum} من ${pages.length}</span>
+              </div>
+            `;
+          }
+        }
+
+        pageWrapper.innerHTML = `
+          ${pageHeaderHtml}
+          <div class="page-rotatable-inner" id="pageRotatable_${pNum}" style="position: relative; width: 100%; transition: transform 0.2s ease;">
+            <img src="${pageSrc}" class="sheet-bg" id="sheetImage_${pNum}" alt="الصفحة ${pNum}" onerror="if(this.src.indexOf('/uploads/') === -1 && '${activeAdminForm.fileName}'){ this.src = '/uploads/${activeAdminForm.fileName}'; }">
+            <div id="boxesContainer_${pNum}" class="absolute inset-0">
+              <!-- Text Boxes for page ${pNum} -->
+            </div>
+          </div>
+        `;
+        scrollArea.appendChild(pageWrapper);
+      });
+
+      document.getElementById('viewModal').classList.remove('hidden');
+      updateBoxesCount();
+
+      // Smart auto-detection for wide landscape documents vs standard portrait:
+      currentSheetRotationAdmin = 0;
+      setSheetWidthAdmin(850);
+
+      const firstImg = document.getElementById('sheetImage_1');
+      if (firstImg) {
+        const checkAspect = () => {
+          if (firstImg.naturalWidth > firstImg.naturalHeight * 1.15) {
+            setSheetWidthAdmin(1450);
+            if (tipIcon) tipIcon.className = 'fa-solid fa-arrows-left-right text-blue-600';
+            if (tipText) tipText.innerText = 'ملف عريض: تم تفعيل شريط التمرير العرضي بالأسفل لإظهار كامل الأعمدة والأبعاد.';
+          } else {
+            setSheetWidthAdmin(850);
+          }
+        };
+        if (firstImg.complete && firstImg.naturalWidth > 0) {
+          checkAspect();
+        } else {
+          firstImg.onload = checkAspect;
+        }
+      }
+
+      if (!isOffice) {
+        // Add default empty box on first page
+        addDraggableBox('', 35, 25, 140, 30, 1);
+      }
+    }
+
+    // Rotation & Zoom controller for Admin
+    let currentSheetWidthAdmin = 850;
+    let currentSheetRotationAdmin = 0; // 0, 90, 180, 270
+
+    function rotateCurrentSheetAdmin(delta = 90) {
+      currentSheetRotationAdmin = (currentSheetRotationAdmin + delta) % 360;
+      applySheetRotationAdmin();
+    }
+
+    function setSheetWidthAdmin(width) {
+      currentSheetWidthAdmin = Math.max(600, Math.min(2600, width));
+      const zoomBadge = document.getElementById('zoomPercentBadgeAdmin');
+      if (zoomBadge) {
+        const pct = Math.round((currentSheetWidthAdmin / 850) * 100);
+        zoomBadge.innerText = `${pct}%`;
+      }
+
+      // Proportional font-size scaling on zoom - ensures text stays locked to the form lines without drifting!
+      const zoomRatio = currentSheetWidthAdmin / 850;
+      document.querySelectorAll('#sheetScrollArea .drag-textarea').forEach(ta => {
+        const baseFont = parseFloat(ta.getAttribute('data-base-font')) || 16;
+        ta.style.fontSize = `${Math.round(baseFont * zoomRatio)}px`;
+      });
+
+      applySheetRotationAdmin();
+    }
+
+    function adjustSheetZoomAdmin(delta) {
+      setSheetWidthAdmin(currentSheetWidthAdmin + delta);
+    }
+
+    function applySheetRotationAdmin() {
+      const wrappers = document.querySelectorAll('#sheetScrollArea .sheet-wrapper');
+      const badge = document.getElementById('rotationAngleBadgeAdmin');
+      if (badge) {
+        if (currentSheetRotationAdmin > 0) {
+          badge.innerText = `${currentSheetRotationAdmin}°`;
+          badge.classList.remove('hidden');
+        } else {
+          badge.classList.add('hidden');
+        }
+      }
+
+      wrappers.forEach(wrapper => {
+        const pNum = wrapper.getAttribute('data-page') || '1';
+        const inner = document.getElementById(`pageRotatable_${pNum}`);
+        const img = document.getElementById(`sheetImage_${pNum}`);
+        if (!inner || !img) return;
+
+        const natW = img.naturalWidth || 1200;
+        const natH = img.naturalHeight || 1700;
+        const aspect = natH / natW;
+
+        const W = currentSheetWidthAdmin;
+        const H = Math.round(W * aspect);
+
+        inner.style.width = `${W}px`;
+        inner.style.height = `${H}px`;
+
+        const headerEl = wrapper.querySelector('.bg-slate-800');
+        const headerH = headerEl ? headerEl.offsetHeight : 0;
+
+        wrapper.style.maxWidth = 'none';
+
+        if (currentSheetRotationAdmin === 0) {
+          wrapper.style.width = `${W}px`;
+          wrapper.style.height = 'auto';
+          inner.style.position = 'relative';
+          inner.style.top = '0px';
+          inner.style.left = '0px';
+          inner.style.transformOrigin = 'top left';
+          inner.style.transform = 'none';
+        } else if (currentSheetRotationAdmin === 90) {
+          wrapper.style.width = `${H}px`;
+          wrapper.style.height = `${W + headerH}px`;
+          inner.style.position = 'absolute';
+          inner.style.top = `${headerH}px`;
+          inner.style.left = '0px';
+          inner.style.transformOrigin = 'top left';
+          inner.style.transform = `translate(${H}px, 0px) rotate(90deg)`;
+        } else if (currentSheetRotationAdmin === 180) {
+          wrapper.style.width = `${W}px`;
+          wrapper.style.height = `${H + headerH}px`;
+          inner.style.position = 'absolute';
+          inner.style.top = `${headerH}px`;
+          inner.style.left = '0px';
+          inner.style.transformOrigin = 'top left';
+          inner.style.transform = `translate(${W}px, ${H}px) rotate(180deg)`;
+        } else if (currentSheetRotationAdmin === 270) {
+          wrapper.style.width = `${H}px`;
+          wrapper.style.height = `${W + headerH}px`;
+          inner.style.position = 'absolute';
+          inner.style.top = `${headerH}px`;
+          inner.style.left = '0px';
+          inner.style.transformOrigin = 'top left';
+          inner.style.transform = `translate(0px, ${W}px) rotate(270deg)`;
+        }
+      });
+    }
+
+    function closeViewModal() {
+      document.getElementById('viewModal').classList.add('hidden');
+      document.getElementById('sheetScrollArea').innerHTML = '';
+    }
+
+    function addDraggableBoxToCurrentPage() {
+      const wrappers = document.querySelectorAll('#sheetScrollArea .sheet-wrapper');
+      let targetPage = 1;
+      const scrollArea = document.getElementById('sheetScrollArea');
+      const scrollTop = scrollArea.scrollTop;
+
+      wrappers.forEach(w => {
+        const pageNum = parseInt(w.getAttribute('data-page')) || 1;
+        if (w.offsetTop - 100 <= scrollTop) {
+          targetPage = pageNum;
+        }
+      });
+
+      addDraggableBox('', 35, 30, 140, 30, targetPage);
+    }
+
+    // Add New Draggable & Resizable Text Box
+    function addDraggableBox(defaultText = '', posXPercent = 35, posYPercent = 30, widthVal = 16.5, heightVal = 2.7, pageNum = 1, baseFont = 16) {
+      const container = document.getElementById(`boxesContainer_${pageNum}`) || document.getElementById('boxesContainer_1');
+      if (!container) return;
+
+      boxIdCounter++;
+      const boxId = 'box_' + boxIdCounter;
+
+      let wPct = parseFloat(widthVal) || 16.5;
+      if (wPct > 50) wPct = ((wPct / 850) * 100);
+      let hPct = parseFloat(heightVal) || 2.7;
+      if (hPct > 15) hPct = ((hPct / 1200) * 100);
+
+      const box = document.createElement('div');
+      box.className = 'drag-box is-focused';
+      box.id = boxId;
+      box.setAttribute('data-page', pageNum);
+      box.style.top = `${posYPercent}%`;
+      box.style.left = `${posXPercent}%`;
+      box.style.width = `${wPct.toFixed(2)}%`;
+      box.style.height = `${hPct.toFixed(2)}%`;
+
+      box.innerHTML = `
+        <div class="drag-bar" onpointerdown="startDrag(event, '${boxId}', ${pageNum})">
+          <span class="flex items-center gap-1">
+            <i class="fa-solid fa-arrows-up-down-left-right text-[10px]"></i>
+            <span>اسحب</span>
+          </span>
+          <div class="flex items-center gap-1.5 no-drag">
+            <button type="button" onclick="duplicateBox('${boxId}', ${pageNum})" class="hover:text-emerald-300 font-bold px-1 flex items-center gap-0.5 text-[10px] bg-white/10 rounded" title="تكرار / نسخ هذا المربع">
+              <i class="fa-regular fa-clone"></i>
+              <span>نسخ</span>
+            </button>
+            <button type="button" onclick="adjustBoxFont('${boxId}', 1)" class="hover:text-amber-300 font-bold px-1" title="تكبير الخط">A+</button>
+            <button type="button" onclick="adjustBoxFont('${boxId}', -1)" class="hover:text-amber-300 font-bold px-1" title="تصغير الخط">A-</button>
+            <button type="button" onclick="deleteBox('${boxId}')" class="hover:text-rose-300 font-bold px-1 text-xs" title="حذف المربع">✕</button>
+          </div>
+        </div>
+        <textarea class="drag-textarea" placeholder="اكتب هنا..." data-base-font="${baseFont}">${defaultText}</textarea>
+        <div class="resize-handle" onpointerdown="startResize(event, '${boxId}')" title="اسحب لتكبير وتصغير المربع">⇲</div>
+      `;
+
+      container.appendChild(box);
+      updateBoxesCount();
+
+      const ta = box.querySelector('.drag-textarea');
+      const zoomRatio = currentSheetWidthAdmin / 850;
+      if (ta) {
+        ta.style.fontSize = `${Math.round(baseFont * zoomRatio)}px`;
+      }
+
+      ta.addEventListener('focus', () => {
+        document.querySelectorAll('.drag-box').forEach(b => b.classList.remove('is-focused'));
+        box.classList.add('is-focused');
+      });
+      ta.addEventListener('blur', () => {
+        box.classList.remove('is-focused');
+      });
+      box.addEventListener('pointerdown', () => {
+        document.querySelectorAll('.drag-box').forEach(b => b.classList.remove('is-focused'));
+        box.classList.add('is-focused');
+      });
+
+      ta.addEventListener('input', () => {
+        const containerH = container.offsetHeight || 1200;
+        if (ta.scrollHeight > box.clientHeight) {
+          const newHPct = ((ta.scrollHeight + 4) / containerH) * 100;
+          box.style.height = `${newHPct.toFixed(2)}%`;
+        }
+      });
+
+      setTimeout(() => {
+        if (ta) ta.focus();
+      }, 50);
+    }
+
+    function deleteBox(id) {
+      const el = document.getElementById(id);
+      if (el) el.remove();
+      updateBoxesCount();
+    }
+
+    function duplicateBox(boxId, pageNum = 1) {
+      const srcBox = document.getElementById(boxId);
+      if (!srcBox) return;
+
+      const srcTa = srcBox.querySelector('.drag-textarea');
+      const text = srcTa ? srcTa.value : '';
+      const baseFont = srcTa ? (parseFloat(srcTa.getAttribute('data-base-font')) || 16) : 16;
+
+      const srcLeftPct = parseFloat(srcBox.style.left) || 35;
+      const srcTopPct = parseFloat(srcBox.style.top) || 30;
+      const srcWidthPct = parseFloat(srcBox.style.width) || 16.5;
+      const srcHeightPct = parseFloat(srcBox.style.height) || 2.7;
+
+      let newLeftPct = Math.max(1, Math.min(85, srcLeftPct - 1.5));
+      let newTopPct = Math.max(1, Math.min(94, srcTopPct + 2.5));
+
+      addDraggableBox(text, newLeftPct.toFixed(2), newTopPct.toFixed(2), srcWidthPct.toFixed(2), srcHeightPct.toFixed(2), pageNum, baseFont);
+    }
+
+    function adjustBoxFont(id, delta) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const ta = el.querySelector('.drag-textarea');
+      if (!ta) return;
+      let baseFont = parseFloat(ta.getAttribute('data-base-font')) || 16;
+      baseFont = Math.max(8, Math.min(48, baseFont + (delta * 2)));
+      ta.setAttribute('data-base-font', baseFont);
+      const zoomRatio = currentSheetWidthAdmin / 850;
+      ta.style.fontSize = `${Math.round(baseFont * zoomRatio)}px`;
+    }
+
+    function updateBoxesCount() {
+      const count = document.querySelectorAll('#sheetScrollArea .drag-box').length;
+      const badge = document.getElementById('boxesCountBadge');
+      if (badge) badge.innerText = count;
+    }
+
+    // Drag Implementation with Rotation Support
+    let activeDrag = null;
+
+    function startDrag(e, boxId, pageNum = 1) {
+      if (e.target.closest('.no-drag')) return;
+      e.preventDefault();
+
+      const box = document.getElementById(boxId);
+      const container = box.parentElement; // boxesContainer
+      const containerW = container.offsetWidth || currentSheetWidthAdmin;
+      const containerH = container.offsetHeight || Math.round(currentSheetWidthAdmin * 1.414);
+
+      const currentLeftPct = parseFloat(box.style.left) || 35;
+      const currentTopPct = parseFloat(box.style.top) || 30;
+
+      activeDrag = {
+        box,
+        pageNum,
+        startX: e.clientX,
+        startY: e.clientY,
+        initialLeftPx: (currentLeftPct / 100) * containerW,
+        initialTopPx: (currentTopPct / 100) * containerH,
+        containerW,
+        containerH,
+        rotation: currentSheetRotationAdmin
+      };
+
+      box.classList.add('active');
+
+      window.addEventListener('pointermove', onDragging);
+      window.addEventListener('pointerup', stopDrag);
+    }
+
+    function onDragging(e) {
+      if (!activeDrag) return;
+      e.preventDefault();
+
+      const dxScreen = e.clientX - activeDrag.startX;
+      const dyScreen = e.clientY - activeDrag.startY;
+
+      let dxLocal = dxScreen;
+      let dyLocal = dyScreen;
+
+      if (activeDrag.rotation === 90) {
+        dxLocal = dyScreen;
+        dyLocal = -dxScreen;
+      } else if (activeDrag.rotation === 180) {
+        dxLocal = -dxScreen;
+        dyLocal = -dyScreen;
+      } else if (activeDrag.rotation === 270) {
+        dxLocal = -dyScreen;
+        dyLocal = dxScreen;
+      }
+
+      let newLeft = activeDrag.initialLeftPx + dxLocal;
+      let newTop = activeDrag.initialTopPx + dyLocal;
+
+      newLeft = Math.max(0, Math.min(activeDrag.containerW - 30, newLeft));
+      newTop = Math.max(0, Math.min(activeDrag.containerH - 20, newTop));
+
+      const leftPct = (newLeft / activeDrag.containerW) * 100;
+      const topPct = (newTop / activeDrag.containerH) * 100;
+
+      activeDrag.box.style.left = `${leftPct.toFixed(2)}%`;
+      activeDrag.box.style.top = `${topPct.toFixed(2)}%`;
+    }
+
+    function stopDrag() {
+      if (activeDrag && activeDrag.box) {
+        activeDrag.box.classList.remove('active');
+      }
+      activeDrag = null;
+      window.removeEventListener('pointermove', onDragging);
+      window.removeEventListener('pointerup', stopDrag);
+    }
+
+    // Resize Implementation with Rotation Support
+    let activeResize = null;
+
+    function startResize(e, boxId) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const box = document.getElementById(boxId);
+      const container = box.parentElement;
+      const containerW = container.offsetWidth || currentSheetWidthAdmin;
+      const containerH = container.offsetHeight || Math.round(currentSheetWidthAdmin * 1.414);
+
+      activeResize = {
+        box,
+        startX: e.clientX,
+        startY: e.clientY,
+        initialWidthPx: box.offsetWidth,
+        initialHeightPx: box.offsetHeight,
+        containerW,
+        containerH,
+        rotation: currentSheetRotationAdmin
+      };
+
+      box.classList.add('active');
+
+      window.addEventListener('pointermove', onResizing);
+      window.addEventListener('pointerup', stopResize);
+    }
+
+    function onResizing(e) {
+      if (!activeResize) return;
+      e.preventDefault();
+
+      const dxScreen = activeResize.startX - e.clientX;
+      const dyScreen = e.clientY - activeResize.startY;
+
+      let dxLocal = dxScreen;
+      let dyLocal = dyScreen;
+
+      if (activeResize.rotation === 90) {
+        dxLocal = dyScreen;
+        dyLocal = dxScreen;
+      } else if (activeResize.rotation === 180) {
+        dxLocal = -dxScreen;
+        dyLocal = -dyScreen;
+      } else if (activeResize.rotation === 270) {
+        dxLocal = -dyScreen;
+        dyLocal = -dxScreen;
+      }
+
+      const newWidthPx = Math.max(30, activeResize.initialWidthPx + dxLocal);
+      const newHeightPx = Math.max(20, activeResize.initialHeightPx + dyLocal);
+
+      const widthPct = (newWidthPx / activeResize.containerW) * 100;
+      const heightPct = (newHeightPx / activeResize.containerH) * 100;
+
+      activeResize.box.style.width = `${widthPct.toFixed(2)}%`;
+      activeResize.box.style.height = `${heightPct.toFixed(2)}%`;
+    }
+
+    function stopResize() {
+      if (activeResize && activeResize.box) {
+        activeResize.box.classList.remove('active');
+      }
+      activeResize = null;
+      window.removeEventListener('pointermove', onResizing);
+      window.removeEventListener('pointerup', stopResize);
+    }
+
+    // Generate high-resolution canvas with official sheet and user texts baked in (supports multi-page)
+    async function generateBakedCanvases() {
+      if (!activeAdminForm) return [];
+
+      if (document.fonts && document.fonts.ready) {
+        await document.fonts.ready;
+      }
+
+      const wrappers = document.querySelectorAll('#sheetScrollArea .sheet-wrapper');
+      const canvases = [];
+
+      for (let i = 0; i < wrappers.length; i++) {
+        const wrapper = wrappers[i];
+        const pageNum = wrapper.getAttribute('data-page') || (i + 1);
+        const imgEl = wrapper.querySelector('.sheet-bg');
+        const rotatableInner = wrapper.querySelector('.page-rotatable-inner');
+        if (!imgEl) continue;
+
+        const origW = imgEl.naturalWidth || 1700;
+        const origH = imgEl.naturalHeight || 2200;
+
+        const canvas = document.createElement('canvas');
+        if (currentSheetRotationAdmin === 90 || currentSheetRotationAdmin === 270) {
+          canvas.width = origH;
+          canvas.height = origW;
+        } else {
+          canvas.width = origW;
+          canvas.height = origH;
+        }
+        const ctx = canvas.getContext('2d');
+
+        ctx.save();
+        if (currentSheetRotationAdmin === 90) {
+          ctx.translate(origH, 0);
+          ctx.rotate(90 * Math.PI / 180);
+        } else if (currentSheetRotationAdmin === 180) {
+          ctx.translate(origW, origH);
+          ctx.rotate(180 * Math.PI / 180);
+        } else if (currentSheetRotationAdmin === 270) {
+          ctx.translate(0, origW);
+          ctx.rotate(270 * Math.PI / 180);
+        }
+
+        ctx.drawImage(imgEl, 0, 0, origW, origH);
+
+        const boxes = wrapper.querySelectorAll('.drag-box');
+        boxes.forEach(box => {
+          const ta = box.querySelector('.drag-textarea');
+          const text = ta ? ta.value : '';
+          if (text && text.trim()) {
+            const leftPct = parseFloat(box.style.left) || 0;
+            const topPct = parseFloat(box.style.top) || 0;
+            const widthPct = parseFloat(box.style.width) || 16.5;
+
+            const baseFontPx = parseFloat(ta.getAttribute('data-base-font')) || 16;
+            const printScale = origW / 850;
+            const canvasFontSize = Math.round(baseFontPx * printScale);
+
+            ctx.save();
+            ctx.font = `bold ${canvasFontSize}px "Cairo", "Traditional Arabic", sans-serif`;
+            ctx.fillStyle = '#000000';
+            ctx.direction = 'rtl';
+            ctx.textAlign = 'right';
+            ctx.textBaseline = 'top';
+
+            const boxX = (leftPct / 100) * origW;
+            const boxY = (topPct / 100) * origH;
+            const boxW = (widthPct / 100) * origW;
+            const textRight = boxX + boxW;
+            const baselineNudge = canvasFontSize * 0.18;
+
+            const lines = text.split('\n');
+            const lineHeight = canvasFontSize * 1.30;
+
+            lines.forEach((line, idx) => {
+              ctx.fillText(line, textRight - (2 * printScale), boxY + baselineNudge + (idx * lineHeight));
+            });
+
+            ctx.restore();
+          }
+        });
+
+        ctx.restore();
+        canvases.push(canvas);
+      }
+
+      return canvases;
+    }
+
+    // Print all pages with pixel precision
+    async function printAllPagesWithBoxes() {
+      if (!activeAdminForm) return;
+
+      const canvases = await generateBakedCanvases();
+      if (!canvases || canvases.length === 0) return;
+
+      let printFrame = document.getElementById('basraAdminPrintFrame');
+      if (printFrame) printFrame.remove();
+
+      printFrame = document.createElement('iframe');
+      printFrame.id = 'basraAdminPrintFrame';
+      printFrame.style.position = 'fixed';
+      printFrame.style.right = '0';
+      printFrame.style.bottom = '0';
+      printFrame.style.width = '1px';
+      printFrame.style.height = '1px';
+      printFrame.style.opacity = '0.01';
+      printFrame.style.border = '0';
+      printFrame.style.pointerEvents = 'none';
+      document.body.appendChild(printFrame);
+
+      const fdoc = printFrame.contentWindow.document;
+      fdoc.open();
+
+      const pagesHtml = canvases.map((c, idx) => {
+        const dataUrl = c.toDataURL('image/png', 1.0);
+        return `
+          <div class="a4-print-page" style="${idx > 0 ? 'page-break-before: always;' : ''}">
+            <img src="${dataUrl}" class="baked-sheet-img" alt="صفحة ${idx + 1}">
+          </div>
+        `;
+      }).join('');
+
+      const isLandscape = canvases[0].width > canvases[0].height;
+      const printOrientation = isLandscape ? 'A4 landscape' : 'A4 portrait';
+      const printPageWidth = isLandscape ? '297mm' : '210mm';
+
+      fdoc.write(`
+        <!DOCTYPE html>
+        <html lang="ar" dir="rtl">
+        <head>
+          <meta charset="UTF-8">
+          <title>${activeAdminForm.title}</title>
+          <style>
+            @page {
+              size: ${printOrientation};
+              margin: 0;
+            }
+            * {
+              box-sizing: border-box;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            html, body {
+              margin: 0;
+              padding: 0;
+              width: 100%;
+              background: #fff;
+            }
+            .a4-print-page {
+              width: ${printPageWidth};
+              max-width: 100%;
+              margin: 0 auto;
+              page-break-inside: avoid;
+            }
+            .baked-sheet-img {
+              width: 100%;
+              height: auto;
+              display: block;
+            }
+            @media print {
+              html, body {
+                width: 100%;
+                margin: 0;
+                padding: 0;
+              }
+              .a4-print-page {
+                width: 100% !important;
+                margin: 0 !important;
+              }
+            }
+          </style>
+        </head>
+        <body>
+          ${pagesHtml}
+        </body>
+        </html>
+      `);
+      fdoc.close();
+
+      setTimeout(() => {
+        try {
+          printFrame.contentWindow.focus();
+          printFrame.contentWindow.print();
+        } catch (err) {
+          console.error('Print trigger error:', err);
+        }
+      }, 500);
+    }
+
+    // Download first page as image
+    async function downloadBakedSheet() {
+      if (!activeAdminForm) return;
+      const canvases = await generateBakedCanvases();
+      if (!canvases || canvases.length === 0) return;
+      const link = document.createElement('a');
+      link.download = `${activeAdminForm.title}_معبأ.png`;
+      link.href = canvases[0].toDataURL('image/png', 1.0);
+      link.click();
+    }
+
+    // Add Form Modal
+    function openAddModal() {
+      document.getElementById('addForm').reset();
+      document.getElementById('addStatusMsg').classList.add('hidden');
+      document.getElementById('addModal').classList.remove('hidden');
+    }
+    function closeAddModal() {
+      document.getElementById('addModal').classList.add('hidden');
+    }
+
+    // Cloud Synchronization Function
+    async function syncWithCloud(extraFiles = [], options = {}) {
+      const statusPill = document.getElementById('cloudSyncStatusPill');
+      const syncBtn = document.getElementById('headerCloudSyncBtn');
+
+      if (statusPill) {
+        statusPill.className = 'hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300 animate-pulse';
+        statusPill.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-amber-600"></i> <span>جاري المزامنة مع السحاب...</span>';
+      }
+      if (syncBtn) {
+        syncBtn.disabled = true;
+        syncBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-amber-300"></i> <span>جاري المزامنة...</span>';
+      }
+
+      const syncUrl = window.location.hostname.includes('vercel.app') 
+        ? '/api/sync' 
+        : 'https://basra-forms.vercel.app/api/sync';
+
+      const adminKey = localStorage.getItem('basra_cloud_key') || 'BasraForms@2026';
+
+      try {
+        const payload = {
+          forms: adminFormsList,
+          categories: adminCategoriesList,
+          files: extraFiles || []
+        };
+
+        const res = await fetch(syncUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-admin-key': adminKey
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+          if (statusPill) {
+            statusPill.className = 'hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300';
+            statusPill.innerHTML = '<i class="fa-solid fa-cloud-check text-emerald-600"></i> <span>متصل بالسحاب ومزامن</span>';
+          }
+          if (syncBtn) {
+            syncBtn.disabled = false;
+            syncBtn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up text-sm"></i> <span>مزامنة السحاب ☁️</span>';
+          }
+          if (!options.silent) {
+            showAppModal({
+              type: 'success',
+              icon: 'fa-solid fa-cloud-arrow-up',
+              title: 'تمت المزامنة السحابية بنجاح!',
+              message: 'تم حفظ كافة التغييرات وإرسالها للسحاب أونلاين. رابط كافة مراكز التسجيل الـ 76 تم تحديثه تلقائياً وفوراً!',
+              confirmText: 'ممتاز'
+            });
+          }
+          return true;
+        } else {
+          throw new Error(data.error || 'فشلت المزامنة مع السحاب');
+        }
+      } catch (err) {
+        console.error('Cloud Sync Error:', err);
+        if (statusPill) {
+          statusPill.className = 'hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-rose-100 text-rose-800 border border-rose-300';
+          statusPill.innerHTML = '<i class="fa-solid fa-circle-exclamation text-rose-600"></i> <span>تعذر الاتصال بالسحاب</span>';
+        }
+        if (syncBtn) {
+          syncBtn.disabled = false;
+          syncBtn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up text-sm"></i> <span>إعادة المحاولة ☁️</span>';
+        }
+        if (!options.silent) {
+          showAppModal({
+            type: 'warning',
+            icon: 'fa-solid fa-triangle-exclamation',
+            title: 'تنبيه المزامنة السحابية',
+            message: 'تم إجراء التعديل ولكن تعذر إرساله للسحاب: ' + err.message + '\nيمكنك الضغط على زر "مزامنة السحاب" بالأعلى لإعادة المحاولة.',
+            confirmText: 'حسناً'
+          });
+        }
+        return false;
+      }
+    }
+
+    async function submitAddForm(e) {
+      e.preventDefault();
+      const title = document.getElementById('addTitle').value.trim();
+      const category = document.getElementById('addCategory').value;
+      const desc = document.getElementById('addDesc').value.trim();
+      const fileInput = document.getElementById('addFile');
+      const file = fileInput.files[0];
+      const statusMsg = document.getElementById('addStatusMsg');
+      const btn = document.getElementById('addSubmitBtn');
+
+      if (!file) {
+        showAppModal({
+          type: 'warning',
+          icon: 'fa-solid fa-file-circle-exclamation',
+          title: 'يرجى اختيار ملف',
+          message: 'يرجى اختيار ملف النموذج أولاً قبل المتابعة.',
+          confirmText: 'حسناً'
+        });
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>جاري المعالجة والمزامنة...</span>';
+      statusMsg.className = 'text-xs p-2 rounded-lg text-center font-bold bg-amber-100 text-amber-800';
+      statusMsg.innerText = 'جاري قراءة الملف وتجهيز المزامنة السحابية...';
+      statusMsg.classList.remove('hidden');
+
+      try {
+        const rawExt = file.name.split('.').pop().toLowerCase();
+        const cleanExt = rawExt === 'jpeg' ? 'jpg' : rawExt;
+        const isOffice = ['docx', 'doc', 'xlsx', 'xls'].includes(cleanExt);
+        const newId = 'form_' + Date.now();
+        const fileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+
+        // Read file as base64
+        const base64Data = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result.split(',')[1]);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+
+        const extraFiles = [];
+        extraFiles.push({
+          path: `uploads/${fileName}`,
+          contentBase64: base64Data
+        });
+
+        let pages = [];
+        let sheetImage = null;
+
+        // Render PDF pages to images using PDF.js if available
+        if (cleanExt === 'pdf' && window.pdfjsLib) {
+          try {
+            statusMsg.innerText = 'جاري استخراج صور صفحات النموذج...';
+            const pdfData = atob(base64Data);
+            const uint8 = new Uint8Array(pdfData.length);
+            for (let i = 0; i < pdfData.length; i++) uint8[i] = pdfData.charCodeAt(i);
+            const pdf = await pdfjsLib.getDocument({ data: uint8 }).promise;
+            const numPages = Math.min(pdf.numPages, 5);
+            for (let p = 1; p <= numPages; p++) {
+              const page = await pdf.getPage(p);
+              const viewport = page.getViewport({ scale: 1.5 });
+              const canvas = document.createElement('canvas');
+              canvas.width = viewport.width;
+              canvas.height = viewport.height;
+              const ctx = canvas.getContext('2d');
+              await page.render({ canvasContext: ctx, viewport }).promise;
+              const pDataUrl = canvas.toDataURL('image/png');
+              const pBase64 = pDataUrl.split(',')[1];
+              const pPath = `sheets/${newId}_page_${p}.png`;
+              extraFiles.push({ path: pPath, contentBase64: pBase64 });
+              pages.push('/' + pPath);
+            }
+            if (pages.length > 0) {
+              sheetImage = pages[0];
+              extraFiles.push({ path: `sheets/${newId}_sheet.png`, contentBase64: extraFiles[1].contentBase64 });
+            }
+          } catch (err) {
+            console.warn('PDF rendering skipped:', err);
+          }
+        } else if (['jpg', 'png'].includes(cleanExt)) {
+          const pPath = `sheets/${newId}_sheet.png`;
+          extraFiles.push({ path: pPath, contentBase64: base64Data });
+          pages.push('/' + pPath);
+          sheetImage = '/' + pPath;
+        }
+
+        const catObj = adminCategoriesList.find(c => c.id === category);
+        const newForm = {
+          id: newId,
+          title: title,
+          category: category,
+          categoryName: catObj ? catObj.name : category,
+          fileType: cleanExt,
+          fileName: fileName,
+          originalName: file.name,
+          fileSize: (file.size / 1024).toFixed(1) + ' KB',
+          uploadDate: new Date().toISOString().split('T')[0],
+          updatedDate: new Date().toISOString().split('T')[0],
+          version: 'v1.0',
+          description: desc,
+          fillableTemplateId: null,
+          hidden: false,
+          downloads: 0,
+          pages: pages.length > 0 ? pages : [`/sheets/${newId}_sheet.png`],
+          pageCount: pages.length || 1,
+          sheetImage: sheetImage || `/sheets/${newId}_sheet.png`,
+          isOffice: isOffice
+        };
+
+        adminFormsList.unshift(newForm);
+        updateFormsCounts();
+        renderAdminFormsTable();
+
+        statusMsg.innerText = 'جاري المزامنة والنشر للمراكز أونلاين...';
+        await syncWithCloud(extraFiles, { silent: true });
+
+        statusMsg.innerText = 'تم إضافة النموذج ونشره بنجاح لجميع المراكز!';
+        statusMsg.className = 'text-xs p-2 rounded-lg text-center font-bold bg-emerald-100 text-emerald-800';
+
+        setTimeout(() => {
+          closeAddModal();
+          document.getElementById('addForm').reset();
+          showAppModal({
+            type: 'success',
+            icon: 'fa-solid fa-circle-check',
+            title: 'تمت الإضافة والنشر بنجاح!',
+            message: `تمت إضافة النموذج "${title}" ونشره تلقائياً لجميع مراكز التسجيل الـ 76 أونلاين.`,
+            confirmText: 'رائع'
+          });
+        }, 900);
+
+      } catch (err) {
+        statusMsg.innerText = 'خطأ أثناء الإضافة: ' + err.message;
+        statusMsg.className = 'text-xs p-2 rounded-lg text-center font-bold bg-rose-100 text-rose-800';
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-save"></i> <span>حفظ وإضافة</span>';
+      }
+    }
+
+    // Edit Form Modal
+    function openEditModal(id) {
+      const f = adminFormsList.find(item => item.id === id);
+      if (!f) return;
+
+      document.getElementById('editFormId').value = f.id;
+      document.getElementById('editTitle').value = f.title;
+      document.getElementById('editCategory').value = f.category || 'leaves';
+      document.getElementById('editDesc').value = f.description || '';
+      document.getElementById('editFormHidden').checked = Boolean(f.hidden);
+      document.getElementById('editStatusMsg').classList.add('hidden');
+      document.getElementById('editModal').classList.remove('hidden');
+    }
+    function closeEditModal() {
+      document.getElementById('editModal').classList.add('hidden');
+    }
+
+    async function submitEditForm(e) {
+      e.preventDefault();
+      const id = document.getElementById('editFormId').value;
+      const title = document.getElementById('editTitle').value.trim();
+      const category = document.getElementById('editCategory').value;
+      const description = document.getElementById('editDesc').value.trim();
+      const hidden = document.getElementById('editFormHidden').checked;
+      const statusMsg = document.getElementById('editStatusMsg');
+
+      const f = adminFormsList.find(item => item.id === id);
+      if (!f) return;
+
+      f.title = title;
+      f.category = category;
+      const catObj = adminCategoriesList.find(c => c.id === category);
+      f.categoryName = catObj ? catObj.name : category;
+      f.description = description;
+      f.hidden = hidden;
+      f.updatedDate = new Date().toISOString().split('T')[0];
+
+      updateFormsCounts();
+      renderAdminFormsTable();
+
+      statusMsg.innerText = 'جاري المزامنة مع السحاب...';
+      statusMsg.className = 'text-xs p-2 rounded-lg text-center font-bold bg-amber-100 text-amber-800';
+      statusMsg.classList.remove('hidden');
+
+      await syncWithCloud([], { silent: true });
+
+      statusMsg.innerText = 'تم حفظ التعديلات ونشرها للمراكز!';
+      statusMsg.className = 'text-xs p-2 rounded-lg text-center font-bold bg-emerald-100 text-emerald-800';
+
+      setTimeout(() => {
+        closeEditModal();
+      }, 700);
+    }
+
+    // Delete Form
+    async function confirmDelete(id) {
+      const f = adminFormsList.find(item => item.id === id);
+      const name = f ? f.title : 'هذا النموذج';
+
+      const confirmed = await showAppModal({
+        type: 'danger',
+        icon: 'fa-solid fa-trash-can',
+        title: 'تأكيد حذف النموذج نهائياً',
+        message: `هل أنت متأكد من حذف:\n"${name}"؟\nسيتم حذفه من واجهة جميع المراكز الـ 76 والملف الأصلي فوراً.`,
+        confirmText: 'نعم، حذف النموذج',
+        cancelText: 'إلغاء التراجع',
+        isConfirm: true
+      });
+
+      if (!confirmed) return;
+
+      adminFormsList = adminFormsList.filter(item => item.id !== id);
+      updateFormsCounts();
+      renderAdminFormsTable();
+
+      await syncWithCloud([], { silent: false });
+    }
+
+    document.addEventListener('DOMContentLoaded', checkAuth);
+  </script>
+
+  <!-- Cloud Publish Modal -->
+  <div id="cloudPublishModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white border-2 border-slate-300 rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl text-center">
+      
+      <div class="w-16 h-16 rounded-2xl bg-emerald-500 text-white flex items-center justify-center text-3xl mx-auto mb-4 shadow-lg shadow-emerald-500/30">
+        <i class="fa-solid fa-cloud-arrow-up"></i>
+      </div>
+
+      <h3 class="text-xl font-black text-slate-900 mb-1">نشر وتحديث الاستمارات للمراكز أونلاين</h3>
+      <p class="text-xs font-bold text-slate-500 mb-6 leading-relaxed">
+        سيتم إرسال كافة النماذج والتعديلات الحالية ليتم تحديثها فوراً لكافة مراكز التسجيل الـ 76 أونلاين عبر الوسيط السحابي الآمن.
+      </p>
+
+      <div class="text-right space-y-4 mb-6">
+        <div>
+          <label class="block text-xs font-black text-slate-800 mb-1.5">رابط الوسيط السحابي (Cloud Sync URL):</label>
+          <input 
+            type="text" 
+            id="cloudSyncUrlInput" 
+            value="https://basra-forms.vercel.app/api/sync"
+            class="w-full bg-slate-50 border-2 border-slate-300 focus:border-emerald-500 rounded-xl px-3.5 py-2.5 text-xs font-mono font-bold text-slate-800 focus:outline-none"
+            dir="ltr"
+          >
+        </div>
+
+        <div>
+          <label class="block text-xs font-black text-slate-800 mb-1.5">رمز الأمان السحابي (Admin Secret Key):</label>
+          <input 
+            type="password" 
+            id="cloudSyncKeyInput" 
+            value="BasraForms@2026"
+            class="w-full bg-slate-50 border-2 border-slate-300 focus:border-emerald-500 rounded-xl px-3.5 py-2.5 text-sm font-mono font-bold text-slate-800 focus:outline-none"
+            dir="ltr"
+          >
+        </div>
+      </div>
+
+      <!-- Live Publish Progress -->
+      <div id="cloudPublishStatus" class="hidden mb-6 p-3 rounded-xl text-xs font-bold flex items-center gap-2 justify-center">
+        <!-- Status updated via JS -->
+      </div>
+
+      <div class="flex items-center gap-3">
+        <button 
+          type="button" 
+          id="startPublishBtn"
+          onclick="startCloudPublish()"
+          class="flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black py-3 px-4 rounded-xl text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/25 active:scale-95 cursor-pointer"
+        >
+          <i class="fa-solid fa-paper-plane"></i>
+          <span>نشر التحديثات الآن</span>
+        </button>
+
+        <button 
+          type="button" 
+          onclick="closeCloudPublishModal()" 
+          class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 px-4 rounded-xl text-sm transition-all border border-slate-300 cursor-pointer"
+        >
+          إلغاء
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    function openCloudPublishModal() {
+      const savedUrl = localStorage.getItem('basra_cloud_url');
+      const savedKey = localStorage.getItem('basra_cloud_key');
+      if (savedUrl) document.getElementById('cloudSyncUrlInput').value = savedUrl;
+      if (savedKey) document.getElementById('cloudSyncKeyInput').value = savedKey;
+
+      const st = document.getElementById('cloudPublishStatus');
+      st.className = 'hidden mb-6 p-3 rounded-xl text-xs font-bold';
+      st.innerHTML = '';
+
+      const btn = document.getElementById('startPublishBtn');
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> <span>نشر التحديثات الآن</span>';
+
+      document.getElementById('cloudPublishModal').classList.remove('hidden');
+    }
+
+    function closeCloudPublishModal() {
+      document.getElementById('cloudPublishModal').classList.add('hidden');
+    }
+
+    async function startCloudPublish() {
+      const cloudUrl = (document.getElementById('cloudSyncUrlInput').value || '').trim();
+      const adminKey = (document.getElementById('cloudSyncKeyInput').value || '').trim();
+
+      if (!cloudUrl || !adminKey) {
+        showAppModal({
+          title: 'تنبيه',
+          message: 'يرجى إدخال رابط الوسيط السحابي ورمز الأمان السحابي.',
+          type: 'warning'
+        });
+        return;
+      }
+
+      localStorage.setItem('basra_cloud_url', cloudUrl);
+      localStorage.setItem('basra_cloud_key', adminKey);
+
+      const st = document.getElementById('cloudPublishStatus');
+      const btn = document.getElementById('startPublishBtn');
+
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>جاري النشر السحابي...</span>';
+
+      st.className = 'mb-6 p-3 rounded-xl text-xs font-bold bg-amber-50 text-amber-800 border border-amber-300 flex items-center gap-2 justify-center';
+      st.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-amber-600 text-base"></i> <span>جاري تجميع الملفات وإرسالها للوسيط السحابي...</span>';
+
+      try {
+        const res = await fetch('/api/admin/publish-to-cloud', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cloudUrl, adminKey })
+        });
+
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+          st.className = 'mb-6 p-3 rounded-xl text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-300 flex items-center gap-2 justify-center';
+          st.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600 text-base"></i> <span>${data.message || 'تم النشر وتحديث المنظومة بنجاح لجميع المراكز!'}</span>`;
+          btn.innerHTML = '<i class="fa-solid fa-check"></i> <span>اكتمل النشر</span>';
+
+          setTimeout(() => {
+            closeCloudPublishModal();
+            showAppModal({
+              title: 'تم النشر بنجاح',
+              message: 'تم إرسال كافة التحديثات والنماذج للوسيط السحابي، والرابط أونلاين لجميع المراكز الـ 76 تم تحديثه فوراً!',
+              type: 'success'
+            });
+          }, 1500);
+
+        } else {
+          st.className = 'mb-6 p-3 rounded-xl text-xs font-bold bg-rose-50 text-rose-800 border border-rose-300 flex items-center gap-2 justify-center';
+          st.innerHTML = `<i class="fa-solid fa-circle-exclamation text-rose-600 text-base"></i> <span>خطأ: ${data.error || 'فشل النشر السحابي'}</span>`;
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fa-solid fa-rotate-right"></i> <span>إعادة المحاولة</span>';
+        }
+      } catch (err) {
+        st.className = 'mb-6 p-3 rounded-xl text-xs font-bold bg-rose-50 text-rose-800 border border-rose-300 flex items-center gap-2 justify-center';
+        st.innerHTML = `<i class="fa-solid fa-circle-exclamation text-rose-600 text-base"></i> <span>خطأ في الاتصال: ${err.message}</span>`;
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-rotate-right"></i> <span>إعادة المحاولة</span>';
+      }
+    }
+  
+    // Automatically check for cloud updates on dashboard load
+    window.addEventListener('DOMContentLoaded', () => {
+      fetch('/api/admin/auto-sync', { method: 'POST' })
+        .then(res => res.json())
+        .then(data => {
+          if (data && data.updated) {
+            showAppModal({
+              title: 'تحديث تلقائي للمنظومة',
+              message: 'تم سحب وتحديث النماذج تلقائياً من السحاب إلى أحدث نسخة معتمدة بنجاح!',
+              type: 'success'
+            });
+            // Reload forms list
+            if (typeof loadForms === 'function') loadForms();
+          }
+        })
+        .catch(() => {});
+    });
+
+</script>
+</body>
+
+</html>

@@ -1536,7 +1536,7 @@
           fileIcon = 'fa-file-pdf text-rose-600';
         }
 
-        const downloadUrl = `/api/forms/${f.id}/download?centerCode=${centerCode}&centerName=${centerName}`;
+        const downloadUrl = f.fileName ? ('./uploads/' + f.fileName) : (`/api/forms/${f.id}/download?centerCode=${centerCode}&centerName=${centerName}`);
 
         let actionButtonsHtml = '';
         if (isOffice) {

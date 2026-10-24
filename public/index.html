@@ -1428,7 +1428,7 @@
       if (!f) return;
       const centerCode = activeCenter ? activeCenter.code : '';
       const centerName = activeCenter ? encodeURIComponent(activeCenter.name) : '';
-      const downloadUrl = `/api/forms/${f.id}/download?centerCode=${centerCode}&centerName=${centerName}`;
+      const downloadUrl = f.fileName ? ('./uploads/' + f.fileName) : (`/api/forms/${f.id}/download?centerCode=${centerCode}&centerName=${centerName}`);
       downloadFileWithPicker(downloadUrl, f.originalName || `${f.title}.${f.fileType}`);
     }
 
@@ -1436,7 +1436,7 @@
       if (!activeForm) return;
       const centerCode = activeCenter ? activeCenter.code : '';
       const centerName = activeCenter ? encodeURIComponent(activeCenter.name) : '';
-      const downloadUrl = `/api/forms/${activeForm.id}/download?centerCode=${centerCode}&centerName=${centerName}`;
+      const downloadUrl = activeForm.fileName ? ('./uploads/' + activeForm.fileName) : (`/api/forms/${activeForm.id}/download?centerCode=${centerCode}&centerName=${centerName}`);
       downloadFileWithPicker(downloadUrl, activeForm.originalName || `${activeForm.title}.${activeForm.fileType}`);
     }
 
@@ -1529,7 +1529,7 @@
           fileIcon = 'fa-file-pdf text-rose-600';
         }
 
-        const downloadUrl = `/api/forms/${f.id}/download?centerCode=${centerCode}&centerName=${centerName}`;
+        const downloadUrl = f.fileName ? ('./uploads/' + f.fileName) : (`/api/forms/${f.id}/download?centerCode=${centerCode}&centerName=${centerName}`);
 
         let actionButtonsHtml = '';
         if (isOffice) {

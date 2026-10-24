@@ -98,6 +98,11 @@ module.exports = async function handler(req, res) {
     if (forms && Array.isArray(forms)) {
       const formsBase64 = Buffer.from(JSON.stringify(forms, null, 2), 'utf-8').toString('base64');
       await uploadToGitHub('data/forms.json', formsBase64, 'تحديث قاعدة بيانات النماذج من لوحة المسؤول');
+      try {
+        await uploadToGitHub('public/data/forms.json', formsBase64, 'تحديث قاعدة بيانات النماذج (public)');
+      } catch (e) {
+        console.warn('public/data/forms.json sync note:', e.message);
+      }
       updatedItems.push('data/forms.json');
     }
 
@@ -105,6 +110,11 @@ module.exports = async function handler(req, res) {
     if (categories && Array.isArray(categories)) {
       const catBase64 = Buffer.from(JSON.stringify(categories, null, 2), 'utf-8').toString('base64');
       await uploadToGitHub('data/categories.json', catBase64, 'تحديث التصنيفات من لوحة المسؤول');
+      try {
+        await uploadToGitHub('public/data/categories.json', catBase64, 'تحديث التصنيفات (public)');
+      } catch (e) {
+        console.warn('public/data/categories.json sync note:', e.message);
+      }
       updatedItems.push('data/categories.json');
     }
 
@@ -112,8 +122,16 @@ module.exports = async function handler(req, res) {
     if (files && Array.isArray(files)) {
       for (const f of files) {
         if (f.path && f.contentBase64) {
-          await uploadToGitHub(f.path, f.contentBase64, `إضافة/تحديث ملف: ${f.path}`);
-          updatedItems.push(f.path);
+          const cleanPath = f.path.replace(/^\/+/, '');
+          await uploadToGitHub(cleanPath, f.contentBase64, `إضافة/تحديث ملف: ${cleanPath}`);
+          updatedItems.push(cleanPath);
+          if (!cleanPath.startsWith('public/')) {
+            try {
+              await uploadToGitHub(`public/${cleanPath}`, f.contentBase64, `إضافة/تحديث ملف (public): ${cleanPath}`);
+            } catch (e) {
+              console.warn(`public/${cleanPath} sync note:`, e.message);
+            }
+          }
         }
       }
     }
