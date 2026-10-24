@@ -1,6 +1,6 @@
 {
-  "version": "2.0.0",
-  "build": 20261024,
-  "system": "Basra Registration Centers Management System",
-  "updatedAt": "2026-10-24T16:45:00Z"
+  "version": "2.0.1",
+  "updatedAt": "2026-10-24T19:34:35.9921354Z",
+  "target": "برنامج المسؤول فقط (لوحة الإدارة)",
+  "file": "admin.html"
 }
