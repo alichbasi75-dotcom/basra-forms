@@ -50,12 +50,13 @@ namespace BasraUpdater
 
         // Independent Version Tracking for Each Program
         private string cloudCentersVersion = "2.0.0";
-        private string cloudAdminVersion = "2.0.1";
-        private string cloudCentersUpdatedAt = "2026-10-24T16:45:00Z";
-        private string cloudAdminUpdatedAt = "2026-10-24T19:34:35Z";
+        private string cloudAdminVersion = "2.0.2";
 
-        private string CLOUD_URL = "https://basra-forms.vercel.app/version.json";
-        private string CLOUD_BACKUP = "https://alichbasi75-dotcom.github.io/basra-forms/version.json";
+        private string CLOUD_CENTERS_URL = "https://basra-forms.vercel.app/version-centers.json";
+        private string CLOUD_ADMIN_URL = "https://basra-forms.vercel.app/version-admin.json";
+        private string CLOUD_CENTERS_BACKUP = "https://alichbasi75-dotcom.github.io/basra-forms/version-centers.json";
+        private string CLOUD_ADMIN_BACKUP = "https://alichbasi75-dotcom.github.io/basra-forms/version-admin.json";
+
         private string workspaceDir = @"C:\Users\ali\.gemini\antigravity\scratch\basra_forms_system";
         private string selectedFilePath = "";
 
@@ -90,7 +91,7 @@ namespace BasraUpdater
             this.Controls.Add(lblTitle);
 
             lblSubTitle = new Label();
-            lblSubTitle.Text = "تحديث واجهة المراكز (index.html) أو واجهة المسؤول (admin.html) بإصدارات وتواريخ مستقلة تماماً";
+            lblSubTitle.Text = "تحديث واجهة المراكز (index.html) أو واجهة المسؤول (admin.html) بملفات إصدار مفصولة تماماً";
             lblSubTitle.Font = new Font("Segoe UI", 8.5f, FontStyle.Regular);
             lblSubTitle.ForeColor = Color.FromArgb(100, 116, 139);
             lblSubTitle.Location = new Point(20, 38);
@@ -133,7 +134,7 @@ namespace BasraUpdater
 
             // 3. Step 1: Program Choice (Strictly Separate: Centers OR Admin)
             grpTarget = new GroupBox();
-            grpTarget.Text = "1. حدد البرنامج المراد تحديثه حصراً (كل برنامج له إصداره المنفصل):";
+            grpTarget.Text = "1. حدد البرنامج المراد تحديثه حصراً (كل برنامج له ملف إصدار مستقل):";
             grpTarget.Font = new Font("Segoe UI", 9.5f, FontStyle.Bold);
             grpTarget.ForeColor = Color.FromArgb(30, 41, 59);
             grpTarget.Location = new Point(20, 118);
@@ -485,31 +486,42 @@ namespace BasraUpdater
                 using (WebClient wc = new WebClient())
                 {
                     wc.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
-                    string json = "";
+
+                    // 1. Fetch Centers Version
                     try
                     {
-                        json = wc.DownloadString(CLOUD_URL + "?t=" + DateTime.Now.Ticks);
+                        string jsonC = wc.DownloadString(CLOUD_CENTERS_URL + "?t=" + DateTime.Now.Ticks);
+                        Match mC = Regex.Match(jsonC, "\"version\"\\s*:\\s*\"([^\"]+)\"");
+                        if (mC.Success) cloudCentersVersion = mC.Groups[1].Value;
                     }
                     catch
                     {
-                        json = wc.DownloadString(CLOUD_BACKUP + "?t=" + DateTime.Now.Ticks);
+                        try
+                        {
+                            string jsonC = wc.DownloadString(CLOUD_CENTERS_BACKUP + "?t=" + DateTime.Now.Ticks);
+                            Match mC = Regex.Match(jsonC, "\"version\"\\s*:\\s*\"([^\"]+)\"");
+                            if (mC.Success) cloudCentersVersion = mC.Groups[1].Value;
+                        }
+                        catch {}
                     }
 
-                    Match mCenters = Regex.Match(json, "\"centersVersion\"\\s*:\\s*\"([^\"]+)\"");
-                    Match mAdmin = Regex.Match(json, "\"adminVersion\"\\s*:\\s*\"([^\"]+)\"");
-                    Match mGen = Regex.Match(json, "\"version\"\\s*:\\s*\"([^\"]+)\"");
-                    Match mCDate = Regex.Match(json, "\"centersUpdatedAt\"\\s*:\\s*\"([^\"]+)\"");
-                    Match mADate = Regex.Match(json, "\"adminUpdatedAt\"\\s*:\\s*\"([^\"]+)\"");
-
-                    if (mCenters.Success) cloudCentersVersion = mCenters.Groups[1].Value;
-                    else cloudCentersVersion = "2.0.0";
-
-                    if (mAdmin.Success) cloudAdminVersion = mAdmin.Groups[1].Value;
-                    else if (mGen.Success) cloudAdminVersion = mGen.Groups[1].Value;
-                    else cloudAdminVersion = "2.0.1";
-
-                    if (mCDate.Success) cloudCentersUpdatedAt = mCDate.Groups[1].Value;
-                    if (mADate.Success) cloudAdminUpdatedAt = mADate.Groups[1].Value;
+                    // 2. Fetch Admin Version
+                    try
+                    {
+                        string jsonA = wc.DownloadString(CLOUD_ADMIN_URL + "?t=" + DateTime.Now.Ticks);
+                        Match mA = Regex.Match(jsonA, "\"version\"\\s*:\\s*\"([^\"]+)\"");
+                        if (mA.Success) cloudAdminVersion = mA.Groups[1].Value;
+                    }
+                    catch
+                    {
+                        try
+                        {
+                            string jsonA = wc.DownloadString(CLOUD_ADMIN_BACKUP + "?t=" + DateTime.Now.Ticks);
+                            Match mA = Regex.Match(jsonA, "\"version\"\\s*:\\s*\"([^\"]+)\"");
+                            if (mA.Success) cloudAdminVersion = mA.Groups[1].Value;
+                        }
+                        catch {}
+                    }
                 }
 
                 OnTargetChanged();
@@ -698,6 +710,7 @@ namespace BasraUpdater
             try
             {
                 string gitAddArgs = "";
+                string nowIso = DateTime.UtcNow.ToString("o");
 
                 // Case 1: Updating ADMIN ONLY (admin.html)
                 if (rbAdmin.Checked)
@@ -705,8 +718,13 @@ namespace BasraUpdater
                     SafeCopy(selectedFilePath, Path.Combine(workspaceDir, "admin.html"));
                     SafeCopy(selectedFilePath, Path.Combine(workspaceDir, "public", "admin.html"));
                     cloudAdminVersion = newVer;
-                    cloudAdminUpdatedAt = DateTime.UtcNow.ToString("o");
-                    gitAddArgs = "admin.html public/admin.html";
+
+                    // Write version-admin.json (ROOT and PUBLIC)
+                    string adminJson = string.Format("{{\n  \"version\": \"{0}\",\n  \"updatedAt\": \"{1}\",\n  \"system\": \"admin\"\n}}", newVer, nowIso);
+                    File.WriteAllText(Path.Combine(workspaceDir, "version-admin.json"), adminJson);
+                    File.WriteAllText(Path.Combine(workspaceDir, "public", "version-admin.json"), adminJson);
+
+                    gitAddArgs = "admin.html public/admin.html version-admin.json public/version-admin.json";
                 }
                 // Case 2: Updating CENTERS ONLY (index.html)
                 else
@@ -715,26 +733,22 @@ namespace BasraUpdater
                     SafeCopy(selectedFilePath, Path.Combine(workspaceDir, "public", "index.html"));
                     SafeCopy(selectedFilePath, Path.Combine(workspaceDir, "public", "center.html"));
                     cloudCentersVersion = newVer;
-                    cloudCentersUpdatedAt = DateTime.UtcNow.ToString("o");
-                    gitAddArgs = "index.html public/index.html public/center.html";
+
+                    // Write version-centers.json (ROOT and PUBLIC)
+                    string centersJson = string.Format("{{\n  \"version\": \"{0}\",\n  \"updatedAt\": \"{1}\",\n  \"system\": \"centers\"\n}}", newVer, nowIso);
+                    File.WriteAllText(Path.Combine(workspaceDir, "version-centers.json"), centersJson);
+                    File.WriteAllText(Path.Combine(workspaceDir, "public", "version-centers.json"), centersJson);
+
+                    gitAddArgs = "index.html public/index.html public/center.html version-centers.json public/version-centers.json";
                 }
 
-                // 2. Update version.json with independent versions for each program
-                lblStatus.Text = "جاري تحديث رقم الإصدار المستقل في سجل المنظومة...";
-                string vJsonPath = Path.Combine(workspaceDir, "version.json");
-                string vJsonPubPath = Path.Combine(workspaceDir, "public", "version.json");
-                string vJsonContent = string.Format(
-                    "{{\n  \"centersVersion\": \"{0}\",\n  \"centersUpdatedAt\": \"{1}\",\n  \"adminVersion\": \"{2}\",\n  \"adminUpdatedAt\": \"{3}\",\n  \"version\": \"{4}\",\n  \"target\": \"{5}\",\n  \"file\": \"{6}\"\n}}",
-                    cloudCentersVersion,
-                    string.IsNullOrEmpty(cloudCentersUpdatedAt) ? "2026-10-24T16:45:00Z" : cloudCentersUpdatedAt,
-                    cloudAdminVersion,
-                    string.IsNullOrEmpty(cloudAdminUpdatedAt) ? DateTime.UtcNow.ToString("o") : cloudAdminUpdatedAt,
-                    newVer,
-                    targetName,
-                    fname
+                // 2. Also keep combined version.json updated for compatibility
+                string combinedJson = string.Format(
+                    "{{\n  \"centersVersion\": \"{0}\",\n  \"adminVersion\": \"{1}\",\n  \"version\": \"{2}\",\n  \"updatedAt\": \"{3}\",\n  \"target\": \"{4}\",\n  \"file\": \"{5}\"\n}}",
+                    cloudCentersVersion, cloudAdminVersion, newVer, nowIso, targetName, fname
                 );
-                File.WriteAllText(vJsonPath, vJsonContent);
-                try { File.WriteAllText(vJsonPubPath, vJsonContent); } catch {}
+                File.WriteAllText(Path.Combine(workspaceDir, "version.json"), combinedJson);
+                File.WriteAllText(Path.Combine(workspaceDir, "public", "version.json"), combinedJson);
                 gitAddArgs += " version.json public/version.json";
 
                 // 3. Git Add (Specific files only!)

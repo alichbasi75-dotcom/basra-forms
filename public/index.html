@@ -2348,10 +2348,10 @@
 
     async function loadVersionInfo() {
       try {
-        const res = await fetch("./version.json?t=" + Date.now());
+        const res = await fetch("./version-centers.json?t=" + Date.now());
         if (res.ok) {
           const vData = await res.json();
-          const verStr = vData.version ? ("الإصدار " + vData.version) : "الإصدار 2.0.0";
+          const verStr = "الإصدار " + (vData.version || "2.0.0");
           let dateStr = "2026-10-24";
           if (vData.updatedAt) {
             try {
