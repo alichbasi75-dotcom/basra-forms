@@ -1574,11 +1574,83 @@
       return p;
     }
 
-    function handleSheetImgError(img, fileName, origSrc) {
+    async function handleSheetImgError(img, fileName, origSrc) {
+      const active = (typeof activeAdminForm !== 'undefined' ? activeAdminForm : null) || (typeof activeForm !== 'undefined' ? activeForm : null);
+      const isOfficeFile = (active && (active.isOffice || ['docx', 'doc', 'xlsx', 'xls'].includes(active.fileType)))
+        || ['.docx', '.doc', '.xlsx', '.xls'].some(ext => (fileName || '').toLowerCase().endsWith(ext));
+
+      // 1. If it is an Office file (Word/Excel), NEVER leave a broken image! Show elegant Office Card
+      if (isOfficeFile && img.parentElement) {
+        const isWord = ['.docx', '.doc'].some(ext => (fileName || (active ? active.fileType : '')).toLowerCase().endsWith(ext));
+        const iconClass = isWord ? 'fa-file-word text-blue-600' : 'fa-file-excel text-emerald-600';
+        const officeBg = isWord ? 'bg-blue-50 border-blue-200' : 'bg-emerald-50 border-emerald-200';
+        const officeBtn = isWord ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-emerald-600 hover:bg-emerald-700 text-white';
+        const officeType = isWord ? 'Word' : 'Excel';
+        const title = active ? active.title : 'ظ†ظ…ظˆط°ط¬ ط±ط³ظ…ظٹ';
+        const downloadUrl = (active && active.fileName) ? `./uploads/${active.fileName}` : (fileName ? `./uploads/${fileName}` : '#');
+        const dlName = (active && active.originalName) ? active.originalName : (fileName || `${title}.${isWord ? 'docx' : 'xlsx'}`);
+
+        const wrapper = img.closest('.sheet-wrapper') || img.parentElement;
+        wrapper.innerHTML = `
+          <div class="my-auto py-12 px-6 max-w-lg mx-auto text-center ${officeBg} border-2 rounded-3xl shadow-xl">
+            <div class="w-20 h-20 rounded-2xl bg-white shadow-lg mx-auto flex items-center justify-center text-4xl mb-4">
+              <i class="fa-solid ${iconClass}"></i>
+            </div>
+            <h4 class="text-base sm:text-lg font-black text-slate-900 mb-2">${title}</h4>
+            <p class="text-xs font-bold text-slate-600 mb-5 leading-relaxed">
+              ظ‡ط°ط§ ط§ظ„ظ†ظ…ظˆط°ط¬ ط¨طµظٹط؛ط© ${officeType}طŒ ظ…ط®طµطµ ظ„ظ„ظپطھط­ ظˆط§ظ„طھط¹ط¯ظٹظ„ ظˆط§ظ„ط·ط¨ط§ط¹ط© ط§ظ„ظ…ط¨ط§ط´ط±ط© ط¹ط¨ط± ط¨ط±ظ†ط§ظ…ط¬ ${officeType}.
+            </p>
+            <div class="flex items-center justify-center gap-3">
+              <a href="${downloadUrl}" download="${dlName}" class="px-5 py-2.5 ${officeBtn} rounded-xl font-black text-xs sm:text-sm flex items-center gap-2 shadow-lg transition-all active:scale-95">
+                <i class="fa-solid fa-download"></i>
+                <span>طھظ†ط²ظٹظ„ ظˆظپطھط­ ظپظٹ ط¨ط±ظ†ط§ظ…ط¬ ${officeType}</span>
+              </a>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      // 2. If it is a PDF file, render dynamically with in-browser PDF.js
+      const isPdf = (active && active.fileType === 'pdf') || (fileName && fileName.toLowerCase().endsWith('.pdf'));
+      if (isPdf && window.pdfjsLib && !img._pdfRenderAttempted) {
+        img._pdfRenderAttempted = true;
+        const pdfUrl = (active && active.fileName) ? `./uploads/${active.fileName}` : `./uploads/${fileName}`;
+        try {
+          const loadingTask = pdfjsLib.getDocument(pdfUrl);
+          const pdf = await loadingTask.promise;
+          const pNum = parseInt((img.id || '').replace('sheetImage_', '')) || 1;
+          const targetPageNum = Math.min(Math.max(1, pNum), pdf.numPages);
+          const page = await pdf.getPage(targetPageNum);
+          const viewport = page.getViewport({ scale: 1.5 });
+
+          const canvas = document.createElement('canvas');
+          canvas.className = 'sheet-bg';
+          canvas.id = img.id;
+          canvas.width = viewport.width;
+          canvas.height = viewport.height;
+          canvas.style.width = '100%';
+          canvas.style.height = 'auto';
+          canvas.style.display = 'block';
+
+          const ctx = canvas.getContext('2d');
+          await page.render({ canvasContext: ctx, viewport }).promise;
+
+          if (img.parentElement) {
+            img.parentElement.replaceChild(canvas, img);
+          }
+          return;
+        } catch (pdfErr) {
+          console.warn('In-browser PDF fallback render failed:', pdfErr);
+        }
+      }
+
+      // 3. Fallbacks for standard images
       if (!img._errStep) img._errStep = 1;
       else img._errStep++;
 
-      if (img._errStep === 1 && fileName) {
+      const isImgFile = ['.png', '.jpg', '.jpeg', '.webp'].some(ext => (fileName || '').toLowerCase().endsWith(ext));
+      if (img._errStep === 1 && fileName && isImgFile) {
         img.src = './uploads/' + fileName;
         return;
       }
@@ -1587,11 +1659,11 @@
         img.src = 'https://basra-forms.vercel.app/' + cleanPath;
         return;
       }
-      if (img._errStep <= 3 && fileName) {
+      if (img._errStep <= 3 && fileName && isImgFile) {
         img.src = 'https://basra-forms.vercel.app/uploads/' + fileName;
         return;
       }
-      console.warn('Could not load sheet image in admin:', origSrc);
+      console.warn('Could not load sheet image:', origSrc);
     }
 
     function checkAuth() {
@@ -2463,13 +2535,18 @@
 
       // Determine pages
       let pages = [];
-      if (activeAdminForm.pages && activeAdminForm.pages.length > 0) {
+      if (activeAdminForm.previewPages && activeAdminForm.previewPages.length > 0) {
+        pages = [...activeAdminForm.previewPages];
+      } else if (isOffice) {
+        // Office files (Word/Excel) with no explicit preview pages should show Office Card
+        pages = [];
+      } else if (activeAdminForm.pages && activeAdminForm.pages.length > 0) {
         pages = [...activeAdminForm.pages];
       } else if (activeAdminForm.sheetImage) {
         pages = [activeAdminForm.sheetImage];
       } else if (activeAdminForm.fileType === 'image' || ['.png', '.jpg', '.jpeg', '.webp'].some(ext => (activeAdminForm.fileName || '').toLowerCase().endsWith(ext))) {
         pages = ['/uploads/' + activeAdminForm.fileName];
-      } else if (!isOffice) {
+      } else {
         pages = [`/sheets/${activeAdminForm.id}_sheet.png`];
       }
 
@@ -3544,6 +3621,7 @@
         });
 
         let pages = [];
+        let previewPages = [];
         let sheetImage = null;
 
         // Render PDF pages to images using PDF.js if available
@@ -3568,6 +3646,7 @@
               const pPath = `sheets/${newId}_page_${p}.png`;
               extraFiles.push({ path: pPath, contentBase64: pBase64 });
               pages.push('/' + pPath);
+              previewPages.push(pDataUrl);
             }
             if (pages.length > 0) {
               sheetImage = pages[0];
@@ -3581,6 +3660,7 @@
           extraFiles.push({ path: pPath, contentBase64: base64Data });
           pages.push('/' + pPath);
           sheetImage = '/' + pPath;
+          previewPages.push(`data:image/${cleanExt === 'jpg' ? 'jpeg' : 'png'};base64,${base64Data}`);
         }
 
         const catObj = adminCategoriesList.find(c => c.id === category);
@@ -3600,9 +3680,10 @@
           fillableTemplateId: null,
           hidden: false,
           downloads: 0,
-          pages: pages.length > 0 ? pages : [`/sheets/${newId}_sheet.png`],
-          pageCount: pages.length || 1,
-          sheetImage: sheetImage || `/sheets/${newId}_sheet.png`,
+          previewPages: previewPages,
+          pages: isOffice ? [] : (pages.length > 0 ? pages : [`/sheets/${newId}_sheet.png`]),
+          pageCount: isOffice ? 1 : (pages.length || 1),
+          sheetImage: isOffice ? null : (sheetImage || `/sheets/${newId}_sheet.png`),
           isOffice: isOffice
         };
 
