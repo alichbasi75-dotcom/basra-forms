@@ -1,8 +1,8 @@
 {
-  "centersVersion": "2.0.5",
-  "adminVersion": "2.0.4",
-  "version": "2.0.5",
-  "updatedAt": "2026-10-25T05:14:43.5562508Z",
+  "centersVersion": "2.0.6",
+  "adminVersion": "2.0.5",
+  "version": "2.0.6",
+  "updatedAt": "2026-10-25T13:27:20.7867613Z",
   "target": "برنامج مراكز التسجيل فقط (بوابة المراكز)",
   "file": "index.html"
 }

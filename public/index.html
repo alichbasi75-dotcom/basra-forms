@@ -48,11 +48,15 @@
       user-select: none;
     }
 
-    /* Scroll area with high visibility horizontal and vertical scrollbars for wide files */
+    /* Scroll area with vertical scrollbar on the RIGHT side */
     #sheetScrollArea {
+      direction: ltr !important; /* Puts vertical scrollbar on the RIGHT edge! */
       overflow-x: auto !important;
       overflow-y: auto !important;
       scroll-behavior: smooth;
+    }
+    #sheetScrollArea > * {
+      direction: rtl !important; /* Preserves proper Arabic RTL inside */
     }
     #sheetScrollArea::-webkit-scrollbar {
       width: 12px;
@@ -185,6 +189,13 @@
       background: #f59e0b;
     }
   </style>
+  <!-- PDF.js for in-browser sheet rendering -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script>
+    if (window.pdfjsLib) {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    }
+  </script>
 </head>
 <body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col">
 
@@ -319,63 +330,67 @@
 
   </main>
 
-  <!-- Interactive Form Viewer with Draggable & Resizable Text Boxes (عرض النموذج مع إمكانية إضافة وسحب مربعات النص) -->
-  <div id="sheetModal" class="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-sm hidden flex flex-col items-center justify-start sm:justify-center p-1.5 sm:p-3 pt-7 sm:pt-3">
-    <div class="bg-white border-2 border-slate-300 rounded-2xl sm:rounded-3xl max-w-5xl w-full h-[calc(100dvh-2.25rem)] sm:h-[96vh] flex flex-col overflow-hidden shadow-2xl">
+  <!-- Interactive Form Viewer (شاشة كاملة، شريط علوي ذكي للهواتف، شريط التمرير على اليمين) -->
+  <div id="sheetModal" class="fixed inset-0 z-50 bg-slate-900 hidden flex flex-col w-screen h-[100dvh] overflow-hidden m-0 p-0">
+    <div class="bg-white w-full h-full flex flex-col overflow-hidden m-0 p-0 rounded-none border-0">
       
-      <!-- Top Action Toolbar -->
-      <div class="bg-amber-500 text-slate-950 px-3 sm:px-4 py-2 sm:py-2.5 flex items-center justify-between gap-2 border-b border-amber-600">
+      <!-- Top Action Toolbar (متجاوب للهواتف والشاشات الكبيرة) -->
+      <div class="bg-amber-500 text-slate-950 px-2 sm:px-4 py-1.5 sm:py-2 flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-2 border-b border-amber-600 shadow-sm shrink-0">
         
-        <!-- Title & Info (Full title displayed, wraps into 2 lines if long, never pushes buttons) -->
-        <div class="flex items-center gap-2 min-w-0 flex-1 overflow-hidden">
-          <div class="w-8 h-8 rounded-lg bg-slate-950 text-amber-400 flex items-center justify-center text-sm shadow shrink-0">
-            <i class="fa-solid fa-file-invoice"></i>
+        <!-- Row 1 on Mobile: Title + Pinned Close Button (ALWAYS 100% visible, never pushed away) -->
+        <div class="flex items-center justify-between gap-2 w-full sm:w-auto min-w-0">
+          <div class="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-1 overflow-hidden">
+            <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-slate-950 text-amber-400 flex items-center justify-center text-xs sm:text-sm shadow shrink-0">
+              <i class="fa-solid fa-file-invoice"></i>
+            </div>
+            <div class="min-w-0">
+              <h3 id="modalSheetTitle" class="text-xs sm:text-sm font-black text-slate-950 truncate sm:line-clamp-2 leading-tight">عرض النموذج</h3>
+            </div>
           </div>
-          <div class="min-w-0">
-            <h3 id="modalSheetTitle" class="text-xs sm:text-sm font-black text-slate-950 line-clamp-2 leading-tight">عرض النموذج</h3>
-          </div>
+          <!-- Close Button on Mobile (Pinned) -->
+          <button type="button" onclick="closeSheetModal()" class="sm:hidden shrink-0 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white font-black text-xs px-3 py-1.5 rounded-xl flex items-center gap-1 shadow-md active:scale-95 border border-red-400/40 cursor-pointer" title="إغلاق النافذة">
+            <i class="fa-solid fa-xmark text-sm"></i>
+            <span>إغلاق</span>
+          </button>
         </div>
 
-        <!-- Action Tools & Close Button -->
-        <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+        <!-- Row 2 on Mobile / Left on Desktop: Horizontally Scrollable Ribbon of Tools -->
+        <div class="flex items-center justify-between sm:justify-end gap-1.5 w-full sm:w-auto min-w-0 shrink-0">
           
-          <!-- Scrollable Tools Bar on small viewports -->
-          <div class="flex items-center gap-1 sm:gap-2 overflow-x-auto scroll-touch-x py-0.5">
-            <!-- 🔄 تدوير الصورة والتحكم بالتكبير والتصغير -->
-            <div class="flex items-center bg-slate-900/30 rounded-xl p-0.5 gap-1 text-slate-950 text-xs font-bold border border-slate-900/20 shrink-0">
-              <button type="button" onclick="rotateCurrentSheet()" id="rotateSheetBtn" class="px-2 sm:px-3 py-1.5 rounded-lg bg-white/80 hover:bg-white text-slate-950 font-black flex items-center gap-1 transition-all shadow-sm active:scale-95 text-[11px] sm:text-xs" title="تدوير الصفحة / الصورة 90 درجة">
-                <i class="fa-solid fa-rotate text-blue-700 text-xs sm:text-sm"></i>
-                <span class="hidden sm:inline">تدوير الصورة</span>
-                <span class="sm:hidden">تدوير</span>
+          <div class="flex items-center gap-1 sm:gap-1.5 overflow-x-auto overflow-y-hidden py-0.5 scroll-touch-x select-none flex-1 sm:flex-initial" style="-webkit-overflow-scrolling: touch; touch-action: pan-x;">
+            <!-- 🔄 تدوير وتكبير/تصغير -->
+            <div class="flex items-center bg-slate-900/30 rounded-xl p-0.5 gap-0.5 sm:gap-1 text-slate-950 text-xs font-bold border border-slate-900/20 shrink-0">
+              <button type="button" onclick="rotateCurrentSheet()" id="rotateSheetBtn" class="px-2 sm:px-2.5 py-1 rounded-lg bg-white/80 hover:bg-white text-slate-950 font-black flex items-center gap-1 transition-all shadow-sm active:scale-95 text-[11px] sm:text-xs shrink-0" title="تدوير الصفحة / الصورة 90 درجة">
+                <i class="fa-solid fa-rotate text-blue-700 text-xs"></i>
+                <span class="text-[11px]">تدوير</span>
                 <span id="rotationAngleBadge" class="text-[10px] bg-blue-100 text-blue-800 font-mono font-bold px-1 rounded hidden">90°</span>
               </button>
-              <button type="button" onclick="adjustSheetZoom(-150)" class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-white/70 hover:bg-white flex items-center justify-center font-black text-xs sm:text-sm" title="تصغير العرض">-</button>
-              <span id="zoomPercentBadge" class="text-[10px] sm:text-[11px] font-mono px-0.5 sm:px-1 font-bold text-slate-900">100%</span>
-              <button type="button" onclick="adjustSheetZoom(150)" class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-white/70 hover:bg-white flex items-center justify-center font-black text-xs sm:text-sm" title="تكبير العرض">+</button>
+              <button type="button" onclick="adjustSheetZoom(-150)" class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-white/70 hover:bg-white flex items-center justify-center font-black text-xs sm:text-sm shrink-0" title="تصغير العرض">-</button>
+              <span id="zoomPercentBadge" class="text-[10px] sm:text-[11px] font-mono px-0.5 sm:px-1 font-bold text-slate-900 shrink-0">100%</span>
+              <button type="button" onclick="adjustSheetZoom(150)" class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-white/70 hover:bg-white flex items-center justify-center font-black text-xs sm:text-sm shrink-0" title="تكبير العرض">+</button>
             </div>
 
-            <!-- ➕ زر إضافة مربع نص قابل للسحب والتحجيم (خاص بـ PDF فقط) -->
-            <button id="addBoxModalBtn" onclick="addDraggableBoxToCurrentPage()" class="shrink-0 bg-slate-950 hover:bg-slate-800 text-amber-300 font-black text-[11px] sm:text-xs px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl flex items-center gap-1 shadow-md transition-all active:scale-95">
-              <i class="fa-solid fa-plus-circle text-xs sm:text-sm"></i>
-              <span class="hidden sm:inline">إضافة مربع نص جديد</span>
-              <span class="sm:hidden">إضافة نص</span>
+            <!-- ➕ إضافة مربع نص -->
+            <button id="addBoxModalBtn" onclick="addDraggableBoxToCurrentPage()" class="shrink-0 bg-slate-950 hover:bg-slate-800 text-amber-300 font-black text-[11px] sm:text-xs px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl flex items-center gap-1 shadow-md transition-all active:scale-95 whitespace-nowrap">
+              <i class="fa-solid fa-plus-circle text-xs"></i>
+              <span>إضافة نص</span>
             </button>
 
-            <!-- 🖨️ طباعة النموذج A4 لجميع الصفحات -->
-            <button onclick="printSheetWithBoxes()" class="shrink-0 bg-emerald-700 hover:bg-emerald-600 text-white font-black text-[11px] sm:text-xs px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl flex items-center gap-1 shadow-md transition-all active:scale-95">
-              <i class="fa-solid fa-print text-xs sm:text-sm"></i>
+            <!-- 🖨️ طباعة A4 -->
+            <button onclick="printSheetWithBoxes()" class="shrink-0 bg-emerald-700 hover:bg-emerald-600 text-white font-black text-[11px] sm:text-xs px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl flex items-center gap-1 shadow-md transition-all active:scale-95 whitespace-nowrap">
+              <i class="fa-solid fa-print text-xs"></i>
               <span>طباعة A4</span>
             </button>
 
-            <!-- 📥 تنزيل الملف الأصلي باختيار موقع الحفظ -->
-            <button type="button" id="modalDownloadBtn" onclick="handleModalDownload()" class="shrink-0 bg-white hover:bg-slate-100 text-slate-800 font-bold text-[11px] sm:text-xs px-2 sm:px-3 py-1.5 sm:py-2 rounded-xl flex items-center gap-1 shadow-sm border border-slate-300" title="تنزيل الملف واختيار موقع الحفظ">
+            <!-- 📥 تنزيل -->
+            <button type="button" id="modalDownloadBtn" onclick="handleModalDownload()" class="shrink-0 bg-white hover:bg-slate-100 text-slate-800 font-bold text-[11px] sm:text-xs px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl flex items-center gap-1 shadow-sm border border-slate-300 whitespace-nowrap" title="تنزيل الملف">
               <i class="fa-solid fa-download text-amber-600"></i>
               <span>تنزيل</span>
             </button>
           </div>
 
-          <!-- إغلاق النافذة (دائماً ظاهر وبشكل كامل بدون قص) -->
-          <button type="button" onclick="closeSheetModal()" class="shrink-0 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white font-black text-xs sm:text-sm px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-xl flex items-center gap-1.5 shadow-md hover:shadow-lg transition-all active:scale-95 border border-red-400/40 cursor-pointer" title="إغلاق النافذة">
+          <!-- Close Button on Desktop -->
+          <button type="button" onclick="closeSheetModal()" class="hidden sm:flex shrink-0 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white font-black text-xs sm:text-sm px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-xl items-center gap-1.5 shadow-md hover:shadow-lg transition-all active:scale-95 border border-red-400/40 cursor-pointer" title="إغلاق النافذة">
             <i class="fa-solid fa-xmark text-sm sm:text-base"></i>
             <span>إغلاق</span>
           </button>
@@ -383,20 +398,20 @@
       </div>
 
       <!-- Quick Guidance Bar -->
-      <div class="bg-amber-50 border-b border-amber-200 px-4 py-1.5 text-xs text-amber-900 flex items-center justify-between" id="modalGuidanceBar">
-        <div class="flex items-center gap-2 font-bold" id="modalTipContainer">
-          <i class="fa-solid fa-lightbulb text-amber-600" id="modalTipIcon"></i>
-          <span id="modalTipText">اضغط زر "إضافة مربع نص"، ثم اسحبه بالفأرة لأي مكان تريده في النموذج وكبّره وصغّره حسب الفراغ.</span>
-          <span id="scrollNoticeBadge" class="hidden bg-blue-100 text-blue-800 border border-blue-300 px-2 py-0.5 rounded-lg font-bold text-[11px]"><i class="fa-solid fa-arrows-left-right ml-1"></i> شريط التمرير العرضي مفعّل بالأسفل</span>
+      <div class="bg-amber-50 border-b border-amber-200 px-3 sm:px-4 py-1.5 text-xs text-amber-900 flex items-center justify-between" id="modalGuidanceBar">
+        <div class="flex items-center gap-2 font-bold min-w-0" id="modalTipContainer">
+          <i class="fa-solid fa-lightbulb text-amber-600 shrink-0" id="modalTipIcon"></i>
+          <span id="modalTipText" class="truncate">اضغط زر "إضافة نص"، ثم اسحبه لأي مكان في النموذج.</span>
+          <span id="scrollNoticeBadge" class="hidden bg-blue-100 text-blue-800 border border-blue-300 px-2 py-0.5 rounded-lg font-bold text-[11px] shrink-0"><i class="fa-solid fa-arrows-left-right ml-1"></i> شريط التمرير العرضي مفعّل</span>
         </div>
-        <div class="text-[11px] text-slate-600 flex items-center gap-3">
+        <div class="text-[11px] text-slate-600 flex items-center gap-3 shrink-0 mr-2">
           <span>الصفحات: <strong id="pagesCountBadge" class="text-blue-700 font-bold">1</strong></span>
-          <span id="boxesCountWrap">المربعات المضافة: <strong id="boxesCountBadge" class="text-blue-700 font-bold">0</strong></span>
+          <span id="boxesCountWrap">المربعات: <strong id="boxesCountBadge" class="text-blue-700 font-bold">0</strong></span>
         </div>
       </div>
 
-      <!-- Interactive Canvas Area (يدعم التمرير العمودي والعرضي لجميع الأعمدة والصفحات) -->
-      <div class="flex-1 bg-slate-200 overflow-auto p-4 select-none" id="sheetScrollArea">
+      <!-- Interactive Canvas Area (شاشة كاملة، شريط التمرير على اليمين) -->
+      <div class="flex-1 bg-slate-200 overflow-auto p-2 sm:p-4 select-none" id="sheetScrollArea">
         <!-- Rendered page sheets dynamically injected here -->
       </div>
 
@@ -1493,9 +1508,10 @@
         "sheetImage":  "/sheets/form_13_sheet.png",
         "isOffice":  true,
         "pages":  [
-
+                      "/sheets/form_13_page_1.png",
+                      "/sheets/form_13_page_2.png"
                   ],
-        "pageCount":  1,
+        "pageCount":  2,
         "hidden":  false
     },
     {
@@ -1517,9 +1533,10 @@
         "sheetImage":  "/sheets/form_14_sheet.png",
         "isOffice":  true,
         "pages":  [
-
+                      "/sheets/form_14_page_1.png",
+                      "/sheets/form_14_page_2.png"
                   ],
-        "pageCount":  1,
+        "pageCount":  2,
         "hidden":  false
     },
     {
@@ -1613,9 +1630,11 @@
         "sheetImage":  "/sheets/form_18_sheet.png",
         "isOffice":  true,
         "pages":  [
-
+                      "/sheets/form_18_page_1.png",
+                      "/sheets/form_18_page_2.png",
+                      "/sheets/form_18_page_3.png"
                   ],
-        "pageCount":  2,
+        "pageCount":  3,
         "hidden":  false
     },
     {
@@ -1637,7 +1656,19 @@
         "sheetImage":  "/sheets/form_19_sheet.png",
         "isOffice":  true,
         "pages":  [
-
+                      "/sheets/form_19_page_1.png",
+                      "/sheets/form_19_page_2.png",
+                      "/sheets/form_19_page_3.png",
+                      "/sheets/form_19_page_4.png",
+                      "/sheets/form_19_page_5.png",
+                      "/sheets/form_19_page_6.png",
+                      "/sheets/form_19_page_7.png",
+                      "/sheets/form_19_page_8.png",
+                      "/sheets/form_19_page_9.png",
+                      "/sheets/form_19_page_10.png",
+                      "/sheets/form_19_page_11.png",
+                      "/sheets/form_19_page_12.png",
+                      "/sheets/form_19_page_13.png"
                   ],
         "pageCount":  13,
         "hidden":  false
@@ -2147,13 +2178,21 @@
       // Determine pages list
       let pages = [];
       if (activeForm.pages && activeForm.pages.length > 0) {
-        pages = activeForm.pages;
+        pages = [...activeForm.pages];
       } else if (activeForm.sheetImage) {
         pages = [activeForm.sheetImage];
       } else if (activeForm.fileType === 'image' || ['.png', '.jpg', '.jpeg', '.webp'].some(ext => (activeForm.fileName || '').toLowerCase().endsWith(ext))) {
         pages = ['./uploads/' + activeForm.fileName];
       } else if (!isOffice) {
         pages = [`./sheets/${activeForm.id}_sheet.png`];
+      }
+
+      // Safeguard: If form has pageCount > 1 but pages array only has 1 or 0 pages, auto-expand to all pages!
+      if ((!pages || pages.length <= 1) && activeForm.pageCount && activeForm.pageCount > 1) {
+        pages = [];
+        for (let i = 1; i <= activeForm.pageCount; i++) {
+          pages.push(`./sheets/${activeForm.id}_page_${i}.png`);
+        }
       }
 
       const scrollArea = document.getElementById('sheetScrollArea');
@@ -2672,6 +2711,13 @@
         pages = [`./sheets/${activeForm.id}_sheet.png`];
       }
 
+            if ((!pages || pages.length <= 1) && activeForm.pageCount && activeForm.pageCount > 1) {
+        pages = [];
+        for (let i = 1; i <= activeForm.pageCount; i++) {
+          pages.push(./sheets/${activeForm.id}_page_${i}.png);
+        }
+      }
+
       const canvases = [];
 
       for (let pIdx = 0; pIdx < pages.length; pIdx++) {
@@ -2864,7 +2910,14 @@
               }
             }
           </style>
-        </head>
+          <!-- PDF.js for in-browser sheet rendering -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script>
+    if (window.pdfjsLib) {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    }
+  </script>
+</head>
         <body id="printBody">
         </body>
         </html>
