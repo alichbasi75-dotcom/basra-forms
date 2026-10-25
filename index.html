@@ -320,8 +320,8 @@
   </main>
 
   <!-- Interactive Form Viewer with Draggable & Resizable Text Boxes (عرض النموذج مع إمكانية إضافة وسحب مربعات النص) -->
-  <div id="sheetModal" class="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-sm hidden flex items-center justify-center p-2 sm:p-3">
-    <div class="bg-white border-2 border-slate-300 rounded-3xl max-w-5xl w-full h-[96vh] flex flex-col overflow-hidden shadow-2xl">
+  <div id="sheetModal" class="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-sm hidden flex flex-col items-center justify-start sm:justify-center p-1.5 sm:p-3 pt-7 sm:pt-3">
+    <div class="bg-white border-2 border-slate-300 rounded-2xl sm:rounded-3xl max-w-5xl w-full h-[calc(100dvh-2.25rem)] sm:h-[96vh] flex flex-col overflow-hidden shadow-2xl">
       
       <!-- Top Action Toolbar -->
       <div class="bg-amber-500 text-slate-950 px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between gap-2.5 border-b border-amber-600 overflow-x-auto whitespace-nowrap scroll-touch-x">
@@ -1758,7 +1758,7 @@
     }
 
     function setSheetWidth(width) {
-      currentSheetWidth = Math.max(600, Math.min(2600, width));
+      currentSheetWidth = Math.max(212, Math.min(2600, width));
       const zoomBadge = document.getElementById('zoomPercentBadge');
       if (zoomBadge) {
         const pct = Math.round((currentSheetWidth / 850) * 100);
