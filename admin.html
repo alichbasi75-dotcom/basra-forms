@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
@@ -78,8 +78,8 @@
     /* Draggable & Resizable Box */
     .drag-box {
       position: absolute;
-      border: 1.5px dashed transparent;
-      background: transparent !important;
+      border: 1.5px dashed rgba(59, 130, 246, 0.45);
+      background: rgba(239, 246, 255, 0.35) !important;
       box-shadow: none;
       z-index: 30;
       border-radius: 4px;
@@ -93,7 +93,13 @@
     .drag-box.is-focused,
     .drag-box.active {
       border: 1.5px dashed #2563eb;
-      background: rgba(255, 255, 255, 0.08) !important;
+      background: rgba(255, 255, 255, 0.12) !important;
+    }
+
+    /* When the box contains text AND is not hovered or focused: hide border so it blends seamlessly into the sheet */
+    .drag-box.has-text:not(:hover):not(.is-focused):not(.active) {
+      border-color: transparent;
+      background: transparent !important;
     }
 
     /* Floating action bar ABOVE the text box */
@@ -154,8 +160,9 @@
       font-size: 13px;
       font-weight: normal;
     }
-    .drag-box:not(:hover):not(.is-focused) .drag-textarea::placeholder {
-      color: transparent;
+    /* Placeholder remains visible when empty so the user knows the box is there */
+    .drag-textarea::placeholder {
+      color: rgba(100, 116, 139, 0.65);
     }
 
     .resize-handle {
@@ -2751,6 +2758,18 @@
       if (ta) {
         ta.style.fontSize = `${Math.round(baseFont * zoomRatio)}px`;
       }
+
+      // Track whether box has text content to seamlessly blend when unfocused
+      function updateBoxTextState() {
+        if (ta && ta.value && ta.value.trim().length > 0) {
+          box.classList.add('has-text');
+        } else {
+          box.classList.remove('has-text');
+        }
+      }
+      ta.addEventListener('input', updateBoxTextState);
+      ta.addEventListener('change', updateBoxTextState);
+      updateBoxTextState();
 
       ta.addEventListener('focus', () => {
         document.querySelectorAll('.drag-box').forEach(b => b.classList.remove('is-focused'));
