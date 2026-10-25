@@ -308,31 +308,6 @@
     "hidden": false
   },
   {
-    "id": "form_13",
-    "title": "نموذج السجل الخاص بالبطاقات المفقودة",
-    "category": "cards",
-    "categoryName": "البطاقات المفقودة وبلاغات المحكمة",
-    "fileType": "xlsx",
-    "fileName": "form_13_نموذج السجل الخاص بالبطاقات المفقودة.xlsx",
-    "originalName": "نموذج السجل الخاص بالبطاقات المفقودة.xlsx",
-    "previewFile": "preview_13.pdf",
-    "fileSize": "11.1 KB",
-    "uploadDate": "2026-10-21",
-    "updatedDate": "2026-10-21",
-    "version": "2026",
-    "description": "سجل حصر وتوثيق البطاقات البايومترية المفقودة بمركز التسجيل.",
-    "fillableTemplateId": null,
-    "downloads": 3,
-    "sheetImage": "/sheets/form_13_sheet.png",
-    "isOffice": true,
-    "pages": [
-      "/sheets/form_13_page_1.png",
-      "/sheets/form_13_page_2.png"
-    ],
-    "pageCount": 2,
-    "hidden": false
-  },
-  {
     "id": "form_14",
     "title": "فورمة جدول بلاغ المحكمه (المفقودة)",
     "category": "cards",
