@@ -160,28 +160,6 @@
     "sheetImage": "/sheets/form_1792780898589_sheet.png"
   },
   {
-    "id": "form_1792774739483",
-    "title": "نموذج الخروج للواجب",
-    "category": "leaves",
-    "fileType": "image",
-    "fileName": "1792774739463_969694.jpeg",
-    "originalName": "نموذج الخروج للواجب.jpeg",
-    "fileSize": "123.7 KB",
-    "uploadDate": "2026-10-23",
-    "updatedDate": "2026-10-23",
-    "version": "v1.0",
-    "description": "نموذج الخروج للواجب",
-    "fillableTemplateId": null,
-    "hidden": false,
-    "downloads": 0,
-    "isOffice": false,
-    "pages": [
-      "/sheets/form_1792774739483_page_1.png"
-    ],
-    "pageCount": 1,
-    "sheetImage": "/sheets/form_1792774739483_sheet.png"
-  },
-  {
     "id": "form_06",
     "title": "نموذج الاستمارة للاجازة الطويلة ترفق مع الطلب",
     "category": "leaves",
