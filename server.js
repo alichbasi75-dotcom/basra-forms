@@ -7,6 +7,14 @@ const multer = require('multer');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-admin-key');
+  res.setHeader('Access-Control-Allow-Private-Network', 'true');
+  if (req.method === 'OPTIONS') return res.status(200).end();
+  next();
+});
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true }));
@@ -366,7 +374,8 @@ function processFormSheets(form) {
     const { execFileSync } = require('child_process');
     const pyScript = path.join(__dirname, 'render_office_and_pdf.py');
 
-    const stdout = execFileSync('python', [pyScript, uploadPath, SHEETS_DIR, form.id, form.fileType], {
+    const pyExe = fs.existsSync('C:\\Python314\\python.exe') ? 'C:\\Python314\\python.exe' : 'python';
+    const stdout = execFileSync(pyExe, [pyScript, uploadPath, SHEETS_DIR, form.id, form.fileType], {
       encoding: 'utf8',
       timeout: 45000
     });

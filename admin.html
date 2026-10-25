@@ -1084,6 +1084,29 @@
     let adminToken = sessionStorage.getItem('basra_admin_auth') || '';
     const DEFAULT_FORMS = [
     {
+        "id": "form_1792960378733",
+        "title": "نموذج طلب اجازة اعتيادية من 4 الى 5 ايام ترسل لمكتب انتخابات البصرة بالبريد",
+        "category": "leaves",
+        "categoryName": "إجازات ومباشرات",
+        "fileType": "doc",
+        "fileName": "1792960378733_________________________4_____5_________________________________________.doc",
+        "originalName": "نموذج اجازة اعتيادية من 4 الى 5 ايام ترسل لمكتب انتخابات البصرة بالبريد .doc",
+        "fileSize": "309.5 KB",
+        "uploadDate": "2026-10-25",
+        "updatedDate": "2026-10-25",
+        "version": "v1.0",
+        "description": "ترسل لمكتب انتخابات البصرة بالبريد الرسمي للمدد من 4 إلى 5 أيام.",
+        "fillableTemplateId": null,
+        "hidden": false,
+        "downloads": 0,
+        "pages": [
+            "/sheets/form_1792960378733_page_1.png"
+        ],
+        "pageCount": 1,
+        "sheetImage": "/sheets/form_1792960378733_sheet.png",
+        "isOffice": true
+    },
+    {
         "id": "form_1792957024209",
         "title": "نموذج طلب اجازة من 6 ايام و اكثر  ترسل للمكتب الوطني وتؤخذ باليد لمكتب انتخابات البصرة",
         "category": "leaves",
@@ -1193,28 +1216,6 @@
         ],
         "pageCount": 1,
         "sheetImage": "/sheets/form_1792780898589_sheet.png"
-    },
-    {
-        "id": "form_1792778498465",
-        "title": "نموذج طلب اجازة اعتيادية من 4 الى 5 ايام ترسل لمكتب انتخابات البصرة بالبريد",
-        "category": "leaves",
-        "fileType": "pdf",
-        "fileName": "1792778498452_374161.pdf",
-        "originalName": "نموذج طلب اجازة اعتيادية من 4 الى 5 ايام ترسل لمكتب انتخابات البصرة بالبريد.pdf",
-        "fileSize": "859.5 KB",
-        "uploadDate": "2026-10-23",
-        "updatedDate": "2026-10-23",
-        "version": "v1.0",
-        "description": "ترسل لمكتب انتخابات البصرة بالبريد الرسمي للمدد من 4 إلى 5 أيام.",
-        "fillableTemplateId": null,
-        "hidden": false,
-        "downloads": 0,
-        "pages": [
-            "/sheets/form_1792778498465_page_1.png"
-        ],
-        "pageCount": 1,
-        "sheetImage": "/sheets/form_1792778498465_sheet.png",
-        "isOffice": false
     },
     {
         "id": "form_1792775942014",
@@ -1584,6 +1585,7 @@
 
       // Helper to wrap text lines on a 2D canvas
       function wrapCanvasText(ctx, text, maxWidth) {
+        if ((text || '').includes('(') && (text || '').includes(')')) return [text];
         const words = (text || '').split(/\s+/);
         const lines = [];
         let current = '';
@@ -1809,7 +1811,12 @@
           const uint8 = new Uint8Array(arrayBuffer);
           const utf16Text = new TextDecoder('utf-16le', { fatal: false }).decode(uint8);
           const matches = utf16Text.match(/[\u0600-\u06FF][\u0600-\u06FF\s0-9/:().\-ـ،*+×÷=٪%"]+/g) || [];
-          const ignoreWords = ['مكتب نور البراق', 'دائرة بناء القدرات', 'Normal', 'Times New Roman', 'Microsoft Word'];
+          const ignoreWords = [
+            'مكتب نور البراق', 'دائرة بناء القدرات', 'Normal', 'Times New Roman', 'Microsoft Word',
+            'عادي', 'العنوان 1', 'العنوان 2', 'العنوان 3', 'العنوان', 'خط الفقرة الافتراضي',
+            'جدول عادي', 'بلا قائمة', 'رأس الصفحة', 'تذييل الصفحة', 'نص في بالون',
+            'شبكة جدول', 'جدول ويب 1', 'جدول ويب 2', 'جدول ويب 3', 'جدول أنيق', 'توكيد'
+          ];
           for (const chunk of matches) {
             const cleaned = chunk.replace(/\r/g, '\n').trim();
             if (cleaned.length < 4) continue;
@@ -2911,8 +2918,6 @@
         }
       }
 
-      // Add default empty box on first page
-      addDraggableBox('', 35, 25, 140, 30, 1);
     }
 
     // Rotation & Zoom controller for Admin
@@ -3923,7 +3928,7 @@
           // 3a. Try local server Word/Excel COM converter if running on PC
           try {
             const ctrl = new AbortController();
-            const tid = setTimeout(() => ctrl.abort(), 6000);
+            const tid = setTimeout(() => ctrl.abort(), 30000);
             const locRes = await fetch('http://localhost:3000/api/render-office-base64', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
