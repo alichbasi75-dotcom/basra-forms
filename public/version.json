@@ -1,9 +1,8 @@
 {
   "centersVersion": "2.0.0",
-  "centersUpdatedAt": "2026-10-24T16:45:00Z",
-  "adminVersion": "2.0.2",
-  "adminUpdatedAt": "2026-10-24T19:45:54.6568101Z",
-  "version": "2.0.2",
+  "adminVersion": "2.0.3",
+  "version": "2.0.3",
+  "updatedAt": "2026-10-25T03:16:48.3740858Z",
   "target": "برنامج المسؤول فقط (لوحة الإدارة)",
   "file": "admin.html"
 }
