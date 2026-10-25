@@ -1,17 +1,22 @@
 [
   {
     "id": "leaves",
-    "name": "الإجازات والمباشرات وبراءة الذمة",
+    "name": "إجازات ومباشرات",
     "icon": "fa-solid fa-calendar-check"
   },
   {
-    "id": "cards",
-    "name": "البطاقات المفقودة وبلاغات المحكمة",
+    "id": "voters",
+    "name": "شؤون الناخبين والبطاقات",
     "icon": "fa-solid fa-id-card"
   },
   {
-    "id": "reports",
-    "name": "التقارير وسجلات الحضور",
-    "icon": "fa-file-signature"
+    "id": "legal",
+    "name": "الشؤون القانونية والمحاضر",
+    "icon": "fa-solid fa-scale-balanced"
+  },
+  {
+    "id": "admin",
+    "name": "الإدارية والمالية والمخازن",
+    "icon": "fa-solid fa-boxes-stacked"
   }
 ]
