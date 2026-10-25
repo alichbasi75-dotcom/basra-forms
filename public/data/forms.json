@@ -212,30 +212,6 @@
     "sheetImage": "/sheets/form_1792780898589_sheet.png"
   },
   {
-    "id": "form_06",
-    "title": "نموذج الاستمارة للاجازة الطويلة ترفق مع الطلب",
-    "category": "leaves",
-    "categoryName": "الإجازات والمباشرات وبراءة الذمة",
-    "fileType": "pdf",
-    "fileName": "form_06_نموذج الاستمارة للاجازة الطويلة ترفق مع الطلب.pdf",
-    "originalName": "نموذج الاستمارة للاجازة الطويلة ترفق مع الطلب.pdf",
-    "previewFile": "form_06_نموذج الاستمارة للاجازة الطويلة ترفق مع الطلب.pdf",
-    "fileSize": "558.5 KB",
-    "uploadDate": "2026-10-21",
-    "updatedDate": "2026-10-21",
-    "version": "2026",
-    "description": "نسخة الاستمارة المرفقة مع طلب الإجازة الطويلة.",
-    "fillableTemplateId": null,
-    "downloads": 0,
-    "sheetImage": "/sheets/form_06_sheet.png",
-    "isOffice": false,
-    "pages": [
-      "/sheets/form_06_page_1.png"
-    ],
-    "pageCount": 1,
-    "hidden": false
-  },
-  {
     "id": "form_09",
     "title": "فورمة براءة ذمة",
     "category": "leaves",
