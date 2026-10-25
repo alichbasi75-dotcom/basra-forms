@@ -324,53 +324,59 @@
     <div class="bg-white border-2 border-slate-300 rounded-2xl sm:rounded-3xl max-w-5xl w-full h-[calc(100dvh-2.25rem)] sm:h-[96vh] flex flex-col overflow-hidden shadow-2xl">
       
       <!-- Top Action Toolbar -->
-      <div class="bg-amber-500 text-slate-950 px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between gap-2.5 border-b border-amber-600 overflow-x-auto whitespace-nowrap scroll-touch-x">
+      <div class="bg-amber-500 text-slate-950 px-3 sm:px-4 py-2 sm:py-2.5 flex items-center justify-between gap-2 border-b border-amber-600">
         
-        <div class="flex items-center gap-2">
-          <div class="w-8 h-8 rounded-lg bg-slate-950 text-amber-400 flex items-center justify-center text-sm shadow">
+        <!-- Title & Info (Full title displayed, wraps into 2 lines if long, never pushes buttons) -->
+        <div class="flex items-center gap-2 min-w-0 flex-1 overflow-hidden">
+          <div class="w-8 h-8 rounded-lg bg-slate-950 text-amber-400 flex items-center justify-center text-sm shadow shrink-0">
             <i class="fa-solid fa-file-invoice"></i>
           </div>
-          <div>
-            <h3 id="modalSheetTitle" class="text-sm sm:text-base font-black line-clamp-1">عرض النموذج الأصلي</h3>
-            <p class="text-[11px] font-bold text-slate-900" id="modalSheetSubtitle">يمكنك سحب وتكبير أي مربع نص والكتابة عليه مباشرة أو التمرير بين الصفحات</p>
+          <div class="min-w-0">
+            <h3 id="modalSheetTitle" class="text-xs sm:text-sm font-black text-slate-950 line-clamp-2 leading-tight">عرض النموذج</h3>
           </div>
         </div>
 
-        <div class="flex items-center gap-2">
+        <!-- Action Tools & Close Button -->
+        <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
           
-          <!-- 🔄 تدوير الصورة والتحكم بالتكبير والتصغير -->
-          <div class="flex items-center bg-slate-900/30 rounded-xl p-0.5 gap-1 text-slate-950 text-xs font-bold border border-slate-900/20">
-            <button type="button" onclick="rotateCurrentSheet()" id="rotateSheetBtn" class="px-3 py-1.5 rounded-lg bg-white/80 hover:bg-white text-slate-950 font-black flex items-center gap-1.5 transition-all shadow-sm active:scale-95" title="تدوير الصفحة / الصورة 90 درجة">
-              <i class="fa-solid fa-rotate text-blue-700 text-sm"></i>
-              <span>تدوير الصورة</span>
-              <span id="rotationAngleBadge" class="text-[10px] bg-blue-100 text-blue-800 font-mono font-bold px-1 rounded hidden">90°</span>
+          <!-- Scrollable Tools Bar on small viewports -->
+          <div class="flex items-center gap-1 sm:gap-2 overflow-x-auto scroll-touch-x py-0.5">
+            <!-- 🔄 تدوير الصورة والتحكم بالتكبير والتصغير -->
+            <div class="flex items-center bg-slate-900/30 rounded-xl p-0.5 gap-1 text-slate-950 text-xs font-bold border border-slate-900/20 shrink-0">
+              <button type="button" onclick="rotateCurrentSheet()" id="rotateSheetBtn" class="px-2 sm:px-3 py-1.5 rounded-lg bg-white/80 hover:bg-white text-slate-950 font-black flex items-center gap-1 transition-all shadow-sm active:scale-95 text-[11px] sm:text-xs" title="تدوير الصفحة / الصورة 90 درجة">
+                <i class="fa-solid fa-rotate text-blue-700 text-xs sm:text-sm"></i>
+                <span class="hidden sm:inline">تدوير الصورة</span>
+                <span class="sm:hidden">تدوير</span>
+                <span id="rotationAngleBadge" class="text-[10px] bg-blue-100 text-blue-800 font-mono font-bold px-1 rounded hidden">90°</span>
+              </button>
+              <button type="button" onclick="adjustSheetZoom(-150)" class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-white/70 hover:bg-white flex items-center justify-center font-black text-xs sm:text-sm" title="تصغير العرض">-</button>
+              <span id="zoomPercentBadge" class="text-[10px] sm:text-[11px] font-mono px-0.5 sm:px-1 font-bold text-slate-900">100%</span>
+              <button type="button" onclick="adjustSheetZoom(150)" class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-white/70 hover:bg-white flex items-center justify-center font-black text-xs sm:text-sm" title="تكبير العرض">+</button>
+            </div>
+
+            <!-- ➕ زر إضافة مربع نص قابل للسحب والتحجيم (خاص بـ PDF فقط) -->
+            <button id="addBoxModalBtn" onclick="addDraggableBoxToCurrentPage()" class="shrink-0 bg-slate-950 hover:bg-slate-800 text-amber-300 font-black text-[11px] sm:text-xs px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl flex items-center gap-1 shadow-md transition-all active:scale-95">
+              <i class="fa-solid fa-plus-circle text-xs sm:text-sm"></i>
+              <span class="hidden sm:inline">إضافة مربع نص جديد</span>
+              <span class="sm:hidden">إضافة نص</span>
             </button>
-            <button type="button" onclick="adjustSheetZoom(-150)" class="w-7 h-7 rounded-lg bg-white/70 hover:bg-white flex items-center justify-center font-black text-sm" title="تصغير العرض">-</button>
-            <span id="zoomPercentBadge" class="text-[11px] font-mono px-1 font-bold text-slate-900">100%</span>
-            <button type="button" onclick="adjustSheetZoom(150)" class="w-7 h-7 rounded-lg bg-white/70 hover:bg-white flex items-center justify-center font-black text-sm" title="تكبير العرض">+</button>
+
+            <!-- 🖨️ طباعة النموذج A4 لجميع الصفحات -->
+            <button onclick="printSheetWithBoxes()" class="shrink-0 bg-emerald-700 hover:bg-emerald-600 text-white font-black text-[11px] sm:text-xs px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl flex items-center gap-1 shadow-md transition-all active:scale-95">
+              <i class="fa-solid fa-print text-xs sm:text-sm"></i>
+              <span>طباعة A4</span>
+            </button>
+
+            <!-- 📥 تنزيل الملف الأصلي باختيار موقع الحفظ -->
+            <button type="button" id="modalDownloadBtn" onclick="handleModalDownload()" class="shrink-0 bg-white hover:bg-slate-100 text-slate-800 font-bold text-[11px] sm:text-xs px-2 sm:px-3 py-1.5 sm:py-2 rounded-xl flex items-center gap-1 shadow-sm border border-slate-300" title="تنزيل الملف واختيار موقع الحفظ">
+              <i class="fa-solid fa-download text-amber-600"></i>
+              <span>تنزيل</span>
+            </button>
           </div>
 
-          <!-- ➕ زر إضافة مربع نص قابل للسحب والتحجيم (خاص بـ PDF فقط) -->
-          <button id="addBoxModalBtn" onclick="addDraggableBoxToCurrentPage()" class="bg-slate-950 hover:bg-slate-800 text-amber-300 font-black text-xs sm:text-sm px-4 py-2 rounded-xl flex items-center gap-2 shadow-md transition-all active:scale-95">
-            <i class="fa-solid fa-plus-circle text-base"></i>
-            <span>إضافة مربع نص جديد</span>
-          </button>
-
-          <!-- 🖨️ طباعة النموذج A4 لجميع الصفحات -->
-          <button onclick="printSheetWithBoxes()" class="bg-emerald-700 hover:bg-emerald-600 text-white font-black text-xs sm:text-sm px-4 py-2 rounded-xl flex items-center gap-2 shadow-md transition-all active:scale-95">
-            <i class="fa-solid fa-print text-base"></i>
-            <span>طباعة النموذج A4</span>
-          </button>
-
-          <!-- 📥 تنزيل الملف الأصلي باختيار موقع الحفظ -->
-          <button type="button" id="modalDownloadBtn" onclick="handleModalDownload()" class="bg-white hover:bg-slate-100 text-slate-800 font-bold text-xs px-3 py-2 rounded-xl flex items-center gap-1.5 shadow-sm border border-slate-300" title="تنزيل الملف واختيار موقع الحفظ">
-            <i class="fa-solid fa-download text-amber-600"></i>
-            <span>تنزيل</span>
-          </button>
-
-          <!-- إغلاق النافذة -->
-          <button type="button" onclick="closeSheetModal()" class="bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white font-black text-xs sm:text-sm px-4 py-2 rounded-xl flex items-center gap-1.5 shadow-md hover:shadow-lg transition-all active:scale-95 border border-red-400/40 cursor-pointer" title="إغلاق النافذة">
-            <i class="fa-solid fa-xmark text-base"></i>
+          <!-- إغلاق النافذة (دائماً ظاهر وبشكل كامل بدون قص) -->
+          <button type="button" onclick="closeSheetModal()" class="shrink-0 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white font-black text-xs sm:text-sm px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-xl flex items-center gap-1.5 shadow-md hover:shadow-lg transition-all active:scale-95 border border-red-400/40 cursor-pointer" title="إغلاق النافذة">
+            <i class="fa-solid fa-xmark text-sm sm:text-base"></i>
             <span>إغلاق</span>
           </button>
         </div>
@@ -541,6 +547,26 @@
       if (p.startsWith('/uploads/')) return './uploads/' + p.substring(9);
       if (p.startsWith('/')) return '.' + p;
       return p;
+    }
+
+    function handleSheetImgError(img, fileName, origSrc) {
+      if (!img._errStep) img._errStep = 1;
+      else img._errStep++;
+
+      if (img._errStep === 1 && fileName) {
+        img.src = './uploads/' + fileName;
+        return;
+      }
+      if (img._errStep <= 2) {
+        const cleanPath = (origSrc || '').replace(/^\.?\//, '');
+        img.src = 'https://basra-forms.vercel.app/' + cleanPath;
+        return;
+      }
+      if (img._errStep <= 3 && fileName) {
+        img.src = 'https://basra-forms.vercel.app/uploads/' + fileName;
+        return;
+      }
+      console.warn('Could not load sheet image:', origSrc);
     }
 
     let allCenters = [
@@ -1153,7 +1179,471 @@
     "tamweenCode": "954"
   }
 ];
-    let allForms = [];
+    const DEFAULT_FORMS = [
+    {
+        "id":  "form_1792790662356",
+        "title":  "نموذج المباشرة",
+        "category":  "leaves",
+        "fileType":  "docx",
+        "fileName":  "1792790662353_175922.doc",
+        "originalName":  "نموذج المباشرة.doc",
+        "fileSize":  "308.5 KB",
+        "uploadDate":  "2026-10-23",
+        "updatedDate":  "2026-10-24",
+        "version":  "v1.0",
+        "description":  "إشعار مباشرة الموظف بالدوام الرسمي بعد انتهاء مدة الإجازة.",
+        "fillableTemplateId":  null,
+        "hidden":  false,
+        "downloads":  0,
+        "pages":  [
+                      "/sheets/form_1792790662356_page_1.png"
+                  ],
+        "pageCount":  1,
+        "sheetImage":  "/sheets/form_1792790662356_sheet.png",
+        "isOffice":  true
+    },
+    {
+        "id":  "form_1792790583961",
+        "title":  "نموذج فحص ومعالجة",
+        "category":  "leaves",
+        "fileType":  "docx",
+        "fileName":  "1792790583958_932345.doc",
+        "originalName":  "نموذج فحص ومعالجة.doc",
+        "fileSize":  "309.0 KB",
+        "uploadDate":  "2026-10-23",
+        "updatedDate":  "2026-10-23",
+        "version":  "v1.0",
+        "description":  "خاص بفحص ومعالجة الموظف الذي ينوي طلب إجازة مرضية.",
+        "fillableTemplateId":  null,
+        "hidden":  false,
+        "downloads":  0,
+        "pages":  [
+                      "/sheets/form_1792790583961_page_1.png"
+                  ],
+        "pageCount":  1,
+        "sheetImage":  "/sheets/form_1792790583961_sheet.png",
+        "isOffice":  true
+    },
+    {
+        "id":  "form_1792783929926",
+        "title":  "نموذج انفكاك",
+        "category":  "leaves",
+        "fileType":  "docx",
+        "fileName":  "1792783929923_84284.docx",
+        "originalName":  "نموذج انفكاك.docx",
+        "fileSize":  "16.4 KB",
+        "uploadDate":  "2026-10-23",
+        "updatedDate":  "2026-10-23",
+        "version":  "v1.0",
+        "description":  "كتاب انفكاك موظف مركز التسجيل للتمتع بالإجازة الممنوحة.",
+        "fillableTemplateId":  null,
+        "hidden":  false,
+        "downloads":  0,
+        "pages":  [
+                      "/sheets/form_1792783929926_page_1.png"
+                  ],
+        "pageCount":  1,
+        "sheetImage":  "/sheets/form_1792783929926_sheet.png",
+        "isOffice":  true
+    },
+    {
+        "id":  "form_1792780898589",
+        "title":  "نموذج طلب اجازة خاصه",
+        "category":  "leaves",
+        "fileType":  "docx",
+        "fileName":  "1792780898579_282916.docx",
+        "originalName":  "نموذج طلب اجازة خاصه.docx",
+        "fileSize":  "13.0 KB",
+        "uploadDate":  "2026-10-23",
+        "updatedDate":  "2026-10-23",
+        "version":  "v1.0",
+        "description":  "ترسل لوحدة شؤون المراكز - خاصة بطلب إجازة اعتيادية قصيرة من يوم إلى 3 أيام.",
+        "fillableTemplateId":  null,
+        "hidden":  false,
+        "downloads":  0,
+        "isOffice":  true,
+        "pages":  [
+                      "/sheets/form_1792780898589_page_1.png"
+                  ],
+        "pageCount":  1,
+        "sheetImage":  "/sheets/form_1792780898589_sheet.png"
+    },
+    {
+        "id":  "form_1792778792445",
+        "title":  "نموذج طلب اجازة من 6 ايام و اكثر  ترسل للمكتب الوطني وتؤخذ باليد لمكتب انتخابات البصرة",
+        "category":  "leaves",
+        "fileType":  "pdf",
+        "fileName":  "1792778792440_986864.pdf",
+        "originalName":  "نموذج طلب اجازة من 6 ايام و اكثر  ترسل للمكتب الوطني وتؤخذ باليد لمكتب انتخابات البصرة.pdf",
+        "fileSize":  "682.5 KB",
+        "uploadDate":  "2026-10-23",
+        "updatedDate":  "2026-10-23",
+        "version":  "v1.0",
+        "description":  "ترفع للمكتب الوطني وتؤخذ باليد لمكتب انتخابات البصرة.",
+        "fillableTemplateId":  null,
+        "hidden":  false,
+        "downloads":  0,
+        "pages":  [
+                      "/sheets/form_1792778792445_page_1.png"
+                  ],
+        "pageCount":  1,
+        "sheetImage":  "/sheets/form_1792778792445_sheet.png",
+        "isOffice":  false
+    },
+    {
+        "id":  "form_1792778498465",
+        "title":  "نموذج طلب اجازة اعتيادية من 4 الى 5 ايام ترسل لمكتب انتخابات البصرة بالبريد",
+        "category":  "leaves",
+        "fileType":  "pdf",
+        "fileName":  "1792778498452_374161.pdf",
+        "originalName":  "نموذج طلب اجازة اعتيادية من 4 الى 5 ايام ترسل لمكتب انتخابات البصرة بالبريد.pdf",
+        "fileSize":  "859.5 KB",
+        "uploadDate":  "2026-10-23",
+        "updatedDate":  "2026-10-23",
+        "version":  "v1.0",
+        "description":  "ترسل لمكتب انتخابات البصرة بالبريد الرسمي للمدد من 4 إلى 5 أيام.",
+        "fillableTemplateId":  null,
+        "hidden":  false,
+        "downloads":  0,
+        "pages":  [
+                      "/sheets/form_1792778498465_page_1.png"
+                  ],
+        "pageCount":  1,
+        "sheetImage":  "/sheets/form_1792778498465_sheet.png",
+        "isOffice":  false
+    },
+    {
+        "id":  "form_1792775942014",
+        "title":  "نموذج اجازة اعتيادية",
+        "category":  "leaves",
+        "fileType":  "image",
+        "fileName":  "1792775942001_517029.jpeg",
+        "originalName":  "نموذج اجازة اعتيادية.jpeg",
+        "fileSize":  "141.3 KB",
+        "uploadDate":  "2026-10-23",
+        "updatedDate":  "2026-10-23",
+        "version":  "v1.0",
+        "description":  "ترسل لوحدة شؤون المراكز - خاصة بطلب إجازة اعتيادية قصيرة من يوم إلى 3 أيام.",
+        "fillableTemplateId":  null,
+        "hidden":  false,
+        "downloads":  0,
+        "sheetImage":  "/sheets/form_1792775942014_sheet.png",
+        "pages":  [
+                      "/sheets/form_1792775942014_page_1.png"
+                  ],
+        "pageCount":  1,
+        "isOffice":  false
+    },
+    {
+        "id":  "form_1792774834884",
+        "title":  "نموذج الزمنية",
+        "category":  "leaves",
+        "fileType":  "image",
+        "fileName":  "1792774834880_944361.jpeg",
+        "originalName":  "نموذج الزمنية.jpeg",
+        "fileSize":  "150.2 KB",
+        "uploadDate":  "2026-10-23",
+        "updatedDate":  "2026-10-23",
+        "version":  "v1.0",
+        "description":  "نموذج الزمنية",
+        "fillableTemplateId":  null,
+        "hidden":  false,
+        "downloads":  0,
+        "isOffice":  false,
+        "pages":  [
+                      "/sheets/form_1792774834884_page_1.png"
+                  ],
+        "pageCount":  1,
+        "sheetImage":  "/sheets/form_1792774834884_sheet.png"
+    },
+    {
+        "id":  "form_1792774739483",
+        "title":  "نموذج الخروج للواجب",
+        "category":  "leaves",
+        "fileType":  "image",
+        "fileName":  "1792774739463_969694.jpeg",
+        "originalName":  "نموذج الخروج للواجب.jpeg",
+        "fileSize":  "123.7 KB",
+        "uploadDate":  "2026-10-23",
+        "updatedDate":  "2026-10-23",
+        "version":  "v1.0",
+        "description":  "نموذج الخروج للواجب",
+        "fillableTemplateId":  null,
+        "hidden":  false,
+        "downloads":  0,
+        "isOffice":  false,
+        "pages":  [
+                      "/sheets/form_1792774739483_page_1.png"
+                  ],
+        "pageCount":  1,
+        "sheetImage":  "/sheets/form_1792774739483_sheet.png"
+    },
+    {
+        "id":  "form_06",
+        "title":  "نموذج الاستمارة للاجازة الطويلة ترفق مع الطلب",
+        "category":  "leaves",
+        "categoryName":  "الإجازات والمباشرات وبراءة الذمة",
+        "fileType":  "pdf",
+        "fileName":  "form_06_نموذج الاستمارة للاجازة الطويلة ترفق مع الطلب.pdf",
+        "originalName":  "نموذج الاستمارة للاجازة الطويلة ترفق مع الطلب.pdf",
+        "previewFile":  "form_06_نموذج الاستمارة للاجازة الطويلة ترفق مع الطلب.pdf",
+        "fileSize":  "558.5 KB",
+        "uploadDate":  "2026-10-21",
+        "updatedDate":  "2026-10-21",
+        "version":  "2026",
+        "description":  "نسخة الاستمارة المرفقة مع طلب الإجازة الطويلة.",
+        "fillableTemplateId":  null,
+        "downloads":  0,
+        "sheetImage":  "/sheets/form_06_sheet.png",
+        "isOffice":  false,
+        "pages":  [
+                      "/sheets/form_06_page_1.png"
+                  ],
+        "pageCount":  1,
+        "hidden":  false
+    },
+    {
+        "id":  "form_09",
+        "title":  "فورمة براءة ذمة",
+        "category":  "leaves",
+        "categoryName":  "الإجازات والمباشرات وبراءة الذمة",
+        "fileType":  "pdf",
+        "fileName":  "form_09_فورمة براءة ذمة.pdf",
+        "originalName":  "فورمة براءة ذمة.pdf",
+        "previewFile":  "form_09_فورمة براءة ذمة.pdf",
+        "fileSize":  "681.8 KB",
+        "uploadDate":  "2026-10-21",
+        "updatedDate":  "2026-10-21",
+        "version":  "2026",
+        "description":  "براءة ذمة الموظف عند النقل أو الانفكاك أو إخلاء العهدة.",
+        "fillableTemplateId":  null,
+        "downloads":  0,
+        "sheetImage":  "/sheets/form_09_sheet.png",
+        "isOffice":  false,
+        "pages":  [
+                      "/sheets/form_09_page_1.png"
+                  ],
+        "pageCount":  1,
+        "hidden":  false
+    },
+    {
+        "id":  "form_11",
+        "title":  "نموذج الاخبار",
+        "category":  "cards",
+        "categoryName":  "البطاقات المفقودة وبلاغات المحكمة",
+        "fileType":  "pdf",
+        "fileName":  "form_11_نموذج الاخبار.pdf",
+        "originalName":  "نموذج الاخبار.pdf",
+        "previewFile":  "form_11_نموذج الاخبار.pdf",
+        "fileSize":  "145.2 KB",
+        "uploadDate":  "2026-10-21",
+        "updatedDate":  "2026-10-21",
+        "version":  "2026",
+        "description":  "نموذج الإخبار الرسمي عن فقدان بطاقة الناخب البايومترية.",
+        "fillableTemplateId":  null,
+        "downloads":  0,
+        "sheetImage":  "/sheets/form_11_sheet.png",
+        "isOffice":  false,
+        "pages":  [
+                      "/sheets/form_11_page_1.png"
+                  ],
+        "pageCount":  1,
+        "hidden":  false
+    },
+    {
+        "id":  "form_12",
+        "title":  "نموذج التعهد",
+        "category":  "cards",
+        "categoryName":  "البطاقات المفقودة وبلاغات المحكمة",
+        "fileType":  "pdf",
+        "fileName":  "form_12_نموذج التعهد.pdf",
+        "originalName":  "نموذج التعهد.pdf",
+        "previewFile":  "form_12_نموذج التعهد.pdf",
+        "fileSize":  "402.1 KB",
+        "uploadDate":  "2026-10-21",
+        "updatedDate":  "2026-10-21",
+        "version":  "2026",
+        "description":  "نموذج التعهد الخطي الخاص بفقدان بطاقة الناخب.",
+        "fillableTemplateId":  null,
+        "downloads":  0,
+        "sheetImage":  "/sheets/form_12_sheet.png",
+        "isOffice":  false,
+        "pages":  [
+                      "/sheets/form_12_page_1.png"
+                  ],
+        "pageCount":  1,
+        "hidden":  false
+    },
+    {
+        "id":  "form_13",
+        "title":  "نموذج السجل الخاص بالبطاقات المفقودة",
+        "category":  "cards",
+        "categoryName":  "البطاقات المفقودة وبلاغات المحكمة",
+        "fileType":  "xlsx",
+        "fileName":  "form_13_نموذج السجل الخاص بالبطاقات المفقودة.xlsx",
+        "originalName":  "نموذج السجل الخاص بالبطاقات المفقودة.xlsx",
+        "previewFile":  "preview_13.pdf",
+        "fileSize":  "11.1 KB",
+        "uploadDate":  "2026-10-21",
+        "updatedDate":  "2026-10-21",
+        "version":  "2026",
+        "description":  "سجل حصر وتوثيق البطاقات البايومترية المفقودة بمركز التسجيل.",
+        "fillableTemplateId":  null,
+        "downloads":  3,
+        "sheetImage":  "/sheets/form_13_sheet.png",
+        "isOffice":  true,
+        "pages":  [
+
+                  ],
+        "pageCount":  1,
+        "hidden":  false
+    },
+    {
+        "id":  "form_14",
+        "title":  "فورمة جدول بلاغ المحكمه (المفقودة)",
+        "category":  "cards",
+        "categoryName":  "البطاقات المفقودة وبلاغات المحكمة",
+        "fileType":  "xlsx",
+        "fileName":  "form_14_فورمة جدول بلاغ المحكمه (المفقودة.xlsx",
+        "originalName":  "فورمة جدول بلاغ المحكمه (المفقودة).xlsx",
+        "previewFile":  "preview_14.pdf",
+        "fileSize":  "10.0 KB",
+        "uploadDate":  "2026-10-21",
+        "updatedDate":  "2026-10-21",
+        "version":  "2026",
+        "description":  "جدول توثيق بلاغات المحكمة وقرارات القاضي للبطاقات المفقودة.",
+        "fillableTemplateId":  null,
+        "downloads":  0,
+        "sheetImage":  "/sheets/form_14_sheet.png",
+        "isOffice":  true,
+        "pages":  [
+
+                  ],
+        "pageCount":  1,
+        "hidden":  false
+    },
+    {
+        "id":  "form_15",
+        "title":  "استمارة رقم 3 اليومية",
+        "category":  "reports",
+        "categoryName":  "التقارير وسجلات الحضور",
+        "fileType":  "pdf",
+        "fileName":  "form_15_استمارة رقم 3 اليومية.pdf",
+        "originalName":  "استمارة رقم 3 اليومية.pdf",
+        "previewFile":  "form_15_استمارة رقم 3 اليومية.pdf",
+        "fileSize":  "514.4 KB",
+        "uploadDate":  "2026-10-21",
+        "updatedDate":  "2026-10-22",
+        "version":  "2026",
+        "description":  "استمارة رقم (3) للموقف اليومي والتقرير الإداري لمركز التسجيل.",
+        "fillableTemplateId":  null,
+        "downloads":  0,
+        "sheetImage":  "/sheets/form_15_sheet.png",
+        "isOffice":  false,
+        "pages":  [
+                      "/sheets/form_15_page_1.png"
+                  ],
+        "pageCount":  1,
+        "hidden":  false
+    },
+    {
+        "id":  "form_16",
+        "title":  "مطالعة نسب انجاز الجوالة",
+        "category":  "reports",
+        "categoryName":  "التقارير وسجلات الحضور",
+        "fileType":  "pdf",
+        "fileName":  "form_16_مطالعة نسب انجاز الجوالة.pdf",
+        "originalName":  "مطالعة نسب انجاز الجوالة.pdf",
+        "previewFile":  "form_16_مطالعة نسب انجاز الجوالة.pdf",
+        "fileSize":  "111.1 KB",
+        "uploadDate":  "2026-10-21",
+        "updatedDate":  "2026-10-21",
+        "version":  "2026",
+        "description":  "مطالعة تفصيلية بنسب إنجاز الفرق التسييرية الجوالة.",
+        "fillableTemplateId":  null,
+        "downloads":  0,
+        "sheetImage":  "/sheets/form_16_sheet.png",
+        "isOffice":  false,
+        "pages":  [
+                      "/sheets/form_16_page_1.png"
+                  ],
+        "pageCount":  1,
+        "hidden":  false
+    },
+    {
+        "id":  "form_17",
+        "title":  "استمارة الاستقطاع المباشر",
+        "category":  "reports",
+        "categoryName":  "التقارير وسجلات الحضور",
+        "fileType":  "pdf",
+        "fileName":  "form_17_استمارة الاستقطاع المباشر.pdf",
+        "originalName":  "استمارة الاستقطاع المباشر.pdf",
+        "previewFile":  "form_17_استمارة الاستقطاع المباشر.pdf",
+        "fileSize":  "219.1 KB",
+        "uploadDate":  "2026-10-21",
+        "updatedDate":  "2026-10-21",
+        "version":  "2026",
+        "description":  "استمارة الاستقطاع المباشر لموظفي مراكز التسجيل.",
+        "fillableTemplateId":  null,
+        "downloads":  0,
+        "sheetImage":  "/sheets/form_17_sheet.png",
+        "isOffice":  false,
+        "pages":  [
+                      "/sheets/form_17_page_1.png"
+                  ],
+        "pageCount":  1,
+        "hidden":  false
+    },
+    {
+        "id":  "form_18",
+        "title":  "نموذج سجل حضور وانصراف 2026",
+        "category":  "reports",
+        "categoryName":  "التقارير وسجلات الحضور",
+        "fileType":  "xlsx",
+        "fileName":  "form_18_نموذج سجل حضور وانصراف 2928 2026.xlsx",
+        "originalName":  "نموذج سجل حضور وانصراف 2026.xlsx",
+        "previewFile":  "preview_18.pdf",
+        "fileSize":  "12.0 KB",
+        "uploadDate":  "2026-10-21",
+        "updatedDate":  "2026-10-23",
+        "version":  "2026",
+        "description":  "سجل توثيق أوقات الحضور والانصراف والتواقيع اليومية بالمركز.",
+        "fillableTemplateId":  null,
+        "downloads":  1,
+        "sheetImage":  "/sheets/form_18_sheet.png",
+        "isOffice":  true,
+        "pages":  [
+
+                  ],
+        "pageCount":  2,
+        "hidden":  false
+    },
+    {
+        "id":  "form_19",
+        "title":  "تسلسل الموظفين يكتب على النماذج",
+        "category":  "reports",
+        "categoryName":  "التقارير وسجلات الحضور",
+        "fileType":  "xlsx",
+        "fileName":  "form_19_تسلسل الموظفين يكتب على النماذج.xlsx",
+        "originalName":  "تسلسل الموظفين يكتب على النماذج.xlsx",
+        "previewFile":  "preview_19.pdf",
+        "fileSize":  "28.1 KB",
+        "uploadDate":  "2026-10-21",
+        "updatedDate":  "2026-10-21",
+        "version":  "2026",
+        "description":  "قائمة تسلسل كودات وأسماء وعناوين موظفي مراكز التسجيل.",
+        "fillableTemplateId":  null,
+        "downloads":  0,
+        "sheetImage":  "/sheets/form_19_sheet.png",
+        "isOffice":  true,
+        "pages":  [
+
+                  ],
+        "pageCount":  13,
+        "hidden":  false
+    }
+];
+    let allForms = [...DEFAULT_FORMS];
     let activeCenter = null;
     let currentCategory = 'all';
     let activeForm = null;
@@ -1327,27 +1817,36 @@
 
     async function loadForms() {
       try {
-        let res = await fetch('./data/forms.json?t=' + Date.now());
-        if (!res.ok) res = await fetch('/api/forms');
-        const data = await res.json();
-        let list = Array.isArray(data) ? data : (data.forms || []);
-        list = list.filter(f => !f.hidden);
-        allForms = list;
-        renderCategoryTabs();
-        renderFilteredForms();
-      } catch (e) {
+        let res = null;
         try {
-          const res = await fetch('/api/forms');
+          res = await fetch('./data/forms.json?t=' + Date.now());
+        } catch (e) {}
+
+        if (!res || !res.ok) {
+          try {
+            res = await fetch('/api/forms');
+          } catch (e) {}
+        }
+
+        if (!res || !res.ok) {
+          try {
+            res = await fetch('https://basra-forms.vercel.app/data/forms.json?t=' + Date.now());
+          } catch (e) {}
+        }
+
+        if (res && res.ok) {
           const data = await res.json();
           let list = Array.isArray(data) ? data : (data.forms || []);
           list = list.filter(f => !f.hidden);
-          allForms = list;
-          renderCategoryTabs();
-          renderFilteredForms();
-        } catch (err) {
-          console.error('loadForms error:', err);
+          if (list && list.length > 0) {
+            allForms = list;
+          }
         }
+      } catch (e) {
+        console.warn('loadForms network fallback:', e);
       }
+      renderCategoryTabs();
+      renderFilteredForms();
     }
 
     function onCodeEntered(code) {
@@ -1432,19 +1931,34 @@
       a.remove();
     }
 
+    function getFormDownloadName(form) {
+      if (!form) return 'ط§ظ„ظ†ظ…ظˆط°ط¬.docx';
+      let ext = 'docx';
+      if (form.fileName && form.fileName.includes('.')) {
+        ext = form.fileName.split('.').pop().toLowerCase();
+      } else if (form.fileType) {
+        ext = form.fileType.replace(/^\./, '').toLowerCase();
+      }
+      let cleanTitle = (form.title || 'ط§ظ„ظ†ظ…ظˆط°ط¬').trim();
+      cleanTitle = cleanTitle.replace(/\.(docx?|xlsx?|pdf|png|jpe?g)$/i, '');
+      return `${cleanTitle}.${ext}`;
+    }
+
     function downloadFormFile(formId) {
       const f = allForms.find(item => item.id === formId);
       if (!f) return;
       trackActivity(f.id, f.title, 'download');
+      const downloadName = getFormDownloadName(f);
       const downloadUrl = f.fileName ? `./uploads/${encodeURIComponent(f.fileName)}` : `/api/forms/${f.id}/download`;
-      downloadFileWithPicker(downloadUrl, f.originalName || `${f.title}.${f.fileType}`);
+      downloadFileWithPicker(downloadUrl, downloadName);
     }
 
     function handleModalDownload() {
       if (!activeForm) return;
       trackActivity(activeForm.id, activeForm.title, 'download');
+      const downloadName = getFormDownloadName(activeForm);
       const downloadUrl = activeForm.fileName ? `./uploads/${encodeURIComponent(activeForm.fileName)}` : `/api/forms/${activeForm.id}/download`;
-      downloadFileWithPicker(downloadUrl, activeForm.originalName || `${activeForm.title}.${activeForm.fileType}`);
+      downloadFileWithPicker(downloadUrl, downloadName);
     }
 
     // Track activity in backend for admin oversight
@@ -1711,7 +2225,7 @@
         pageWrapper.innerHTML = `
           ${pageHeaderHtml}
           <div class="page-rotatable-inner" id="pageRotatable_${pNum}" style="position: relative; width: 100%; transition: transform 0.2s ease;">
-            <img src="${normalizePath(pageSrc)}" class="sheet-bg" id="sheetImage_${pNum}" alt="الصفحة ${pNum}" onerror="if(this.src.indexOf('uploads') === -1 && '${activeForm.fileName}'){ this.src = './uploads/${activeForm.fileName}'; }">
+            <img src="${normalizePath(pageSrc)}" class="sheet-bg" id="sheetImage_${pNum}" alt="الصفحة ${pNum}" onerror="handleSheetImgError(this, '${activeForm.fileName || ''}', '${pageSrc}')">
             <div id="boxesContainer_${pNum}" class="absolute inset-0">
               <!-- Text Boxes for page ${pNum} -->
             </div>
@@ -2248,20 +2762,43 @@
     // Print the Sheet with 100% pixel accuracy (supports all pages)
     async function printSheetWithBoxes() {
       if (!activeForm) return;
-
       trackActivity(activeForm.id, activeForm.title, 'print');
 
-      const canvases = await generateBakedCanvases();
-      if (!canvases || canvases.length === 0) return;
+      const wrappers = document.querySelectorAll('#sheetScrollArea .sheet-wrapper');
+      if (!wrappers || wrappers.length === 0) {
+        window.print();
+        return;
+      }
 
-      const pageImagesHtml = canvases.map((c, idx) => {
-        const dataUrl = c.toDataURL('image/png', 1.0);
-        return `
-          <div class="a4-print-page" ${idx > 0 ? 'style="page-break-before: always;"' : ''}>
-            <img src="${dataUrl}" class="baked-sheet-img" alt="صفحة ${idx + 1}">
-          </div>
-        `;
-      }).join('');
+      // Determine orientation from first image
+      const firstImg = document.querySelector('#sheetScrollArea .sheet-bg');
+      const isLandscape = firstImg && (firstImg.naturalWidth > firstImg.naturalHeight * 1.15);
+      const printOrientation = isLandscape ? 'A4 landscape' : 'A4 portrait';
+      const printPageWidth = isLandscape ? '297mm' : '210mm';
+
+      // 1. Generate High-Resolution Baked Canvases (identical to v2.0.0, zero drift)
+      let canvases = [];
+      try {
+        canvases = await generateBakedCanvases();
+      } catch (err) {
+        console.warn('Canvas baking warning:', err);
+        canvases = [];
+      }
+
+      // 2. Try exporting canvases to DataURL (works on HTTP/HTTPS / Vercel with 100% pixel precision)
+      let canUseDataUrl = false;
+      let bakedUrls = [];
+      if (canvases && canvases.length === wrappers.length) {
+        try {
+          for (let i = 0; i < canvases.length; i++) {
+            bakedUrls.push(canvases[i].toDataURL('image/png', 1.0));
+          }
+          canUseDataUrl = true;
+        } catch (e) {
+          canUseDataUrl = false;
+          bakedUrls = [];
+        }
+      }
 
       let printFrame = document.getElementById('basraPrintFrame');
       if (printFrame) printFrame.remove();
@@ -2278,11 +2815,8 @@
       printFrame.style.pointerEvents = 'none';
       document.body.appendChild(printFrame);
 
-      const isLandscape = canvases[0].width > canvases[0].height;
-      const printOrientation = isLandscape ? 'A4 landscape' : 'A4 portrait';
-      const printPageWidth = isLandscape ? '297mm' : '210mm';
-
-      const fdoc = printFrame.contentWindow.document;
+      const fwin = printFrame.contentWindow;
+      const fdoc = fwin.document;
       fdoc.open();
       fdoc.write(`
         <!DOCTYPE html>
@@ -2310,6 +2844,8 @@
               width: ${printPageWidth};
               max-width: 100%;
               margin: 0 auto;
+              position: relative;
+              page-break-inside: avoid;
             }
             .baked-sheet-img {
               width: 100%;
@@ -2329,38 +2865,170 @@
             }
           </style>
         </head>
-        <body>
-          ${pageImagesHtml}
+        <body id="printBody">
         </body>
         </html>
       `);
       fdoc.close();
 
-      setTimeout(() => {
-        try {
-          printFrame.contentWindow.focus();
-          printFrame.contentWindow.print();
-        } catch (err) {
-          console.error('Print trigger error:', err);
-        }
-      }, 300);
+      const printBody = fdoc.getElementById('printBody');
+
+      if (canUseDataUrl) {
+        // v2.0.0 High-Resolution Baked PNG Images (100% zero drift)
+        bakedUrls.forEach((url, idx) => {
+          const pageDiv = fdoc.createElement('div');
+          pageDiv.className = 'a4-print-page';
+          if (idx > 0) pageDiv.style.pageBreakBefore = 'always';
+          const img = fdoc.createElement('img');
+          img.src = url;
+          img.className = 'baked-sheet-img';
+          img.alt = `صفحة ${idx + 1}`;
+          pageDiv.appendChild(img);
+          printBody.appendChild(pageDiv);
+        });
+      } else if (canvases && canvases.length === wrappers.length) {
+        // Direct Canvas Element Insertion (works on file:/// even when tainted, 100% baked, zero drift!)
+        canvases.forEach((c, idx) => {
+          const pageDiv = fdoc.createElement('div');
+          pageDiv.className = 'a4-print-page';
+          if (idx > 0) pageDiv.style.pageBreakBefore = 'always';
+          c.className = 'baked-sheet-img';
+          c.style.width = '100%';
+          c.style.height = 'auto';
+          c.style.display = 'block';
+          try {
+            const adopted = fdoc.adoptNode(c);
+            pageDiv.appendChild(adopted);
+          } catch(err) {
+            pageDiv.appendChild(c);
+          }
+          printBody.appendChild(pageDiv);
+        });
+      } else {
+        // Pixel-accurate DOM clone fallback (exact 1:1 clone of editor textarea styles, zero drift!)
+        wrappers.forEach((wrapper, idx) => {
+          const imgEl = wrapper.querySelector('.sheet-bg');
+          if (!imgEl) return;
+          const pageDiv = fdoc.createElement('div');
+          pageDiv.className = 'a4-print-page';
+          pageDiv.style.position = 'relative';
+          if (idx > 0) pageDiv.style.pageBreakBefore = 'always';
+
+          const img = fdoc.createElement('img');
+          img.src = imgEl.src;
+          img.className = 'baked-sheet-img';
+          pageDiv.appendChild(img);
+
+          const overlay = fdoc.createElement('div');
+          overlay.style.position = 'absolute';
+          overlay.style.top = '0';
+          overlay.style.left = '0';
+          overlay.style.right = '0';
+          overlay.style.bottom = '0';
+          overlay.style.pointerEvents = 'none';
+
+          const boxes = wrapper.querySelectorAll('.drag-box');
+          boxes.forEach(box => {
+            const ta = box.querySelector('.drag-textarea');
+            const text = ta ? ta.value : '';
+            if (text && text.trim()) {
+              const left = box.style.left;
+              const top = box.style.top;
+              const width = box.style.width;
+              const height = box.style.height;
+              const baseFontPx = parseFloat(ta.getAttribute('data-base-font')) || 16;
+              const textAlign = ta.style.textAlign || 'right';
+
+              const boxDiv = fdoc.createElement('div');
+              boxDiv.style.position = 'absolute';
+              boxDiv.style.left = left;
+              boxDiv.style.top = top;
+              boxDiv.style.width = width;
+              boxDiv.style.height = height;
+              boxDiv.style.boxSizing = 'border-box';
+              boxDiv.style.overflow = 'hidden';
+
+              const textInner = fdoc.createElement('div');
+              textInner.style.width = '100%';
+              textInner.style.height = '100%';
+              textInner.style.padding = '1px 3px';
+              textInner.style.fontFamily = "'Cairo', 'Traditional Arabic', serif";
+              textInner.style.fontSize = `${baseFontPx}px`;
+              textInner.style.fontWeight = '800';
+              textInner.style.lineHeight = '1.25';
+              textInner.style.direction = 'rtl';
+              textInner.style.textAlign = textAlign;
+              textInner.style.color = '#000';
+              textInner.style.whiteSpace = 'pre-wrap';
+              textInner.style.wordBreak = 'break-word';
+              textInner.textContent = text;
+
+              boxDiv.appendChild(textInner);
+              overlay.appendChild(boxDiv);
+            }
+          });
+
+          pageDiv.appendChild(overlay);
+          printBody.appendChild(pageDiv);
+        });
+      }
+
+      const iframeImgs = fdoc.querySelectorAll('img');
+      let loaded = 0;
+      const total = iframeImgs.length;
+      let printTriggered = false;
+
+      function triggerPrintNow() {
+        if (printTriggered) return;
+        printTriggered = true;
+        setTimeout(() => {
+          try {
+            fwin.focus();
+            fwin.print();
+          } catch (e) {
+            window.print();
+          }
+        }, 200);
+      }
+
+      if (total === 0) {
+        triggerPrintNow();
+      } else {
+        iframeImgs.forEach(img => {
+          if (img.complete) {
+            loaded++;
+            if (loaded >= total) triggerPrintNow();
+          } else {
+            img.onload = img.onerror = () => {
+              loaded++;
+              if (loaded >= total) triggerPrintNow();
+            };
+          }
+        });
+        setTimeout(triggerPrintNow, 1200);
+      }
     }
 
-    // Download the completed sheet directly as a high-resolution PNG image
     async function downloadBakedSheet() {
       if (!activeForm) return;
-      const canvases = await generateBakedCanvases();
-      if (!canvases || canvases.length === 0) return;
+      try {
+        const canvases = await generateBakedCanvases();
+        if (!canvases || canvases.length === 0) return;
 
-      canvases.forEach((canvas, idx) => {
-        const link = document.createElement('a');
-        link.download = canvases.length > 1
-          ? `${activeForm.title}_صفحة_${idx + 1}_معبأ.png`
-          : `${activeForm.title}_معبأ.png`;
-        link.href = canvas.toDataURL('image/png', 1.0);
-        link.click();
-      });
+        canvases.forEach((canvas, idx) => {
+          const link = document.createElement('a');
+          link.download = canvases.length > 1
+            ? `${activeForm.title}_صفحة_${idx + 1}_معبأ.png`
+            : `${activeForm.title}_معبأ.png`;
+          link.href = canvas.toDataURL('image/png', 1.0);
+          link.click();
+        });
+      } catch (err) {
+        console.error('Download baked sheet error:', err);
+        alert('ملاحظة: تنزيل النموذج كصورة PNG جاهزة يتطلب تشغيل النظام عبر السيرفر أو الرابط المرفوع (Vercel). للطباعة المباشرة يمكنك استخدام زر "طباعة A4".');
+      }
     }
+
 
     async function loadVersionInfo() {
       try {
