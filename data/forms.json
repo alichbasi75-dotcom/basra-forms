@@ -284,31 +284,6 @@
     "hidden": false
   },
   {
-    "id": "form_14",
-    "title": "فورمة جدول بلاغ المحكمه (المفقودة)",
-    "category": "cards",
-    "categoryName": "البطاقات المفقودة وبلاغات المحكمة",
-    "fileType": "xlsx",
-    "fileName": "form_14_فورمة جدول بلاغ المحكمه (المفقودة.xlsx",
-    "originalName": "فورمة جدول بلاغ المحكمه (المفقودة).xlsx",
-    "previewFile": "preview_14.pdf",
-    "fileSize": "10.0 KB",
-    "uploadDate": "2026-10-21",
-    "updatedDate": "2026-10-21",
-    "version": "2026",
-    "description": "جدول توثيق بلاغات المحكمة وقرارات القاضي للبطاقات المفقودة.",
-    "fillableTemplateId": null,
-    "downloads": 0,
-    "sheetImage": "/sheets/form_14_sheet.png",
-    "isOffice": true,
-    "pages": [
-      "/sheets/form_14_page_1.png",
-      "/sheets/form_14_page_2.png"
-    ],
-    "pageCount": 2,
-    "hidden": false
-  },
-  {
     "id": "form_16",
     "title": "مطالعة نسب انجاز الجوالة",
     "category": "reports",
