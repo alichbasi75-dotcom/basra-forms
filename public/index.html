@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
@@ -221,12 +221,12 @@
         منظومة نماذج واستمارات مراكز التسجيل (76 مركزاً)
       </div>
 
-      <div class="bg-slate-50 border-2 border-slate-200 rounded-2xl p-4 text-right mb-5 focus-within:border-amber-500 transition-colors">
+                  <div class="bg-slate-50 border-2 border-slate-200 rounded-2xl p-4 text-right mb-5 focus-within:border-amber-500 transition-colors">
         <label class="block text-xs font-black text-slate-800 mb-2 flex items-center gap-2">
           <i class="fa-solid fa-id-card text-amber-600 text-base"></i>
           <span>يرجى إدخال رقم مركز التسجيل الخاص بك للدخول:</span>
         </label>
-        <input type="text" id="gateCenterInput" maxlength="4" inputmode="numeric" pattern="[0-9]*" placeholder="مثال: 2928" oninput="onGateInput(this.value)" onkeydown="if(event.key === 'Enter' && !document.getElementById('gateSubmitBtn').disabled) submitGatekeeper()" class="w-full bg-white border-2 border-slate-300 focus:border-amber-500 rounded-xl px-4 py-3 text-center text-2xl font-black text-slate-900 focus:outline-none font-mono tracking-widest placeholder:text-sm placeholder:font-normal placeholder:tracking-normal placeholder:text-slate-400" autofocus>
+        <input type="text" id="gateCenterInput" maxlength="4" inputmode="numeric" pattern="[0-9]*" placeholder="مثال: 2928" oninput="onGateInput(this.value)" onchange="onGateInput(this.value)" onkeyup="onGateInput(this.value)" onpaste="setTimeout(function(){onGateInput(document.getElementById('gateCenterInput').value)}, 20)" onkeydown="if(event.key === 'Enter') submitGatekeeper()" class="w-full bg-white border-2 border-slate-300 focus:border-amber-500 rounded-xl px-4 py-3 text-center text-2xl font-black text-slate-900 focus:outline-none font-mono tracking-widest placeholder:text-sm placeholder:font-normal placeholder:tracking-normal placeholder:text-slate-400" autofocus>
         
         <!-- Live Center Match Badge -->
         <div id="gateCenterMatchBadge" class="mt-3 hidden p-2.5 rounded-xl text-xs font-bold flex items-center gap-2">
@@ -234,7 +234,10 @@
         </div>
       </div>
 
-      <button type="button" id="gateSubmitBtn" onclick="submitGatekeeper()" disabled class="w-full bg-slate-200 text-slate-400 cursor-not-allowed font-black py-3.5 px-4 rounded-xl text-sm transition-all flex items-center justify-center gap-2 shadow-sm"><span>دخول إلى منظومة النماذج</span><i class="fa-solid fa-arrow-left"></i></button>
+      <button type="button" id="gateSubmitBtn" onclick="submitGatekeeper()" class="w-full bg-slate-200 text-slate-600 hover:bg-slate-300 font-black py-3.5 px-4 rounded-xl text-sm transition-all flex items-center justify-center gap-2 shadow-sm cursor-pointer">
+        <span>دخول إلى منظومة النماذج</span>
+        <i class="fa-solid fa-arrow-left"></i>
+      </button>
 
       <div class="mt-4 text-[11px] text-slate-400">
         يتم تسجيل عمليات العرض والتنزيل باسم مركزك لمتابعة الإجراءات الرسمية من قبل مكتب انتخابات البصرة
@@ -463,6 +466,154 @@
 
   <script>
     let appModalResolve = null;
+
+        // ==========================================
+    // Gatekeeper System (Unbreakable & Immediate)
+    // ==========================================
+    var activeCenter = null;
+    var gateMatchedCenter = null;
+
+    function sanitizeCenterCode(raw) {
+      if (!raw) return '';
+      var str = String(raw).trim();
+      var clean = '';
+      for (var i = 0; i < str.length; i++) {
+        var cp = str.charCodeAt(i);
+        if (cp >= 48 && cp <= 57) clean += str[i];
+        else if (cp >= 1632 && cp <= 1641) clean += String.fromCharCode(cp - 1632 + 48);
+        else if (cp >= 1776 && cp <= 1785) clean += String.fromCharCode(cp - 1776 + 48);
+      }
+      return clean.slice(0, 4);
+    }
+
+    function onGateInput(code) {
+      var input = document.getElementById('gateCenterInput');
+      var val = sanitizeCenterCode(code);
+      if (input && input.value !== val) {
+        input.value = val;
+      }
+
+      var badge = document.getElementById('gateCenterMatchBadge');
+      var btn = document.getElementById('gateSubmitBtn');
+
+      if (val.length < 4) {
+        gateMatchedCenter = null;
+        if (btn) {
+          btn.className = 'w-full bg-slate-200 text-slate-500 hover:bg-slate-300 font-black py-3.5 px-4 rounded-xl text-sm transition-all flex items-center justify-center gap-2 shadow-sm cursor-pointer';
+        }
+        if (badge) {
+          if (val.length > 0) {
+            badge.innerHTML = '<i class="fa-solid fa-circle-info text-amber-600 text-base"></i> <span>يرجى إكمال 4 أرقام لرمز المركز (' + val.length + ' من 4)</span>';
+            badge.className = 'mt-3 p-2.5 rounded-xl text-xs font-bold bg-amber-50 text-amber-800 border border-amber-300 flex items-center gap-2 justify-center';
+          } else {
+            badge.className = 'mt-3 hidden p-2.5 rounded-xl text-xs font-bold';
+          }
+        }
+        return;
+      }
+
+      // Exactly 4 digits:
+      var list = (typeof allCenters !== 'undefined' && Array.isArray(allCenters)) ? allCenters : [];
+      var match = list.find(function(c) { return String(c.code).trim() === val; });
+      if (match) {
+        gateMatchedCenter = match;
+        var tamweenPart = match.tamweenName ? ' • تموين: ' + match.tamweenName : '';
+        if (badge) {
+          badge.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-600 text-base"></i> <span>تم التعرف: <strong>' + match.name + '</strong> (رمز: ' + match.code + ')' + tamweenPart + '</span>';
+          badge.className = 'mt-3 p-2.5 rounded-xl text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-300 flex items-center gap-2 justify-center';
+        }
+      } else {
+        gateMatchedCenter = { code: val, name: 'مركز ' + val, fullName: 'مركز ' + val + ' (' + val + ')' };
+        if (badge) {
+          badge.innerHTML = '<i class="fa-solid fa-circle-check text-blue-600 text-base"></i> <span>تم اعتماد رمز المركز: <strong>' + val + '</strong></span>';
+          badge.className = 'mt-3 p-2.5 rounded-xl text-xs font-bold bg-blue-50 text-blue-800 border border-blue-200 flex items-center gap-2 justify-center';
+        }
+      }
+
+      // Turn button gold and active when 4 digits are entered!
+      if (btn) {
+        btn.className = 'w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-3.5 px-4 rounded-xl text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-amber-500/25 active:scale-95 cursor-pointer';
+      }
+    }
+
+    function openGatekeeperModal() {
+      var modal = document.getElementById('gatekeeperModal');
+      if (modal) {
+        modal.style.setProperty('display', 'flex', 'important');
+        modal.classList.remove('hidden');
+      }
+      var closeWrap = document.getElementById('gateCloseBtnWrap');
+      if (closeWrap) {
+        if (activeCenter) closeWrap.classList.remove('hidden');
+        else closeWrap.classList.add('hidden');
+      }
+      var input = document.getElementById('gateCenterInput');
+      if (input) {
+        input.value = activeCenter ? activeCenter.code : '';
+        onGateInput(input.value);
+        setTimeout(function() { input.focus(); }, 100);
+      }
+    }
+
+    function closeGatekeeperModal() {
+      var modal = document.getElementById('gatekeeperModal');
+      if (modal) {
+        modal.style.setProperty('display', 'none', 'important');
+        modal.classList.add('hidden');
+      }
+    }
+
+    function submitGatekeeper() {
+      var input = document.getElementById('gateCenterInput');
+      var entered = input ? input.value : '';
+      var val = sanitizeCenterCode(entered);
+
+      if (!val || val.length < 4) {
+        alert('⚠️ تنبيه: يرجى إدخال رقم مركز التسجيل المكوّن من 4 أرقام للمتابعة (مثال: 2928)');
+        if (input) input.focus();
+        return;
+      }
+
+      var list = (typeof allCenters !== 'undefined' && Array.isArray(allCenters)) ? allCenters : [];
+      var match = list.find(function(c) { return String(c.code).trim() === val; });
+      activeCenter = match || { code: val, name: 'مركز ' + val, fullName: 'مركز ' + val + ' (' + val + ')' };
+      gateMatchedCenter = activeCenter;
+
+      try {
+        localStorage.setItem('basra_simple_center_code', activeCenter.code);
+        localStorage.setItem('basra_simple_center_name', activeCenter.name);
+      } catch (e) {}
+
+      var codeVal = document.getElementById('centerCodeVal');
+      if (codeVal) codeVal.innerText = activeCenter.code;
+
+      if (typeof onCodeEntered === 'function') {
+        onCodeEntered(activeCenter.code);
+      }
+
+      closeGatekeeperModal();
+
+      if (typeof renderFilteredForms === 'function') {
+        renderFilteredForms();
+      }
+    }
+
+    // Auto-detect restored or autofilled values continuously
+    setInterval(function() {
+      var input = document.getElementById('gateCenterInput');
+      if (input && input.value) {
+        var clean = sanitizeCenterCode(input.value);
+        if (clean.length === 4 && (!gateMatchedCenter || gateMatchedCenter.code !== clean)) {
+          onGateInput(clean);
+        }
+      }
+    }, 250);
+
+    window.onGateInput = onGateInput;
+    window.submitGatekeeper = submitGatekeeper;
+    window.openGatekeeperModal = openGatekeeperModal;
+    window.closeGatekeeperModal = closeGatekeeperModal;
+
 
     function showAppModal({
       title = 'تنبيه',
@@ -1675,7 +1826,7 @@
     }
 ];
     let allForms = [...DEFAULT_FORMS];
-    let activeCenter = null;
+    // activeCenter declared at top
     let currentCategory = 'all';
     let activeForm = null;
     let boxIdCounter = 0;
@@ -1691,6 +1842,10 @@
       } else {
         openGatekeeperModal();
       }
+      const initialGateVal = document.getElementById('gateCenterInput');
+      if (initialGateVal && initialGateVal.value) {
+        onGateInput(initialGateVal.value);
+      }
 
       const scrollArea = document.getElementById('sheetScrollArea');
       if (scrollArea) {
@@ -1703,6 +1858,7 @@
     }
 
     // Gatekeeper functions (تغيير رقم المركز بالضغط المباشر على الرقم)
+    // openGatekeeperModal at top
     function openGatekeeperModal() {
       const modal = document.getElementById('gatekeeperModal');
       modal.classList.remove('hidden');
@@ -1717,75 +1873,12 @@
       setTimeout(() => input.focus(), 100);
     }
 
+    // closeGatekeeperModal at top
     function closeGatekeeperModal() {
       document.getElementById('gatekeeperModal').classList.add('hidden');
     }
 
-    let gateMatchedCenter = null;
-    function onGateInput(code) {
-      const input = document.getElementById('gateCenterInput');
-      // Strictly enforce numbers only and exactly at most 4 digits
-      let val = (code || '').replace(/[^0-9]/g, '');
-      if (val.length > 4) val = val.slice(0, 4);
-      if (input && input.value !== val) {
-        input.value = val;
-      }
-
-      const badge = document.getElementById('gateCenterMatchBadge');
-      const btn = document.getElementById('gateSubmitBtn');
-
-      // Less than 4 digits: Strictly disabled
-      if (val.length < 4) {
-        gateMatchedCenter = null;
-        btn.disabled = true;
-        btn.className = 'w-full bg-slate-200 text-slate-400 cursor-not-allowed font-black py-3.5 px-4 rounded-xl text-sm transition-all flex items-center justify-center gap-2 shadow-sm';
-        
-        if (val.length > 0) {
-          badge.innerHTML = `<i class="fa-solid fa-circle-info text-amber-600 text-base"></i> <span>يرجى إدخل 4 أرقام لرمز المركز (${val.length} من 4)</span>`;
-          badge.className = 'mt-3 p-2.5 rounded-xl text-xs font-bold bg-amber-50 text-amber-800 border border-amber-300 flex items-center gap-2 justify-center';
-        } else {
-          badge.className = 'mt-3 hidden p-2.5 rounded-xl text-xs font-bold';
-        }
-        return;
-      }
-
-      // Exactly 4 digits:
-      if (allCenters.length === 0) {
-        badge.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-amber-600 text-base"></i> <span>جاري التحقق من قاعدة بيانات المراكز...</span>`;
-        badge.className = 'mt-3 p-2.5 rounded-xl text-xs font-bold bg-amber-50 text-amber-800 border border-amber-300 flex items-center gap-2 justify-center';
-        btn.disabled = true;
-        btn.className = 'w-full bg-slate-200 text-slate-400 cursor-not-allowed font-black py-3.5 px-4 rounded-xl text-sm transition-all flex items-center justify-center gap-2 shadow-sm';
-        return;
-      }
-
-      const match = allCenters.find(c => String(c.code).trim() === val);
-      if (match) {
-        gateMatchedCenter = match;
-        const tamweenPart = match.tamweenName ? ' • تموين: ' + match.tamweenName : '';
-        badge.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600 text-base"></i> <span>تم التعرف: <strong>${match.name}</strong> (رمز: ${match.code})${tamweenPart}</span>`;
-        badge.className = 'mt-3 p-2.5 rounded-xl text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-300 flex items-center gap-2 justify-center';
-        btn.disabled = false;
-        btn.className = 'w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-3.5 px-4 rounded-xl text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-amber-500/25 active:scale-95 cursor-pointer';
-      } else {
-        gateMatchedCenter = null;
-        badge.innerHTML = `<i class="fa-solid fa-circle-exclamation text-rose-600 text-base"></i> <span>الرمز (${val}) غير مسجل ضمن مراكز البصرة الـ 76</span>`;
-        badge.className = 'mt-3 p-2.5 rounded-xl text-xs font-bold bg-rose-50 text-rose-800 border border-rose-300 flex items-center gap-2 justify-center';
-        btn.disabled = true;
-        btn.className = 'w-full bg-slate-200 text-slate-400 cursor-not-allowed font-black py-3.5 px-4 rounded-xl text-sm transition-all flex items-center justify-center gap-2 shadow-sm';
-      }
-    }
-
-    function submitGatekeeper() {
-      if (!gateMatchedCenter) return;
-      activeCenter = gateMatchedCenter;
-      localStorage.setItem('basra_simple_center_code', activeCenter.code);
-      localStorage.setItem('basra_simple_center_name', activeCenter.name);
-      const codeVal = document.getElementById('centerCodeVal');
-      if (codeVal) codeVal.innerText = activeCenter.code;
-      onCodeEntered(activeCenter.code);
-      closeGatekeeperModal();
-      renderFilteredForms();
-    }
+    // Gatekeeper moved to top
 
     let allCategories = [
   {
@@ -2714,7 +2807,7 @@
             if ((!pages || pages.length <= 1) && activeForm.pageCount && activeForm.pageCount > 1) {
         pages = [];
         for (let i = 1; i <= activeForm.pageCount; i++) {
-          pages.push(./sheets/${activeForm.id}_page_${i}.png);
+          pages.push(`./sheets/${activeForm.id}_page_${i}.png`);
         }
       }
 
@@ -2910,13 +3003,6 @@
               }
             }
           </style>
-          <!-- PDF.js for in-browser sheet rendering -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-  <script>
-    if (window.pdfjsLib) {
-      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-    }
-  </script>
 </head>
         <body id="printBody">
         </body>
