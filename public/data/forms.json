@@ -358,30 +358,6 @@
     "hidden": false
   },
   {
-    "id": "form_15",
-    "title": "استمارة رقم 3 اليومية",
-    "category": "reports",
-    "categoryName": "التقارير وسجلات الحضور",
-    "fileType": "pdf",
-    "fileName": "form_15_استمارة رقم 3 اليومية.pdf",
-    "originalName": "استمارة رقم 3 اليومية.pdf",
-    "previewFile": "form_15_استمارة رقم 3 اليومية.pdf",
-    "fileSize": "514.4 KB",
-    "uploadDate": "2026-10-21",
-    "updatedDate": "2026-10-22",
-    "version": "2026",
-    "description": "استمارة رقم (3) للموقف اليومي والتقرير الإداري لمركز التسجيل.",
-    "fillableTemplateId": null,
-    "downloads": 0,
-    "sheetImage": "/sheets/form_15_sheet.png",
-    "isOffice": false,
-    "pages": [
-      "/sheets/form_15_page_1.png"
-    ],
-    "pageCount": 1,
-    "hidden": false
-  },
-  {
     "id": "form_16",
     "title": "مطالعة نسب انجاز الجوالة",
     "category": "reports",
