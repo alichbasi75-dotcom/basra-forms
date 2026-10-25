@@ -8,7 +8,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true }));
 
 const DATA_DIR = path.join(__dirname, 'data');
@@ -400,6 +400,35 @@ function processFormSheets(form) {
 
   return form;
 }
+
+
+// Endpoint to render Word/Excel base64 to PNG sheets via Word/Excel COM + PyMuPDF
+app.post('/api/render-office-base64', (req, res) => {
+  try {
+    const { fileName, fileType, formId, contentBase64 } = req.body || {};
+    if (!fileName || !contentBase64 || !formId) {
+      return res.status(400).json({ success: false, error: 'Missing parameters' });
+    }
+    const uploadPath = path.join(UPLOADS_DIR, fileName);
+    fs.writeFileSync(uploadPath, Buffer.from(contentBase64, 'base64'));
+    const tempForm = processFormSheets({ id: formId, fileName, fileType: fileType || 'doc' });
+    const pageBase64List = [];
+    const publicSheetsDir = path.join(__dirname, 'public', 'sheets');
+    const rootSheetsDir = path.join(__dirname, 'sheets');
+    if (!fs.existsSync(rootSheetsDir)) fs.mkdirSync(rootSheetsDir, { recursive: true });
+    (tempForm.pages || []).forEach(pg => {
+      const baseName = path.basename(pg);
+      const fullP = path.join(publicSheetsDir, baseName);
+      if (fs.existsSync(fullP)) {
+        fs.copyFileSync(fullP, path.join(rootSheetsDir, baseName));
+        pageBase64List.push(fs.readFileSync(fullP).toString('base64'));
+      }
+    });
+    res.json({ success: pageBase64List.length > 0, pageBase64List, pages: tempForm.pages });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
 
 // Admin upload form
 app.post('/api/admin/forms', upload.single('file'), (req, res) => {

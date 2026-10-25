@@ -196,8 +196,10 @@
       background: #f59e0b;
     }
   </style>
-  <!-- PDF.js for in-browser sheet rendering -->
+    <!-- PDF.js & Office Sheet Renderers (Mammoth + SheetJS) for in-browser sheet rendering -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script>
     if (window.pdfjsLib) {
       pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -722,23 +724,392 @@
       return p;
     }
 
-    function handleSheetImgError(img, fileName, origSrc) {
+    // ================= UNIVERSAL OFFICE (DOC / DOCX / XLS / XLSX) & PDF IN-BROWSER SHEET RENDERER =================
+    async function renderOfficeBufferToDataUrls(arrayBuffer, ext, formTitle) {
+      const cleanExt = (ext || '').toLowerCase().replace(/^\./, '');
+      const titleText = formTitle || 'نموذج رسمي - مكتب انتخابات محافظة البصرة';
+
+      // Helper to wrap text lines on a 2D canvas
+      function wrapCanvasText(ctx, text, maxWidth) {
+        const words = (text || '').split(/\s+/);
+        const lines = [];
+        let current = '';
+        for (let i = 0; i < words.length; i++) {
+          const w = words[i];
+          const test = current ? (current + ' ' + w) : w;
+          if (ctx.measureText(test).width > maxWidth && current) {
+            lines.push(current);
+            current = w;
+          } else {
+            current = test;
+          }
+        }
+        if (current) lines.push(current);
+        return lines.length > 0 ? lines : [''];
+      }
+
+      // Helper to render structured paragraphs/blocks onto A4 canvases (1240 x 1754 px)
+      function renderParagraphsToA4Canvases(paragraphs, isSpreadsheet, gridRows) {
+        const pageW = isSpreadsheet ? 1754 : 1240;
+        const pageH = isSpreadsheet ? 1240 : 1754;
+        const marginX = 95;
+        const contentW = pageW - (marginX * 2);
+
+        const createPageCanvas = () => {
+          const c = document.createElement('canvas');
+          c.width = pageW;
+          c.height = pageH;
+          const ctx = c.getContext('2d');
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, pageW, pageH);
+
+          // Official IHEC Header
+          ctx.direction = 'rtl';
+          ctx.textAlign = 'center';
+          ctx.fillStyle = '#0f172a';
+          ctx.font = 'bold 24px "Cairo", "Traditional Arabic", serif';
+          ctx.fillText('جمهورية العراق', pageW / 2, 65);
+          ctx.fillStyle = '#1e3a8a';
+          ctx.font = 'bold 28px "Cairo", "Traditional Arabic", serif';
+          ctx.fillText('المفوضية العليا المستقلة للانتخابات', pageW / 2, 102);
+          ctx.fillStyle = '#334155';
+          ctx.font = 'bold 18px "Cairo", "Traditional Arabic", sans-serif';
+          ctx.fillText('The Independent High Electoral Commission', pageW / 2, 132);
+
+          // Right Header
+          ctx.textAlign = 'right';
+          ctx.fillStyle = '#0f172a';
+          ctx.font = 'bold 24px "Cairo", "Traditional Arabic", serif';
+          ctx.fillText('مكتب انتخابات', pageW - marginX, 78);
+          ctx.fillText('محافظة البصرة', pageW - marginX, 114);
+
+          // Left Header
+          ctx.textAlign = 'right';
+          ctx.font = 'bold 20px "Cairo", "Traditional Arabic", serif';
+          ctx.fillText('العدد /', marginX + 180, 78);
+          ctx.fillText('التاريخ /', marginX + 180, 114);
+
+          // Header divider line
+          ctx.strokeStyle = '#0f172a';
+          ctx.lineWidth = 4;
+          ctx.beginPath();
+          ctx.moveTo(marginX, 155);
+          ctx.lineTo(pageW - marginX, 155);
+          ctx.stroke();
+
+          return { canvas: c, ctx, y: 210 };
+        };
+
+        if (isSpreadsheet && gridRows && gridRows.length > 0) {
+          const pages = [];
+          let cur = createPageCanvas();
+          pages.push(cur.canvas);
+
+          // Title
+          cur.ctx.direction = 'rtl';
+          cur.ctx.textAlign = 'center';
+          cur.ctx.fillStyle = '#0f172a';
+          cur.ctx.font = 'bold 28px "Cairo", "Traditional Arabic", serif';
+          cur.ctx.fillText(titleText, pageW / 2, cur.y);
+          cur.y += 45;
+
+          const nonEmptyRows = gridRows.filter(r => Array.isArray(r) && r.some(cell => String(cell || '').trim() !== ''));
+          const maxCols = Math.min(12, Math.max(1, ...nonEmptyRows.map(r => r.length)));
+          const colW = contentW / maxCols;
+          const rowH = 44;
+
+          for (let rIdx = 0; rIdx < nonEmptyRows.length; rIdx++) {
+            if (cur.y + rowH > pageH - 80) {
+              cur = createPageCanvas();
+              pages.push(cur.canvas);
+            }
+            const row = nonEmptyRows[rIdx];
+            const isHeader = rIdx === 0;
+            for (let cIdx = 0; cIdx < maxCols; cIdx++) {
+              const cellX = pageW - marginX - ((cIdx + 1) * colW);
+              cur.ctx.fillStyle = isHeader ? '#f1f5f9' : '#ffffff';
+              cur.ctx.fillRect(cellX, cur.y, colW, rowH);
+              cur.ctx.strokeStyle = '#64748b';
+              cur.ctx.lineWidth = 1.5;
+              cur.ctx.strokeRect(cellX, cur.y, colW, rowH);
+
+              const val = String(row[cIdx] !== undefined && row[cIdx] !== null ? row[cIdx] : '').trim();
+              if (val) {
+                cur.ctx.fillStyle = '#0f172a';
+                cur.ctx.font = (isHeader ? 'bold 18px ' : 'bold 16px ') + '"Cairo", "Traditional Arabic", sans-serif';
+                cur.ctx.textAlign = 'center';
+                cur.ctx.fillText(val.substring(0, 35), cellX + (colW / 2), cur.y + 28);
+              }
+            }
+            cur.y += rowH;
+          }
+          return pages.map(c => c.toDataURL('image/png'));
+        }
+
+        // Word Document (.doc / .docx) layout
+        const pages = [];
+        let cur = createPageCanvas();
+        pages.push(cur.canvas);
+
+        cur.ctx.direction = 'rtl';
+        for (let i = 0; i < paragraphs.length; i++) {
+          const p = paragraphs[i];
+          const text = (p.text || '').trim();
+          if (!text) {
+            cur.y += 18;
+            continue;
+          }
+
+          if (cur.y > pageH - 120) {
+            cur = createPageCanvas();
+            pages.push(cur.canvas);
+          }
+
+          if (p.type === 'subject') {
+            cur.y += 15;
+            cur.ctx.textAlign = 'center';
+            cur.ctx.fillStyle = '#0f172a';
+            cur.ctx.font = 'bold 32px "Cairo", "Traditional Arabic", serif';
+            cur.ctx.fillText(text, pageW / 2, cur.y);
+            cur.y += 55;
+          } else if (p.type === 'addressee') {
+            cur.ctx.textAlign = 'right';
+            cur.ctx.fillStyle = '#0f172a';
+            cur.ctx.font = 'bold 28px "Cairo", "Traditional Arabic", serif';
+            cur.ctx.fillText(text, pageW - marginX, cur.y);
+            cur.y += 48;
+          } else if (p.type === 'signatures_dual') {
+            // Two-column signature block (right & left)
+            cur.y = Math.max(cur.y + 60, pageH - 420);
+            cur.ctx.textAlign = 'right';
+            cur.ctx.fillStyle = '#0f172a';
+            cur.ctx.font = 'bold 25px "Cairo", "Traditional Arabic", serif';
+            const rightLines = p.rightLines || [];
+            const leftLines = p.leftLines || [];
+            const maxL = Math.max(rightLines.length, leftLines.length);
+            for (let k = 0; k < maxL; k++) {
+              if (rightLines[k]) {
+                cur.ctx.fillText(rightLines[k], pageW - marginX, cur.y);
+              }
+              if (leftLines[k]) {
+                cur.ctx.fillText(leftLines[k], marginX + 380, cur.y);
+              }
+              cur.y += 50;
+            }
+          } else if (p.type === 'note') {
+            cur.y += 20;
+            cur.ctx.textAlign = 'right';
+            cur.ctx.fillStyle = '#1e293b';
+            cur.ctx.font = 'bold 22px "Cairo", "Traditional Arabic", serif';
+            cur.ctx.fillText(text, pageW - marginX, cur.y);
+            cur.y += 42;
+          } else {
+            cur.ctx.textAlign = 'right';
+            cur.ctx.fillStyle = '#0f172a';
+            cur.ctx.font = 'bold 27px "Cairo", "Traditional Arabic", serif';
+            const wrapped = wrapCanvasText(cur.ctx, text, contentW);
+            for (let w = 0; w < wrapped.length; w++) {
+              if (cur.y > pageH - 100) {
+                cur = createPageCanvas();
+                pages.push(cur.canvas);
+              }
+              cur.ctx.fillText(wrapped[w], pageW - marginX, cur.y);
+              cur.y += 54;
+            }
+          }
+        }
+
+        return pages.map(c => c.toDataURL('image/png'));
+      }
+
+      // 1. Excel (.xlsx / .xls) via SheetJS
+      if ((cleanExt === 'xlsx' || cleanExt === 'xls') && window.XLSX) {
+        try {
+          const wb = XLSX.read(arrayBuffer, { type: 'array' });
+          const firstSheetName = wb.SheetNames[0];
+          const ws = wb.Sheets[firstSheetName];
+          const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+          if (rows && rows.length > 0) {
+            return renderParagraphsToA4Canvases([], true, rows);
+          }
+        } catch (e) {
+          console.warn('SheetJS Excel render warning:', e);
+        }
+      }
+
+      // 2. Word (.docx) via Mammoth
+      let rawTextLines = [];
+      if (cleanExt === 'docx' && window.mammoth) {
+        try {
+          const res = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
+          if (res && res.value) {
+            rawTextLines = res.value.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+          }
+        } catch (e) {
+          console.warn('Mammoth docx extract warning:', e);
+        }
+      }
+
+      // 3. Word 97-2003 (.doc) or fallback UTF-16LE / UTF-8 stream extraction
+      if (rawTextLines.length === 0) {
+        try {
+          const uint8 = new Uint8Array(arrayBuffer);
+          const utf16Text = new TextDecoder('utf-16le', { fatal: false }).decode(uint8);
+          const matches = utf16Text.match(/[\u0600-\u06FF][\u0600-\u06FF\s0-9/:().\-ـ،*+×÷=٪%"]+/g) || [];
+          const ignoreWords = ['مكتب نور البراق', 'دائرة بناء القدرات', 'Normal', 'Times New Roman', 'Microsoft Word'];
+          for (const chunk of matches) {
+            const cleaned = chunk.replace(/\r/g, '\n').trim();
+            if (cleaned.length < 4) continue;
+            if (ignoreWords.some(w => cleaned === w)) continue;
+            const subLines = cleaned.split('\n').map(s => s.trim()).filter(Boolean);
+            for (const sl of subLines) {
+              if (ignoreWords.some(w => sl.includes(w) && sl.length < 25)) continue;
+              if (sl === 'مكتب انتخابات' || sl === 'محافظة البصرة' || sl.startsWith('العدد') || sl === 'التاريخ/') continue;
+              rawTextLines.push(sl);
+            }
+          }
+        } catch (e) {
+          console.warn('Binary .doc UTF-16LE parse warning:', e);
+        }
+      }
+
+      // Organize extracted lines into structured official form paragraphs
+      const structured = [];
+      if (rawTextLines.length === 0) {
+        structured.push({ type: 'subject', text: titleText });
+      } else {
+        let i = 0;
+        while (i < rawTextLines.length) {
+          const line = rawTextLines[i];
+          if (line.startsWith('م /') || line.startsWith('م/') || line.startsWith('الموضوع')) {
+            structured.push({ type: 'subject', text: line });
+            i++;
+          } else if (line.startsWith('السيد ') || line.startsWith('إلى /') || line.startsWith('الى /') || line.startsWith('شعبة ')) {
+            structured.push({ type: 'addressee', text: line });
+            i++;
+          } else if (line.startsWith('التوقيع')) {
+            // Collect signature block(s)
+            const sigBlock1 = [];
+            const sigBlock2 = [];
+            while (i < rawTextLines.length && !rawTextLines[i].startsWith('ملاحظة')) {
+              const curL = rawTextLines[i];
+              if (curL.startsWith('التوقيع') && sigBlock1.length > 0) {
+                // Start second signature column
+                while (i < rawTextLines.length && !rawTextLines[i].startsWith('ملاحظة')) {
+                  sigBlock2.push(rawTextLines[i]);
+                  i++;
+                }
+                break;
+              } else {
+                sigBlock1.push(curL);
+                i++;
+              }
+            }
+            structured.push({
+              type: 'signatures_dual',
+              rightLines: sigBlock1,
+              leftLines: sigBlock2
+            });
+          } else if (line.startsWith('ملاحظة')) {
+            structured.push({ type: 'note', text: line });
+            i++;
+          } else {
+            structured.push({ type: 'body', text: line });
+            i++;
+          }
+        }
+      }
+
+      return renderParagraphsToA4Canvases(structured, false, null);
+    }
+
+    async function handleSheetImgError(img, fileName, origSrc) {
+      const active = (typeof activeAdminForm !== 'undefined' ? activeAdminForm : null) || (typeof activeForm !== 'undefined' ? activeForm : null);
       if (!img._errStep) img._errStep = 1;
       else img._errStep++;
 
-      if (img._errStep === 1 && fileName) {
-        img.src = './uploads/' + fileName;
-        return;
-      }
-      if (img._errStep <= 2) {
+      // Step 1: Try alternate sheet paths (local relative vs Vercel cloud)
+      if (img._errStep === 1 && origSrc) {
         const cleanPath = (origSrc || '').replace(/^\.?\//, '');
-        img.src = 'https://basra-forms.vercel.app/' + cleanPath;
-        return;
+        if (!img.src.includes('basra-forms.vercel.app')) {
+          img.src = 'https://basra-forms.vercel.app/' + cleanPath;
+          return;
+        }
       }
-      if (img._errStep <= 3 && fileName) {
-        img.src = 'https://basra-forms.vercel.app/uploads/' + fileName;
-        return;
+
+      // Step 2: If it is a direct image file, try uploads folder
+      const isImgFile = ['.png', '.jpg', '.jpeg', '.webp'].some(ext => (fileName || '').toLowerCase().endsWith(ext));
+      if (isImgFile && fileName) {
+        if (img._errStep === 2) {
+          img.src = './uploads/' + fileName;
+          return;
+        }
+        if (img._errStep === 3) {
+          img.src = 'https://basra-forms.vercel.app/uploads/' + fileName;
+          return;
+        }
       }
+
+      // Step 3: If it is a PDF file, render dynamically into img.src so text boxes stay interactive!
+      const isPdf = (active && active.fileType === 'pdf') || (fileName && fileName.toLowerCase().endsWith('.pdf'));
+      if (isPdf && window.pdfjsLib && !img._pdfRenderAttempted) {
+        img._pdfRenderAttempted = true;
+        const urlsToTry = [
+          (active && active.fileName) ? `./uploads/${active.fileName}` : `./uploads/${fileName}`,
+          `https://basra-forms.vercel.app/uploads/${(active && active.fileName) ? active.fileName : fileName}`
+        ];
+        for (const pdfUrl of urlsToTry) {
+          try {
+            const loadingTask = pdfjsLib.getDocument(pdfUrl);
+            const pdf = await loadingTask.promise;
+            const pNum = parseInt((img.id || '').replace('sheetImage_', '')) || 1;
+            const targetPageNum = Math.min(Math.max(1, pNum), pdf.numPages);
+            const page = await pdf.getPage(targetPageNum);
+            const viewport = page.getViewport({ scale: 1.8 });
+
+            const canvas = document.createElement('canvas');
+            canvas.width = viewport.width;
+            canvas.height = viewport.height;
+            const ctx = canvas.getContext('2d');
+            await page.render({ canvasContext: ctx, viewport }).promise;
+            img.src = canvas.toDataURL('image/png');
+            return;
+          } catch (pdfErr) {
+            console.warn('PDF fallback attempt warning:', pdfErr);
+          }
+        }
+      }
+
+      // Step 4: If it is an Office file (.doc, .docx, .xls, .xlsx), fetch and render onto A4 sheet image so text boxes work 100%!
+      const isOfficeFile = (active && (active.isOffice || ['docx', 'doc', 'xlsx', 'xls'].includes(active.fileType)))
+        || ['.docx', '.doc', '.xlsx', '.xls'].some(ext => (fileName || '').toLowerCase().endsWith(ext));
+      if (isOfficeFile && !img._officeRenderAttempted) {
+        img._officeRenderAttempted = true;
+        const targetFile = (active && active.fileName) ? active.fileName : fileName;
+        const ext = (active && active.fileType) ? active.fileType : (targetFile || '').split('.').pop();
+        const title = active ? active.title : '';
+        const urlsToTry = [
+          `./uploads/${targetFile}`,
+          `https://basra-forms.vercel.app/uploads/${targetFile}`
+        ];
+        for (const u of urlsToTry) {
+          try {
+            const resp = await fetch(u);
+            if (resp.ok) {
+              const buf = await resp.arrayBuffer();
+              const dataUrls = await renderOfficeBufferToDataUrls(buf, ext, title);
+              if (dataUrls && dataUrls.length > 0) {
+                const pNum = parseInt((img.id || '').replace('sheetImage_', '')) || 1;
+                img.src = dataUrls[Math.min(pNum - 1, dataUrls.length - 1)];
+                return;
+              }
+            }
+          } catch (offErr) {
+            console.warn('Office dynamic sheet render warning:', offErr);
+          }
+        }
+      }
+
       console.warn('Could not load sheet image:', origSrc);
     }
 
@@ -1354,482 +1725,483 @@
 ];
     const DEFAULT_FORMS = [
     {
-        "id":  "form_1792790662356",
-        "title":  "نموذج المباشرة",
-        "category":  "leaves",
-        "fileType":  "docx",
-        "fileName":  "1792790662353_175922.doc",
-        "originalName":  "نموذج المباشرة.doc",
-        "fileSize":  "308.5 KB",
-        "uploadDate":  "2026-10-23",
-        "updatedDate":  "2026-10-24",
-        "version":  "v1.0",
-        "description":  "إشعار مباشرة الموظف بالدوام الرسمي بعد انتهاء مدة الإجازة.",
-        "fillableTemplateId":  null,
-        "hidden":  false,
-        "downloads":  0,
-        "pages":  [
-                      "/sheets/form_1792790662356_page_1.png"
-                  ],
-        "pageCount":  1,
-        "sheetImage":  "/sheets/form_1792790662356_sheet.png",
-        "isOffice":  true
+        "id": "form_1792957024209",
+        "title": "نموذج طلب اجازة من 6 ايام و اكثر  ترسل للمكتب الوطني وتؤخذ باليد لمكتب انتخابات البصرة",
+        "category": "leaves",
+        "categoryName": "إجازات ومباشرات",
+        "fileType": "doc",
+        "fileName": "1792957024209________________6_____________________________________________________________________________________________________.doc",
+        "originalName": "نموذج اجازة من 6 ايام و اكثر  ترسل للمكتب الوطني وتؤخذ باليد لمكتب انتخابات البصرة  مع استمارة تؤخذ من مكتب المحافظه .doc",
+        "fileSize": "303.5 KB",
+        "uploadDate": "2026-10-25",
+        "updatedDate": "2026-10-25",
+        "version": "v1.0",
+        "description": "ترفع للمكتب الوطني وتؤخذ باليد لمكتب انتخابات البصرة.",
+        "fillableTemplateId": null,
+        "hidden": false,
+        "downloads": 0,
+        "pages": [
+            "/sheets/form_1792957024209_page_1.png"
+        ],
+        "pageCount": 1,
+        "sheetImage": "/sheets/form_1792957024209_sheet.png",
+        "isOffice": true
     },
     {
-        "id":  "form_1792790583961",
-        "title":  "نموذج فحص ومعالجة",
-        "category":  "leaves",
-        "fileType":  "docx",
-        "fileName":  "1792790583958_932345.doc",
-        "originalName":  "نموذج فحص ومعالجة.doc",
-        "fileSize":  "309.0 KB",
-        "uploadDate":  "2026-10-23",
-        "updatedDate":  "2026-10-23",
-        "version":  "v1.0",
-        "description":  "خاص بفحص ومعالجة الموظف الذي ينوي طلب إجازة مرضية.",
-        "fillableTemplateId":  null,
-        "hidden":  false,
-        "downloads":  0,
-        "pages":  [
-                      "/sheets/form_1792790583961_page_1.png"
-                  ],
-        "pageCount":  1,
-        "sheetImage":  "/sheets/form_1792790583961_sheet.png",
-        "isOffice":  true
+        "id": "form_1792790662356",
+        "title": "نموذج المباشرة",
+        "category": "leaves",
+        "fileType": "docx",
+        "fileName": "1792790662353_175922.doc",
+        "originalName": "نموذج المباشرة.doc",
+        "fileSize": "308.5 KB",
+        "uploadDate": "2026-10-23",
+        "updatedDate": "2026-10-24",
+        "version": "v1.0",
+        "description": "إشعار مباشرة الموظف بالدوام الرسمي بعد انتهاء مدة الإجازة.",
+        "fillableTemplateId": null,
+        "hidden": false,
+        "downloads": 0,
+        "pages": [
+            "/sheets/form_1792790662356_page_1.png"
+        ],
+        "pageCount": 1,
+        "sheetImage": "/sheets/form_1792790662356_sheet.png",
+        "isOffice": true
     },
     {
-        "id":  "form_1792783929926",
-        "title":  "نموذج انفكاك",
-        "category":  "leaves",
-        "fileType":  "docx",
-        "fileName":  "1792783929923_84284.docx",
-        "originalName":  "نموذج انفكاك.docx",
-        "fileSize":  "16.4 KB",
-        "uploadDate":  "2026-10-23",
-        "updatedDate":  "2026-10-23",
-        "version":  "v1.0",
-        "description":  "كتاب انفكاك موظف مركز التسجيل للتمتع بالإجازة الممنوحة.",
-        "fillableTemplateId":  null,
-        "hidden":  false,
-        "downloads":  0,
-        "pages":  [
-                      "/sheets/form_1792783929926_page_1.png"
-                  ],
-        "pageCount":  1,
-        "sheetImage":  "/sheets/form_1792783929926_sheet.png",
-        "isOffice":  true
+        "id": "form_1792790583961",
+        "title": "نموذج فحص ومعالجة",
+        "category": "leaves",
+        "fileType": "docx",
+        "fileName": "1792790583958_932345.doc",
+        "originalName": "نموذج فحص ومعالجة.doc",
+        "fileSize": "309.0 KB",
+        "uploadDate": "2026-10-23",
+        "updatedDate": "2026-10-23",
+        "version": "v1.0",
+        "description": "خاص بفحص ومعالجة الموظف الذي ينوي طلب إجازة مرضية.",
+        "fillableTemplateId": null,
+        "hidden": false,
+        "downloads": 0,
+        "pages": [
+            "/sheets/form_1792790583961_page_1.png"
+        ],
+        "pageCount": 1,
+        "sheetImage": "/sheets/form_1792790583961_sheet.png",
+        "isOffice": true
     },
     {
-        "id":  "form_1792780898589",
-        "title":  "نموذج طلب اجازة خاصه",
-        "category":  "leaves",
-        "fileType":  "docx",
-        "fileName":  "1792780898579_282916.docx",
-        "originalName":  "نموذج طلب اجازة خاصه.docx",
-        "fileSize":  "13.0 KB",
-        "uploadDate":  "2026-10-23",
-        "updatedDate":  "2026-10-23",
-        "version":  "v1.0",
-        "description":  "ترسل لوحدة شؤون المراكز - خاصة بطلب إجازة اعتيادية قصيرة من يوم إلى 3 أيام.",
-        "fillableTemplateId":  null,
-        "hidden":  false,
-        "downloads":  0,
-        "isOffice":  true,
-        "pages":  [
-                      "/sheets/form_1792780898589_page_1.png"
-                  ],
-        "pageCount":  1,
-        "sheetImage":  "/sheets/form_1792780898589_sheet.png"
+        "id": "form_1792783929926",
+        "title": "نموذج انفكاك",
+        "category": "leaves",
+        "fileType": "docx",
+        "fileName": "1792783929923_84284.docx",
+        "originalName": "نموذج انفكاك.docx",
+        "fileSize": "16.4 KB",
+        "uploadDate": "2026-10-23",
+        "updatedDate": "2026-10-23",
+        "version": "v1.0",
+        "description": "كتاب انفكاك موظف مركز التسجيل للتمتع بالإجازة الممنوحة.",
+        "fillableTemplateId": null,
+        "hidden": false,
+        "downloads": 0,
+        "pages": [
+            "/sheets/form_1792783929926_page_1.png"
+        ],
+        "pageCount": 1,
+        "sheetImage": "/sheets/form_1792783929926_sheet.png",
+        "isOffice": true
     },
     {
-        "id":  "form_1792778792445",
-        "title":  "نموذج طلب اجازة من 6 ايام و اكثر  ترسل للمكتب الوطني وتؤخذ باليد لمكتب انتخابات البصرة",
-        "category":  "leaves",
-        "fileType":  "pdf",
-        "fileName":  "1792778792440_986864.pdf",
-        "originalName":  "نموذج طلب اجازة من 6 ايام و اكثر  ترسل للمكتب الوطني وتؤخذ باليد لمكتب انتخابات البصرة.pdf",
-        "fileSize":  "682.5 KB",
-        "uploadDate":  "2026-10-23",
-        "updatedDate":  "2026-10-23",
-        "version":  "v1.0",
-        "description":  "ترفع للمكتب الوطني وتؤخذ باليد لمكتب انتخابات البصرة.",
-        "fillableTemplateId":  null,
-        "hidden":  false,
-        "downloads":  0,
-        "pages":  [
-                      "/sheets/form_1792778792445_page_1.png"
-                  ],
-        "pageCount":  1,
-        "sheetImage":  "/sheets/form_1792778792445_sheet.png",
-        "isOffice":  false
+        "id": "form_1792780898589",
+        "title": "نموذج طلب اجازة خاصه",
+        "category": "leaves",
+        "fileType": "docx",
+        "fileName": "1792780898579_282916.docx",
+        "originalName": "نموذج طلب اجازة خاصه.docx",
+        "fileSize": "13.0 KB",
+        "uploadDate": "2026-10-23",
+        "updatedDate": "2026-10-23",
+        "version": "v1.0",
+        "description": "ترسل لوحدة شؤون المراكز - خاصة بطلب إجازة اعتيادية قصيرة من يوم إلى 3 أيام.",
+        "fillableTemplateId": null,
+        "hidden": false,
+        "downloads": 0,
+        "isOffice": true,
+        "pages": [
+            "/sheets/form_1792780898589_page_1.png"
+        ],
+        "pageCount": 1,
+        "sheetImage": "/sheets/form_1792780898589_sheet.png"
     },
     {
-        "id":  "form_1792778498465",
-        "title":  "نموذج طلب اجازة اعتيادية من 4 الى 5 ايام ترسل لمكتب انتخابات البصرة بالبريد",
-        "category":  "leaves",
-        "fileType":  "pdf",
-        "fileName":  "1792778498452_374161.pdf",
-        "originalName":  "نموذج طلب اجازة اعتيادية من 4 الى 5 ايام ترسل لمكتب انتخابات البصرة بالبريد.pdf",
-        "fileSize":  "859.5 KB",
-        "uploadDate":  "2026-10-23",
-        "updatedDate":  "2026-10-23",
-        "version":  "v1.0",
-        "description":  "ترسل لمكتب انتخابات البصرة بالبريد الرسمي للمدد من 4 إلى 5 أيام.",
-        "fillableTemplateId":  null,
-        "hidden":  false,
-        "downloads":  0,
-        "pages":  [
-                      "/sheets/form_1792778498465_page_1.png"
-                  ],
-        "pageCount":  1,
-        "sheetImage":  "/sheets/form_1792778498465_sheet.png",
-        "isOffice":  false
+        "id": "form_1792778498465",
+        "title": "نموذج طلب اجازة اعتيادية من 4 الى 5 ايام ترسل لمكتب انتخابات البصرة بالبريد",
+        "category": "leaves",
+        "fileType": "pdf",
+        "fileName": "1792778498452_374161.pdf",
+        "originalName": "نموذج طلب اجازة اعتيادية من 4 الى 5 ايام ترسل لمكتب انتخابات البصرة بالبريد.pdf",
+        "fileSize": "859.5 KB",
+        "uploadDate": "2026-10-23",
+        "updatedDate": "2026-10-23",
+        "version": "v1.0",
+        "description": "ترسل لمكتب انتخابات البصرة بالبريد الرسمي للمدد من 4 إلى 5 أيام.",
+        "fillableTemplateId": null,
+        "hidden": false,
+        "downloads": 0,
+        "pages": [
+            "/sheets/form_1792778498465_page_1.png"
+        ],
+        "pageCount": 1,
+        "sheetImage": "/sheets/form_1792778498465_sheet.png",
+        "isOffice": false
     },
     {
-        "id":  "form_1792775942014",
-        "title":  "نموذج اجازة اعتيادية",
-        "category":  "leaves",
-        "fileType":  "image",
-        "fileName":  "1792775942001_517029.jpeg",
-        "originalName":  "نموذج اجازة اعتيادية.jpeg",
-        "fileSize":  "141.3 KB",
-        "uploadDate":  "2026-10-23",
-        "updatedDate":  "2026-10-23",
-        "version":  "v1.0",
-        "description":  "ترسل لوحدة شؤون المراكز - خاصة بطلب إجازة اعتيادية قصيرة من يوم إلى 3 أيام.",
-        "fillableTemplateId":  null,
-        "hidden":  false,
-        "downloads":  0,
-        "sheetImage":  "/sheets/form_1792775942014_sheet.png",
-        "pages":  [
-                      "/sheets/form_1792775942014_page_1.png"
-                  ],
-        "pageCount":  1,
-        "isOffice":  false
+        "id": "form_1792775942014",
+        "title": "نموذج اجازة اعتيادية",
+        "category": "leaves",
+        "fileType": "image",
+        "fileName": "1792775942001_517029.jpeg",
+        "originalName": "نموذج اجازة اعتيادية.jpeg",
+        "fileSize": "141.3 KB",
+        "uploadDate": "2026-10-23",
+        "updatedDate": "2026-10-23",
+        "version": "v1.0",
+        "description": "ترسل لوحدة شؤون المراكز - خاصة بطلب إجازة اعتيادية قصيرة من يوم إلى 3 أيام.",
+        "fillableTemplateId": null,
+        "hidden": false,
+        "downloads": 0,
+        "sheetImage": "/sheets/form_1792775942014_sheet.png",
+        "pages": [
+            "/sheets/form_1792775942014_page_1.png"
+        ],
+        "pageCount": 1,
+        "isOffice": false
     },
     {
-        "id":  "form_1792774834884",
-        "title":  "نموذج الزمنية",
-        "category":  "leaves",
-        "fileType":  "image",
-        "fileName":  "1792774834880_944361.jpeg",
-        "originalName":  "نموذج الزمنية.jpeg",
-        "fileSize":  "150.2 KB",
-        "uploadDate":  "2026-10-23",
-        "updatedDate":  "2026-10-23",
-        "version":  "v1.0",
-        "description":  "نموذج الزمنية",
-        "fillableTemplateId":  null,
-        "hidden":  false,
-        "downloads":  0,
-        "isOffice":  false,
-        "pages":  [
-                      "/sheets/form_1792774834884_page_1.png"
-                  ],
-        "pageCount":  1,
-        "sheetImage":  "/sheets/form_1792774834884_sheet.png"
+        "id": "form_1792774834884",
+        "title": "نموذج الزمنية",
+        "category": "leaves",
+        "fileType": "image",
+        "fileName": "1792774834880_944361.jpeg",
+        "originalName": "نموذج الزمنية.jpeg",
+        "fileSize": "150.2 KB",
+        "uploadDate": "2026-10-23",
+        "updatedDate": "2026-10-23",
+        "version": "v1.0",
+        "description": "نموذج الزمنية",
+        "fillableTemplateId": null,
+        "hidden": false,
+        "downloads": 0,
+        "isOffice": false,
+        "pages": [
+            "/sheets/form_1792774834884_page_1.png"
+        ],
+        "pageCount": 1,
+        "sheetImage": "/sheets/form_1792774834884_sheet.png"
     },
     {
-        "id":  "form_1792774739483",
-        "title":  "نموذج الخروج للواجب",
-        "category":  "leaves",
-        "fileType":  "image",
-        "fileName":  "1792774739463_969694.jpeg",
-        "originalName":  "نموذج الخروج للواجب.jpeg",
-        "fileSize":  "123.7 KB",
-        "uploadDate":  "2026-10-23",
-        "updatedDate":  "2026-10-23",
-        "version":  "v1.0",
-        "description":  "نموذج الخروج للواجب",
-        "fillableTemplateId":  null,
-        "hidden":  false,
-        "downloads":  0,
-        "isOffice":  false,
-        "pages":  [
-                      "/sheets/form_1792774739483_page_1.png"
-                  ],
-        "pageCount":  1,
-        "sheetImage":  "/sheets/form_1792774739483_sheet.png"
+        "id": "form_1792774739483",
+        "title": "نموذج الخروج للواجب",
+        "category": "leaves",
+        "fileType": "image",
+        "fileName": "1792774739463_969694.jpeg",
+        "originalName": "نموذج الخروج للواجب.jpeg",
+        "fileSize": "123.7 KB",
+        "uploadDate": "2026-10-23",
+        "updatedDate": "2026-10-23",
+        "version": "v1.0",
+        "description": "نموذج الخروج للواجب",
+        "fillableTemplateId": null,
+        "hidden": false,
+        "downloads": 0,
+        "isOffice": false,
+        "pages": [
+            "/sheets/form_1792774739483_page_1.png"
+        ],
+        "pageCount": 1,
+        "sheetImage": "/sheets/form_1792774739483_sheet.png"
     },
     {
-        "id":  "form_06",
-        "title":  "نموذج الاستمارة للاجازة الطويلة ترفق مع الطلب",
-        "category":  "leaves",
-        "categoryName":  "الإجازات والمباشرات وبراءة الذمة",
-        "fileType":  "pdf",
-        "fileName":  "form_06_نموذج الاستمارة للاجازة الطويلة ترفق مع الطلب.pdf",
-        "originalName":  "نموذج الاستمارة للاجازة الطويلة ترفق مع الطلب.pdf",
-        "previewFile":  "form_06_نموذج الاستمارة للاجازة الطويلة ترفق مع الطلب.pdf",
-        "fileSize":  "558.5 KB",
-        "uploadDate":  "2026-10-21",
-        "updatedDate":  "2026-10-21",
-        "version":  "2026",
-        "description":  "نسخة الاستمارة المرفقة مع طلب الإجازة الطويلة.",
-        "fillableTemplateId":  null,
-        "downloads":  0,
-        "sheetImage":  "/sheets/form_06_sheet.png",
-        "isOffice":  false,
-        "pages":  [
-                      "/sheets/form_06_page_1.png"
-                  ],
-        "pageCount":  1,
-        "hidden":  false
+        "id": "form_06",
+        "title": "نموذج الاستمارة للاجازة الطويلة ترفق مع الطلب",
+        "category": "leaves",
+        "categoryName": "الإجازات والمباشرات وبراءة الذمة",
+        "fileType": "pdf",
+        "fileName": "form_06_نموذج الاستمارة للاجازة الطويلة ترفق مع الطلب.pdf",
+        "originalName": "نموذج الاستمارة للاجازة الطويلة ترفق مع الطلب.pdf",
+        "previewFile": "form_06_نموذج الاستمارة للاجازة الطويلة ترفق مع الطلب.pdf",
+        "fileSize": "558.5 KB",
+        "uploadDate": "2026-10-21",
+        "updatedDate": "2026-10-21",
+        "version": "2026",
+        "description": "نسخة الاستمارة المرفقة مع طلب الإجازة الطويلة.",
+        "fillableTemplateId": null,
+        "downloads": 0,
+        "sheetImage": "/sheets/form_06_sheet.png",
+        "isOffice": false,
+        "pages": [
+            "/sheets/form_06_page_1.png"
+        ],
+        "pageCount": 1,
+        "hidden": false
     },
     {
-        "id":  "form_09",
-        "title":  "فورمة براءة ذمة",
-        "category":  "leaves",
-        "categoryName":  "الإجازات والمباشرات وبراءة الذمة",
-        "fileType":  "pdf",
-        "fileName":  "form_09_فورمة براءة ذمة.pdf",
-        "originalName":  "فورمة براءة ذمة.pdf",
-        "previewFile":  "form_09_فورمة براءة ذمة.pdf",
-        "fileSize":  "681.8 KB",
-        "uploadDate":  "2026-10-21",
-        "updatedDate":  "2026-10-21",
-        "version":  "2026",
-        "description":  "براءة ذمة الموظف عند النقل أو الانفكاك أو إخلاء العهدة.",
-        "fillableTemplateId":  null,
-        "downloads":  0,
-        "sheetImage":  "/sheets/form_09_sheet.png",
-        "isOffice":  false,
-        "pages":  [
-                      "/sheets/form_09_page_1.png"
-                  ],
-        "pageCount":  1,
-        "hidden":  false
+        "id": "form_09",
+        "title": "فورمة براءة ذمة",
+        "category": "leaves",
+        "categoryName": "الإجازات والمباشرات وبراءة الذمة",
+        "fileType": "pdf",
+        "fileName": "form_09_فورمة براءة ذمة.pdf",
+        "originalName": "فورمة براءة ذمة.pdf",
+        "previewFile": "form_09_فورمة براءة ذمة.pdf",
+        "fileSize": "681.8 KB",
+        "uploadDate": "2026-10-21",
+        "updatedDate": "2026-10-21",
+        "version": "2026",
+        "description": "براءة ذمة الموظف عند النقل أو الانفكاك أو إخلاء العهدة.",
+        "fillableTemplateId": null,
+        "downloads": 0,
+        "sheetImage": "/sheets/form_09_sheet.png",
+        "isOffice": false,
+        "pages": [
+            "/sheets/form_09_page_1.png"
+        ],
+        "pageCount": 1,
+        "hidden": false
     },
     {
-        "id":  "form_11",
-        "title":  "نموذج الاخبار",
-        "category":  "cards",
-        "categoryName":  "البطاقات المفقودة وبلاغات المحكمة",
-        "fileType":  "pdf",
-        "fileName":  "form_11_نموذج الاخبار.pdf",
-        "originalName":  "نموذج الاخبار.pdf",
-        "previewFile":  "form_11_نموذج الاخبار.pdf",
-        "fileSize":  "145.2 KB",
-        "uploadDate":  "2026-10-21",
-        "updatedDate":  "2026-10-21",
-        "version":  "2026",
-        "description":  "نموذج الإخبار الرسمي عن فقدان بطاقة الناخب البايومترية.",
-        "fillableTemplateId":  null,
-        "downloads":  0,
-        "sheetImage":  "/sheets/form_11_sheet.png",
-        "isOffice":  false,
-        "pages":  [
-                      "/sheets/form_11_page_1.png"
-                  ],
-        "pageCount":  1,
-        "hidden":  false
+        "id": "form_11",
+        "title": "نموذج الاخبار",
+        "category": "cards",
+        "categoryName": "البطاقات المفقودة وبلاغات المحكمة",
+        "fileType": "pdf",
+        "fileName": "form_11_نموذج الاخبار.pdf",
+        "originalName": "نموذج الاخبار.pdf",
+        "previewFile": "form_11_نموذج الاخبار.pdf",
+        "fileSize": "145.2 KB",
+        "uploadDate": "2026-10-21",
+        "updatedDate": "2026-10-21",
+        "version": "2026",
+        "description": "نموذج الإخبار الرسمي عن فقدان بطاقة الناخب البايومترية.",
+        "fillableTemplateId": null,
+        "downloads": 0,
+        "sheetImage": "/sheets/form_11_sheet.png",
+        "isOffice": false,
+        "pages": [
+            "/sheets/form_11_page_1.png"
+        ],
+        "pageCount": 1,
+        "hidden": false
     },
     {
-        "id":  "form_12",
-        "title":  "نموذج التعهد",
-        "category":  "cards",
-        "categoryName":  "البطاقات المفقودة وبلاغات المحكمة",
-        "fileType":  "pdf",
-        "fileName":  "form_12_نموذج التعهد.pdf",
-        "originalName":  "نموذج التعهد.pdf",
-        "previewFile":  "form_12_نموذج التعهد.pdf",
-        "fileSize":  "402.1 KB",
-        "uploadDate":  "2026-10-21",
-        "updatedDate":  "2026-10-21",
-        "version":  "2026",
-        "description":  "نموذج التعهد الخطي الخاص بفقدان بطاقة الناخب.",
-        "fillableTemplateId":  null,
-        "downloads":  0,
-        "sheetImage":  "/sheets/form_12_sheet.png",
-        "isOffice":  false,
-        "pages":  [
-                      "/sheets/form_12_page_1.png"
-                  ],
-        "pageCount":  1,
-        "hidden":  false
+        "id": "form_12",
+        "title": "نموذج التعهد",
+        "category": "cards",
+        "categoryName": "البطاقات المفقودة وبلاغات المحكمة",
+        "fileType": "pdf",
+        "fileName": "form_12_نموذج التعهد.pdf",
+        "originalName": "نموذج التعهد.pdf",
+        "previewFile": "form_12_نموذج التعهد.pdf",
+        "fileSize": "402.1 KB",
+        "uploadDate": "2026-10-21",
+        "updatedDate": "2026-10-21",
+        "version": "2026",
+        "description": "نموذج التعهد الخطي الخاص بفقدان بطاقة الناخب.",
+        "fillableTemplateId": null,
+        "downloads": 0,
+        "sheetImage": "/sheets/form_12_sheet.png",
+        "isOffice": false,
+        "pages": [
+            "/sheets/form_12_page_1.png"
+        ],
+        "pageCount": 1,
+        "hidden": false
     },
     {
-        "id":  "form_13",
-        "title":  "نموذج السجل الخاص بالبطاقات المفقودة",
-        "category":  "cards",
-        "categoryName":  "البطاقات المفقودة وبلاغات المحكمة",
-        "fileType":  "xlsx",
-        "fileName":  "form_13_نموذج السجل الخاص بالبطاقات المفقودة.xlsx",
-        "originalName":  "نموذج السجل الخاص بالبطاقات المفقودة.xlsx",
-        "previewFile":  "preview_13.pdf",
-        "fileSize":  "11.1 KB",
-        "uploadDate":  "2026-10-21",
-        "updatedDate":  "2026-10-21",
-        "version":  "2026",
-        "description":  "سجل حصر وتوثيق البطاقات البايومترية المفقودة بمركز التسجيل.",
-        "fillableTemplateId":  null,
-        "downloads":  3,
-        "sheetImage":  "/sheets/form_13_sheet.png",
-        "isOffice":  true,
-        "pages":  [
-                      "/sheets/form_13_page_1.png",
-                      "/sheets/form_13_page_2.png"
-                  ],
-        "pageCount":  2,
-        "hidden":  false
+        "id": "form_13",
+        "title": "نموذج السجل الخاص بالبطاقات المفقودة",
+        "category": "cards",
+        "categoryName": "البطاقات المفقودة وبلاغات المحكمة",
+        "fileType": "xlsx",
+        "fileName": "form_13_نموذج السجل الخاص بالبطاقات المفقودة.xlsx",
+        "originalName": "نموذج السجل الخاص بالبطاقات المفقودة.xlsx",
+        "previewFile": "preview_13.pdf",
+        "fileSize": "11.1 KB",
+        "uploadDate": "2026-10-21",
+        "updatedDate": "2026-10-21",
+        "version": "2026",
+        "description": "سجل حصر وتوثيق البطاقات البايومترية المفقودة بمركز التسجيل.",
+        "fillableTemplateId": null,
+        "downloads": 3,
+        "sheetImage": "/sheets/form_13_sheet.png",
+        "isOffice": true,
+        "pages": [
+            "/sheets/form_13_page_1.png",
+            "/sheets/form_13_page_2.png"
+        ],
+        "pageCount": 2,
+        "hidden": false
     },
     {
-        "id":  "form_14",
-        "title":  "فورمة جدول بلاغ المحكمه (المفقودة)",
-        "category":  "cards",
-        "categoryName":  "البطاقات المفقودة وبلاغات المحكمة",
-        "fileType":  "xlsx",
-        "fileName":  "form_14_فورمة جدول بلاغ المحكمه (المفقودة.xlsx",
-        "originalName":  "فورمة جدول بلاغ المحكمه (المفقودة).xlsx",
-        "previewFile":  "preview_14.pdf",
-        "fileSize":  "10.0 KB",
-        "uploadDate":  "2026-10-21",
-        "updatedDate":  "2026-10-21",
-        "version":  "2026",
-        "description":  "جدول توثيق بلاغات المحكمة وقرارات القاضي للبطاقات المفقودة.",
-        "fillableTemplateId":  null,
-        "downloads":  0,
-        "sheetImage":  "/sheets/form_14_sheet.png",
-        "isOffice":  true,
-        "pages":  [
-                      "/sheets/form_14_page_1.png",
-                      "/sheets/form_14_page_2.png"
-                  ],
-        "pageCount":  2,
-        "hidden":  false
+        "id": "form_14",
+        "title": "فورمة جدول بلاغ المحكمه (المفقودة)",
+        "category": "cards",
+        "categoryName": "البطاقات المفقودة وبلاغات المحكمة",
+        "fileType": "xlsx",
+        "fileName": "form_14_فورمة جدول بلاغ المحكمه (المفقودة.xlsx",
+        "originalName": "فورمة جدول بلاغ المحكمه (المفقودة).xlsx",
+        "previewFile": "preview_14.pdf",
+        "fileSize": "10.0 KB",
+        "uploadDate": "2026-10-21",
+        "updatedDate": "2026-10-21",
+        "version": "2026",
+        "description": "جدول توثيق بلاغات المحكمة وقرارات القاضي للبطاقات المفقودة.",
+        "fillableTemplateId": null,
+        "downloads": 0,
+        "sheetImage": "/sheets/form_14_sheet.png",
+        "isOffice": true,
+        "pages": [
+            "/sheets/form_14_page_1.png",
+            "/sheets/form_14_page_2.png"
+        ],
+        "pageCount": 2,
+        "hidden": false
     },
     {
-        "id":  "form_15",
-        "title":  "استمارة رقم 3 اليومية",
-        "category":  "reports",
-        "categoryName":  "التقارير وسجلات الحضور",
-        "fileType":  "pdf",
-        "fileName":  "form_15_استمارة رقم 3 اليومية.pdf",
-        "originalName":  "استمارة رقم 3 اليومية.pdf",
-        "previewFile":  "form_15_استمارة رقم 3 اليومية.pdf",
-        "fileSize":  "514.4 KB",
-        "uploadDate":  "2026-10-21",
-        "updatedDate":  "2026-10-22",
-        "version":  "2026",
-        "description":  "استمارة رقم (3) للموقف اليومي والتقرير الإداري لمركز التسجيل.",
-        "fillableTemplateId":  null,
-        "downloads":  0,
-        "sheetImage":  "/sheets/form_15_sheet.png",
-        "isOffice":  false,
-        "pages":  [
-                      "/sheets/form_15_page_1.png"
-                  ],
-        "pageCount":  1,
-        "hidden":  false
+        "id": "form_15",
+        "title": "استمارة رقم 3 اليومية",
+        "category": "reports",
+        "categoryName": "التقارير وسجلات الحضور",
+        "fileType": "pdf",
+        "fileName": "form_15_استمارة رقم 3 اليومية.pdf",
+        "originalName": "استمارة رقم 3 اليومية.pdf",
+        "previewFile": "form_15_استمارة رقم 3 اليومية.pdf",
+        "fileSize": "514.4 KB",
+        "uploadDate": "2026-10-21",
+        "updatedDate": "2026-10-22",
+        "version": "2026",
+        "description": "استمارة رقم (3) للموقف اليومي والتقرير الإداري لمركز التسجيل.",
+        "fillableTemplateId": null,
+        "downloads": 0,
+        "sheetImage": "/sheets/form_15_sheet.png",
+        "isOffice": false,
+        "pages": [
+            "/sheets/form_15_page_1.png"
+        ],
+        "pageCount": 1,
+        "hidden": false
     },
     {
-        "id":  "form_16",
-        "title":  "مطالعة نسب انجاز الجوالة",
-        "category":  "reports",
-        "categoryName":  "التقارير وسجلات الحضور",
-        "fileType":  "pdf",
-        "fileName":  "form_16_مطالعة نسب انجاز الجوالة.pdf",
-        "originalName":  "مطالعة نسب انجاز الجوالة.pdf",
-        "previewFile":  "form_16_مطالعة نسب انجاز الجوالة.pdf",
-        "fileSize":  "111.1 KB",
-        "uploadDate":  "2026-10-21",
-        "updatedDate":  "2026-10-21",
-        "version":  "2026",
-        "description":  "مطالعة تفصيلية بنسب إنجاز الفرق التسييرية الجوالة.",
-        "fillableTemplateId":  null,
-        "downloads":  0,
-        "sheetImage":  "/sheets/form_16_sheet.png",
-        "isOffice":  false,
-        "pages":  [
-                      "/sheets/form_16_page_1.png"
-                  ],
-        "pageCount":  1,
-        "hidden":  false
+        "id": "form_16",
+        "title": "مطالعة نسب انجاز الجوالة",
+        "category": "reports",
+        "categoryName": "التقارير وسجلات الحضور",
+        "fileType": "pdf",
+        "fileName": "form_16_مطالعة نسب انجاز الجوالة.pdf",
+        "originalName": "مطالعة نسب انجاز الجوالة.pdf",
+        "previewFile": "form_16_مطالعة نسب انجاز الجوالة.pdf",
+        "fileSize": "111.1 KB",
+        "uploadDate": "2026-10-21",
+        "updatedDate": "2026-10-21",
+        "version": "2026",
+        "description": "مطالعة تفصيلية بنسب إنجاز الفرق التسييرية الجوالة.",
+        "fillableTemplateId": null,
+        "downloads": 0,
+        "sheetImage": "/sheets/form_16_sheet.png",
+        "isOffice": false,
+        "pages": [
+            "/sheets/form_16_page_1.png"
+        ],
+        "pageCount": 1,
+        "hidden": false
     },
     {
-        "id":  "form_17",
-        "title":  "استمارة الاستقطاع المباشر",
-        "category":  "reports",
-        "categoryName":  "التقارير وسجلات الحضور",
-        "fileType":  "pdf",
-        "fileName":  "form_17_استمارة الاستقطاع المباشر.pdf",
-        "originalName":  "استمارة الاستقطاع المباشر.pdf",
-        "previewFile":  "form_17_استمارة الاستقطاع المباشر.pdf",
-        "fileSize":  "219.1 KB",
-        "uploadDate":  "2026-10-21",
-        "updatedDate":  "2026-10-21",
-        "version":  "2026",
-        "description":  "استمارة الاستقطاع المباشر لموظفي مراكز التسجيل.",
-        "fillableTemplateId":  null,
-        "downloads":  0,
-        "sheetImage":  "/sheets/form_17_sheet.png",
-        "isOffice":  false,
-        "pages":  [
-                      "/sheets/form_17_page_1.png"
-                  ],
-        "pageCount":  1,
-        "hidden":  false
+        "id": "form_17",
+        "title": "استمارة الاستقطاع المباشر",
+        "category": "reports",
+        "categoryName": "التقارير وسجلات الحضور",
+        "fileType": "pdf",
+        "fileName": "form_17_استمارة الاستقطاع المباشر.pdf",
+        "originalName": "استمارة الاستقطاع المباشر.pdf",
+        "previewFile": "form_17_استمارة الاستقطاع المباشر.pdf",
+        "fileSize": "219.1 KB",
+        "uploadDate": "2026-10-21",
+        "updatedDate": "2026-10-21",
+        "version": "2026",
+        "description": "استمارة الاستقطاع المباشر لموظفي مراكز التسجيل.",
+        "fillableTemplateId": null,
+        "downloads": 0,
+        "sheetImage": "/sheets/form_17_sheet.png",
+        "isOffice": false,
+        "pages": [
+            "/sheets/form_17_page_1.png"
+        ],
+        "pageCount": 1,
+        "hidden": false
     },
     {
-        "id":  "form_18",
-        "title":  "نموذج سجل حضور وانصراف 2026",
-        "category":  "reports",
-        "categoryName":  "التقارير وسجلات الحضور",
-        "fileType":  "xlsx",
-        "fileName":  "form_18_نموذج سجل حضور وانصراف 2928 2026.xlsx",
-        "originalName":  "نموذج سجل حضور وانصراف 2026.xlsx",
-        "previewFile":  "preview_18.pdf",
-        "fileSize":  "12.0 KB",
-        "uploadDate":  "2026-10-21",
-        "updatedDate":  "2026-10-23",
-        "version":  "2026",
-        "description":  "سجل توثيق أوقات الحضور والانصراف والتواقيع اليومية بالمركز.",
-        "fillableTemplateId":  null,
-        "downloads":  1,
-        "sheetImage":  "/sheets/form_18_sheet.png",
-        "isOffice":  true,
-        "pages":  [
-                      "/sheets/form_18_page_1.png",
-                      "/sheets/form_18_page_2.png",
-                      "/sheets/form_18_page_3.png"
-                  ],
-        "pageCount":  3,
-        "hidden":  false
+        "id": "form_18",
+        "title": "نموذج سجل حضور وانصراف 2026",
+        "category": "reports",
+        "categoryName": "التقارير وسجلات الحضور",
+        "fileType": "xlsx",
+        "fileName": "form_18_نموذج سجل حضور وانصراف 2928 2026.xlsx",
+        "originalName": "نموذج سجل حضور وانصراف 2026.xlsx",
+        "previewFile": "preview_18.pdf",
+        "fileSize": "12.0 KB",
+        "uploadDate": "2026-10-21",
+        "updatedDate": "2026-10-23",
+        "version": "2026",
+        "description": "سجل توثيق أوقات الحضور والانصراف والتواقيع اليومية بالمركز.",
+        "fillableTemplateId": null,
+        "downloads": 1,
+        "sheetImage": "/sheets/form_18_sheet.png",
+        "isOffice": true,
+        "pages": [
+            "/sheets/form_18_page_1.png",
+            "/sheets/form_18_page_2.png",
+            "/sheets/form_18_page_3.png"
+        ],
+        "pageCount": 3,
+        "hidden": false
     },
     {
-        "id":  "form_19",
-        "title":  "تسلسل الموظفين يكتب على النماذج",
-        "category":  "reports",
-        "categoryName":  "التقارير وسجلات الحضور",
-        "fileType":  "xlsx",
-        "fileName":  "form_19_تسلسل الموظفين يكتب على النماذج.xlsx",
-        "originalName":  "تسلسل الموظفين يكتب على النماذج.xlsx",
-        "previewFile":  "preview_19.pdf",
-        "fileSize":  "28.1 KB",
-        "uploadDate":  "2026-10-21",
-        "updatedDate":  "2026-10-21",
-        "version":  "2026",
-        "description":  "قائمة تسلسل كودات وأسماء وعناوين موظفي مراكز التسجيل.",
-        "fillableTemplateId":  null,
-        "downloads":  0,
-        "sheetImage":  "/sheets/form_19_sheet.png",
-        "isOffice":  true,
-        "pages":  [
-                      "/sheets/form_19_page_1.png",
-                      "/sheets/form_19_page_2.png",
-                      "/sheets/form_19_page_3.png",
-                      "/sheets/form_19_page_4.png",
-                      "/sheets/form_19_page_5.png",
-                      "/sheets/form_19_page_6.png",
-                      "/sheets/form_19_page_7.png",
-                      "/sheets/form_19_page_8.png",
-                      "/sheets/form_19_page_9.png",
-                      "/sheets/form_19_page_10.png",
-                      "/sheets/form_19_page_11.png",
-                      "/sheets/form_19_page_12.png",
-                      "/sheets/form_19_page_13.png"
-                  ],
-        "pageCount":  13,
-        "hidden":  false
+        "id": "form_19",
+        "title": "تسلسل الموظفين يكتب على النماذج",
+        "category": "reports",
+        "categoryName": "التقارير وسجلات الحضور",
+        "fileType": "xlsx",
+        "fileName": "form_19_تسلسل الموظفين يكتب على النماذج.xlsx",
+        "originalName": "تسلسل الموظفين يكتب على النماذج.xlsx",
+        "previewFile": "preview_19.pdf",
+        "fileSize": "28.1 KB",
+        "uploadDate": "2026-10-21",
+        "updatedDate": "2026-10-21",
+        "version": "2026",
+        "description": "قائمة تسلسل كودات وأسماء وعناوين موظفي مراكز التسجيل.",
+        "fillableTemplateId": null,
+        "downloads": 0,
+        "sheetImage": "/sheets/form_19_sheet.png",
+        "isOffice": true,
+        "pages": [
+            "/sheets/form_19_page_1.png",
+            "/sheets/form_19_page_2.png",
+            "/sheets/form_19_page_3.png",
+            "/sheets/form_19_page_4.png",
+            "/sheets/form_19_page_5.png",
+            "/sheets/form_19_page_6.png",
+            "/sheets/form_19_page_7.png",
+            "/sheets/form_19_page_8.png",
+            "/sheets/form_19_page_9.png",
+            "/sheets/form_19_page_10.png",
+            "/sheets/form_19_page_11.png",
+            "/sheets/form_19_page_12.png",
+            "/sheets/form_19_page_13.png"
+        ],
+        "pageCount": 13,
+        "hidden": false
     }
 ];
     let allForms = [...DEFAULT_FORMS];
@@ -2261,29 +2633,24 @@
       const tipText = document.getElementById('modalTipText');
       const tipIcon = document.getElementById('modalTipIcon');
 
-      if (isOffice) {
-        if (addBoxBtn) addBoxBtn.classList.add('hidden');
-        if (boxesCountWrap) boxesCountWrap.classList.add('hidden');
-        if (modalSubtitle) modalSubtitle.innerText = 'معاينة النموذج الرسمي الأصلي لملف Word/Excel مع إمكانية التمرير والطباعة A4 مباشرة';
-        if (tipIcon) tipIcon.className = 'fa-solid fa-file-circle-check text-blue-600';
-        if (tipText) tipText.innerText = 'هذا النموذج للعرض والمعاينة والطباعة المباشرة بدون كتابة. يمكنك التمرير لكافة الصفحات وطباعتها أو تنزيل الملف الأصلي.';
-      } else {
-        if (addBoxBtn) addBoxBtn.classList.remove('hidden');
-        if (boxesCountWrap) boxesCountWrap.classList.remove('hidden');
-        if (modalSubtitle) modalSubtitle.innerText = 'يمكنك سحب وتكبير أي مربع نص والكتابة عليه مباشرة أو التمرير بين الصفحات';
-        if (tipIcon) tipIcon.className = 'fa-solid fa-lightbulb text-amber-600';
-        if (tipText) tipText.innerText = 'اضغط زر "إضافة مربع نص"، ثم اسحبه بالفأرة لأي مكان تريده في النموذج وكبّره وصغّره حسب الفراغ.';
-      }
+      // Enable interactive text boxes for ALL forms (PDF, Image, Word, Excel)
+      if (addBoxBtn) addBoxBtn.classList.remove('hidden');
+      if (boxesCountWrap) boxesCountWrap.classList.remove('hidden');
+      if (modalSubtitle) modalSubtitle.innerText = 'يمكنك سحب وتكبير أي مربع نص والكتابة عليه مباشرة أو التمرير بين الصفحات';
+      if (tipIcon) tipIcon.className = 'fa-solid fa-lightbulb text-amber-600';
+      if (tipText) tipText.innerText = 'اضغط زر "إضافة نص"، ثم اسحبه لأي مكان في النموذج وكبّره وصغّره حسب الفراغ.';
 
-      // Determine pages list
+      // Determine pages list for all form types
       let pages = [];
-      if (activeForm.pages && activeForm.pages.length > 0) {
+      if (activeForm.previewPages && activeForm.previewPages.length > 0) {
+        pages = [...activeForm.previewPages];
+      } else if (activeForm.pages && activeForm.pages.length > 0) {
         pages = [...activeForm.pages];
       } else if (activeForm.sheetImage) {
         pages = [activeForm.sheetImage];
       } else if (activeForm.fileType === 'image' || ['.png', '.jpg', '.jpeg', '.webp'].some(ext => (activeForm.fileName || '').toLowerCase().endsWith(ext))) {
         pages = ['./uploads/' + activeForm.fileName];
-      } else if (!isOffice) {
+      } else {
         pages = [`./sheets/${activeForm.id}_sheet.png`];
       }
 
@@ -2300,36 +2667,6 @@
       boxIdCounter = 0;
       currentVisiblePage = 1;
 
-      // If it's an office file with no rendered page images yet, show an elegant Office Card
-      if (pages.length === 0 && isOffice) {
-        const isWord = ['docx', 'doc'].includes(activeForm.fileType);
-        const iconClass = isWord ? 'fa-file-word text-blue-600' : 'fa-file-excel text-emerald-600';
-        const officeBg = isWord ? 'bg-blue-50 border-blue-200' : 'bg-emerald-50 border-emerald-200';
-        const officeBtn = isWord ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-emerald-600 hover:bg-emerald-700 text-white';
-        const officeType = isWord ? 'Word' : 'Excel';
-
-        scrollArea.innerHTML = `
-          <div class="my-auto py-16 px-6 max-w-lg mx-auto text-center ${officeBg} border-2 rounded-3xl shadow-xl">
-            <div class="w-24 h-24 rounded-3xl bg-white shadow-lg mx-auto flex items-center justify-center text-5xl mb-5">
-              <i class="fa-solid ${iconClass}"></i>
-            </div>
-            <h4 class="text-xl font-black text-slate-900 mb-2">${activeForm.title}</h4>
-            <p class="text-xs font-bold text-slate-600 mb-6 leading-relaxed">
-              هذا النموذج بصيغة ${officeType} (${(activeForm.fileType || '').toUpperCase()})، تم إعداده للفتح والطباعة والتعديل المباشر عبر برنامج مايكروسوفت ${officeType}.
-            </p>
-            <div class="flex items-center justify-center gap-3">
-              <a href="${activeForm.fileName ? './uploads/' + encodeURIComponent(activeForm.fileName) : '/api/forms/' + activeForm.id + '/download'}" download class="px-6 py-3 ${officeBtn} rounded-xl font-black text-sm flex items-center gap-2 shadow-lg transition-all active:scale-95">
-                <i class="fa-solid fa-download"></i>
-                <span>تنزيل وفتح في برنامج ${officeType}</span>
-              </a>
-            </div>
-          </div>
-        `;
-        document.getElementById('pagesCountBadge').innerText = '1';
-        document.getElementById('sheetModal').classList.remove('hidden');
-        return;
-      }
-
       document.getElementById('pagesCountBadge').innerText = pages.length;
 
       // Render each page with its own wrapper and rotatable box layer
@@ -2343,22 +2680,14 @@
 
         let pageHeaderHtml = '';
         if (pages.length > 1) {
-          if (!isOffice) {
-            pageHeaderHtml = `
-              <div class="bg-slate-800 text-white text-xs font-bold px-3 py-1.5 rounded-t flex items-center justify-between">
-                <span>صفحة ${pNum} من ${pages.length}</span>
-                <button type="button" onclick="addDraggableBox('', 35, 30, 140, 30, ${pNum})" class="bg-amber-500 hover:bg-amber-400 text-slate-950 px-2.5 py-0.5 rounded text-xs font-black">
-                  + إضافة نص في هذه الصفحة
-                </button>
-              </div>
-            `;
-          } else {
-            pageHeaderHtml = `
-              <div class="bg-slate-800 text-white text-xs font-bold px-3 py-1.5 rounded-t flex items-center justify-between">
-                <span>صفحة ${pNum} من ${pages.length}</span>
-              </div>
-            `;
-          }
+          pageHeaderHtml = `
+            <div class="bg-slate-800 text-white text-xs font-bold px-3 py-1.5 rounded-t flex items-center justify-between">
+              <span>صفحة ${pNum} من ${pages.length}</span>
+              <button type="button" onclick="addDraggableBox('', 35, 30, 140, 30, ${pNum})" class="bg-amber-500 hover:bg-amber-400 text-slate-950 px-2.5 py-0.5 rounded text-xs font-black">
+                + إضافة نص في هذه الصفحة
+              </button>
+            </div>
+          `;
         }
 
         pageWrapper.innerHTML = `

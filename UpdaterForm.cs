@@ -707,129 +707,172 @@ namespace BasraUpdater
             lblStatus.Text = "جاري معالجة ونسخ الملف المطابق...";
             lblStatus.ForeColor = Color.FromArgb(2, 132, 199);
 
-            try
+            bool isAdminTarget = rbAdmin.Checked;
+            System.Threading.ThreadPool.QueueUserWorkItem(delegate
             {
-                string gitAddArgs = "";
-                string nowIso = DateTime.UtcNow.ToString("o");
-
-                // Case 1: Updating ADMIN ONLY (admin.html)
-                if (rbAdmin.Checked)
+                try
                 {
-                    SafeCopy(selectedFilePath, Path.Combine(workspaceDir, "admin.html"));
-                    SafeCopy(selectedFilePath, Path.Combine(workspaceDir, "public", "admin.html"));
-                    cloudAdminVersion = newVer;
+                    // 0. Clean any stale git lock or broken rebase folder
+                    string lockFile = Path.Combine(workspaceDir, ".git", "index.lock");
+                    if (File.Exists(lockFile)) { try { File.Delete(lockFile); } catch { } }
+                    string rebaseDir = Path.Combine(workspaceDir, ".git", "rebase-merge");
+                    if (Directory.Exists(rebaseDir)) { try { Directory.Delete(rebaseDir, true); } catch { } }
 
-                    // Write version-admin.json (ROOT and PUBLIC)
-                    string adminJson = string.Format("{{\n  \"version\": \"{0}\",\n  \"updatedAt\": \"{1}\",\n  \"system\": \"admin\"\n}}", newVer, nowIso);
-                    File.WriteAllText(Path.Combine(workspaceDir, "version-admin.json"), adminJson);
-                    File.WriteAllText(Path.Combine(workspaceDir, "public", "version-admin.json"), adminJson);
+                    // 1. Sync with remote FIRST before applying our file so there is NEVER a rebase conflict
+                    this.Invoke((MethodInvoker)delegate {
+                        lblStatus.Text = "جاري مزامنة الفرع السحابي...";
+                    });
+                    ProcessStartInfo psiPull = new ProcessStartInfo("git", "pull --rebase -X theirs --autostash origin main");
+                    psiPull.WorkingDirectory = workspaceDir;
+                    psiPull.EnvironmentVariables["HOME"] = workspaceDir;
+                    psiPull.EnvironmentVariables["GIT_TERMINAL_PROMPT"] = "0";
+                    psiPull.EnvironmentVariables["GIT_EDITOR"] = "true";
+                    psiPull.CreateNoWindow = true;
+                    psiPull.UseShellExecute = false;
+                    Process pPull = Process.Start(psiPull);
+                    if (!pPull.WaitForExit(20000)) { try { pPull.Kill(); } catch { } }
+                    if (Directory.Exists(rebaseDir)) { try { Directory.Delete(rebaseDir, true); } catch { } }
+                    if (File.Exists(lockFile)) { try { File.Delete(lockFile); } catch { } }
 
-                    gitAddArgs = "admin.html public/admin.html version-admin.json public/version-admin.json";
-                }
-                // Case 2: Updating CENTERS ONLY (index.html)
-                else
-                {
-                    SafeCopy(selectedFilePath, Path.Combine(workspaceDir, "index.html"));
-                    SafeCopy(selectedFilePath, Path.Combine(workspaceDir, "public", "index.html"));
-                    SafeCopy(selectedFilePath, Path.Combine(workspaceDir, "public", "center.html"));
-                    cloudCentersVersion = newVer;
+                    // 2. Now copy the selected file and update version JSONs on top of latest branch
+                    this.Invoke((MethodInvoker)delegate {
+                        lblStatus.Text = "جاري معالجة ونسخ الملف المطابق...";
+                    });
+                    string gitAddArgs = "";
+                    string nowIso = DateTime.UtcNow.ToString("o");
 
-                    // Write version-centers.json (ROOT and PUBLIC)
-                    string centersJson = string.Format("{{\n  \"version\": \"{0}\",\n  \"updatedAt\": \"{1}\",\n  \"system\": \"centers\"\n}}", newVer, nowIso);
-                    File.WriteAllText(Path.Combine(workspaceDir, "version-centers.json"), centersJson);
-                    File.WriteAllText(Path.Combine(workspaceDir, "public", "version-centers.json"), centersJson);
+                    if (isAdminTarget)
+                    {
+                        SafeCopy(selectedFilePath, Path.Combine(workspaceDir, "admin.html"));
+                        SafeCopy(selectedFilePath, Path.Combine(workspaceDir, "public", "admin.html"));
+                        cloudAdminVersion = newVer;
 
-                    gitAddArgs = "index.html public/index.html public/center.html version-centers.json public/version-centers.json";
-                }
+                        string adminJson = string.Format("{{\n  \"version\": \"{0}\",\n  \"updatedAt\": \"{1}\",\n  \"system\": \"admin\"\n}}", newVer, nowIso);
+                        File.WriteAllText(Path.Combine(workspaceDir, "version-admin.json"), adminJson);
+                        File.WriteAllText(Path.Combine(workspaceDir, "public", "version-admin.json"), adminJson);
 
-                // 2. Also keep combined version.json updated for compatibility
-                string combinedJson = string.Format(
-                    "{{\n  \"centersVersion\": \"{0}\",\n  \"adminVersion\": \"{1}\",\n  \"version\": \"{2}\",\n  \"updatedAt\": \"{3}\",\n  \"target\": \"{4}\",\n  \"file\": \"{5}\"\n}}",
-                    cloudCentersVersion, cloudAdminVersion, newVer, nowIso, targetName, fname
-                );
-                File.WriteAllText(Path.Combine(workspaceDir, "version.json"), combinedJson);
-                File.WriteAllText(Path.Combine(workspaceDir, "public", "version.json"), combinedJson);
-                gitAddArgs += " version.json public/version.json";
+                        gitAddArgs = "admin.html public/admin.html version-admin.json public/version-admin.json sheets/ public/sheets/ data/forms.json public/data/forms.json";
+                    }
+                    else
+                    {
+                        SafeCopy(selectedFilePath, Path.Combine(workspaceDir, "index.html"));
+                        SafeCopy(selectedFilePath, Path.Combine(workspaceDir, "public", "index.html"));
+                        SafeCopy(selectedFilePath, Path.Combine(workspaceDir, "public", "center.html"));
+                        cloudCentersVersion = newVer;
 
-                // 3. Git Add (Specific files only!)
-                lblStatus.Text = "جاري إضافة الملفات المحددة للتحديث (Git Add)...";
-                ProcessStartInfo psiAdd = new ProcessStartInfo("git", "add " + gitAddArgs);
-                psiAdd.WorkingDirectory = workspaceDir;
-                psiAdd.CreateNoWindow = true;
-                psiAdd.UseShellExecute = false;
-                Process.Start(psiAdd).WaitForExit();
+                        string centersJson = string.Format("{{\n  \"version\": \"{0}\",\n  \"updatedAt\": \"{1}\",\n  \"system\": \"centers\"\n}}", newVer, nowIso);
+                        File.WriteAllText(Path.Combine(workspaceDir, "version-centers.json"), centersJson);
+                        File.WriteAllText(Path.Combine(workspaceDir, "public", "version-centers.json"), centersJson);
 
-                // 4. Git Commit
-                lblStatus.Text = "جاري توثيق التحديث المنفصل (Git Commit)...";
-                string commitMsg = string.Format("تحديث {0} إلى الإصدار {1}: {2}", targetName, newVer, fname);
-                ProcessStartInfo psiCommit = new ProcessStartInfo("git", string.Format("commit -m \"{0}\"", commitMsg));
-                psiCommit.WorkingDirectory = workspaceDir;
-                psiCommit.CreateNoWindow = true;
-                psiCommit.UseShellExecute = false;
-                Process.Start(psiCommit).WaitForExit();
+                        gitAddArgs = "index.html public/index.html public/center.html version-centers.json public/version-centers.json sheets/ public/sheets/ data/forms.json public/data/forms.json";
+                    }
 
-                // 5. Git Pull Rebase before Push
-                lblStatus.Text = "جاري مزامنة الفرع السحابي...";
-                ProcessStartInfo psiPull = new ProcessStartInfo("git", "pull --rebase origin main");
-                psiPull.WorkingDirectory = workspaceDir;
-                psiPull.CreateNoWindow = true;
-                psiPull.UseShellExecute = false;
-                Process.Start(psiPull).WaitForExit();
-
-                // 6. Git Push
-                lblStatus.Text = "جاري رفع التحديث السحابي إلى GitHub و Vercel...";
-                ProcessStartInfo psiPush = new ProcessStartInfo("git", "push origin main");
-                psiPush.WorkingDirectory = workspaceDir;
-                psiPush.CreateNoWindow = true;
-                psiPush.UseShellExecute = false;
-                Process pPush = Process.Start(psiPush);
-                pPush.WaitForExit();
-
-                progressBar.Visible = false;
-
-                if (pPush.ExitCode == 0)
-                {
-                    lblStatus.Text = string.Format("اكتمل الرفع بنجاح! تم تحديث {0} إلى الإصدار ({1}) أونلاين 🚀", targetName, newVer);
-                    lblStatus.ForeColor = Color.FromArgb(16, 185, 129);
-
-                    MessageBox.Show(
-                        string.Format(
-                            "تم رفع ونشر التحديث السحابي بنجاح تام! 🚀\n\n" +
-                            "• النظام المحدث: {0}\n" +
-                            "• الملف المرفوع: {1}\n" +
-                            "• رقم الإصدار الجديد: {2}\n\n" +
-                            "تم تحديث هذا البرنامج أونلاين دون تغيير إصدار البرنامج الآخر نهائياً.",
-                            targetName, fname, newVer
-                        ),
-                        "اكتمل التحديث السحابي بنجاح",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Information
+                    string combinedJson = string.Format(
+                        "{{\n  \"centersVersion\": \"{0}\",\n  \"adminVersion\": \"{1}\",\n  \"version\": \"{2}\",\n  \"updatedAt\": \"{3}\",\n  \"target\": \"{4}\",\n  \"file\": \"{5}\"\n}}",
+                        cloudCentersVersion, cloudAdminVersion, newVer, nowIso, targetName, fname
                     );
+                    File.WriteAllText(Path.Combine(workspaceDir, "version.json"), combinedJson);
+                    File.WriteAllText(Path.Combine(workspaceDir, "public", "version.json"), combinedJson);
+                    gitAddArgs += " version.json public/version.json";
 
-                    FetchCloudVersion();
+                    // 3. Git Add
+                    this.Invoke((MethodInvoker)delegate {
+                        lblStatus.Text = "جاري إضافة الملفات المحددة للتحديث (Git Add)...";
+                    });
+                    ProcessStartInfo psiAdd = new ProcessStartInfo("git", "add " + gitAddArgs);
+                    psiAdd.WorkingDirectory = workspaceDir;
+                    psiAdd.EnvironmentVariables["HOME"] = workspaceDir;
+                    psiAdd.EnvironmentVariables["GIT_TERMINAL_PROMPT"] = "0";
+                    psiAdd.CreateNoWindow = true;
+                    psiAdd.UseShellExecute = false;
+                    Process pAdd = Process.Start(psiAdd);
+                    if (!pAdd.WaitForExit(15000)) { try { pAdd.Kill(); } catch { } }
+
+                    // 4. Git Commit
+                    this.Invoke((MethodInvoker)delegate {
+                        lblStatus.Text = "جاري توثيق التحديث المنفصل (Git Commit)...";
+                    });
+                    string commitMsg = string.Format("تحديث {0} إلى الإصدار {1}: {2}", targetName, newVer, fname);
+                    ProcessStartInfo psiCommit = new ProcessStartInfo("git", string.Format("commit -m \"{0}\"", commitMsg));
+                    psiCommit.WorkingDirectory = workspaceDir;
+                    psiCommit.EnvironmentVariables["HOME"] = workspaceDir;
+                    psiCommit.EnvironmentVariables["GIT_TERMINAL_PROMPT"] = "0";
+                    psiCommit.CreateNoWindow = true;
+                    psiCommit.UseShellExecute = false;
+                    Process pCommit = Process.Start(psiCommit);
+                    if (!pCommit.WaitForExit(15000)) { try { pCommit.Kill(); } catch { } }
+
+                    // 5. Git Push
+                    this.Invoke((MethodInvoker)delegate {
+                        lblStatus.Text = "جاري رفع التحديث السحابي إلى GitHub و Vercel...";
+                    });
+                    ProcessStartInfo psiPush = new ProcessStartInfo("git", "push origin main");
+                    psiPush.WorkingDirectory = workspaceDir;
+                    psiPush.EnvironmentVariables["HOME"] = workspaceDir;
+                    psiPush.EnvironmentVariables["GIT_TERMINAL_PROMPT"] = "0";
+                    psiPush.CreateNoWindow = true;
+                    psiPush.UseShellExecute = false;
+                    psiPush.RedirectStandardError = true;
+                    Process pPush = Process.Start(psiPush);
+                    string pushErr = pPush.StandardError.ReadToEnd();
+                    if (!pPush.WaitForExit(30000)) { try { pPush.Kill(); } catch { } }
+
+                    this.Invoke((MethodInvoker)delegate {
+                        progressBar.Visible = false;
+                        if (pPush.ExitCode == 0)
+                        {
+                            lblStatus.Text = string.Format("اكتمل الرفع بنجاح! تم تحديث {0} إلى الإصدار ({1}) أونلاين 🚀", targetName, newVer);
+                            lblStatus.ForeColor = Color.FromArgb(16, 185, 129);
+
+                            MessageBox.Show(
+                                string.Format(
+                                    "تم رفع ونشر التحديث السحابي بنجاح تام! 🚀\n\n" +
+                                    "• النظام المحدث: {0}\n" +
+                                    "• الملف المرفوع: {1}\n" +
+                                    "• رقم الإصدار الجديد: {2}\n\n" +
+                                    "تم تحديث هذا البرنامج أونلاين دون تغيير إصدار البرنامج الآخر نهائياً.",
+                                    targetName, fname, newVer
+                                ),
+                                "اكتمل التحديث السحابي بنجاح",
+                                MessageBoxButtons.OK,
+                                MessageBoxIcon.Information
+                            );
+
+                            FetchCloudVersion();
+                        }
+                        else
+                        {
+                            lblStatus.Text = "حدث خطأ أثناء الاتصال بالسحاب. تأكد من اتصال الإنترنت.";
+                            lblStatus.ForeColor = Color.FromArgb(225, 29, 72);
+                            string msg = "تعذر إتمام عملية الرفع السحابي. يرجى التأكد من اتصال الإنترنت وإعادة المحاولة.";
+                            if (!string.IsNullOrEmpty(pushErr) && pushErr.Trim().Length > 0)
+                            {
+                                msg += "\n\nتفاصيل الخطأ:\n" + pushErr.Trim();
+                            }
+                            MessageBox.Show(msg, "خطأ في الرفع", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+                    });
                 }
-                else
+                catch (Exception ex)
                 {
-                    lblStatus.Text = "حدث خطأ أثناء الاتصال بالسحاب. تأكد من اتصال الإنترنت.";
-                    lblStatus.ForeColor = Color.FromArgb(225, 29, 72);
-                    MessageBox.Show("تعذر إتمام عملية الرفع السحابي. يرجى التأكد من اتصال الإنترنت وإعادة المحاولة.", "خطأ في الرفع", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    this.Invoke((MethodInvoker)delegate {
+                        progressBar.Visible = false;
+                        lblStatus.Text = "خطأ: " + ex.Message;
+                        lblStatus.ForeColor = Color.FromArgb(225, 29, 72);
+                        MessageBox.Show("حدث خطأ أثناء تنفيذ التحديث:\n" + ex.Message, "خطأ", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    });
                 }
-            }
-            catch (Exception ex)
-            {
-                progressBar.Visible = false;
-                lblStatus.Text = "خطأ: " + ex.Message;
-                lblStatus.ForeColor = Color.FromArgb(225, 29, 72);
-                MessageBox.Show("حدث خطأ أثناء تنفيذ التحديث:\n" + ex.Message, "خطأ", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-            finally
-            {
-                btnBrowseFile.Enabled = true;
-                rbCenters.Enabled = true;
-                rbAdmin.Enabled = true;
-                txtNewVer.Enabled = true;
-                ValidateAll();
-            }
+                finally
+                {
+                    this.Invoke((MethodInvoker)delegate {
+                        btnBrowseFile.Enabled = true;
+                        rbCenters.Enabled = true;
+                        rbAdmin.Enabled = true;
+                        txtNewVer.Enabled = true;
+                        ValidateAll();
+                    });
+                }
+            });
         }
 
         [STAThread]
