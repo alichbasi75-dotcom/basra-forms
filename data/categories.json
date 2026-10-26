@@ -5,13 +5,13 @@
     "icon": "fa-solid fa-calendar-check"
   },
   {
-    "id": "voters",
-    "name": "التقارير  وسجلات الحضور",
+    "id": "cards",
+    "name": "البطاقات المفقودة وبلاغات المحكمة",
     "icon": "fa-solid fa-id-card"
   },
   {
-    "id": "legal",
-    "name": "البطاقات  المفقودة  وبلاغات المحكمة",
-    "icon": "fa-solid fa-scale-balanced"
+    "id": "reports",
+    "name": "التقارير وسجلات الحضور",
+    "icon": "fa-solid fa-file-signature"
   }
 ]

@@ -1825,7 +1825,41 @@
       }
     }
 
-        async function loadCategories() {
+    function isFormInCategory(f, catId) {
+      if (!f || !catId || catId === 'all') return true;
+      if (f.category === catId) return true;
+      if ((catId === 'cards' || catId === 'legal') && (f.category === 'cards' || f.category === 'legal')) return true;
+      if ((catId === 'reports' || catId === 'voters') && (f.category === 'reports' || f.category === 'voters')) return true;
+      return false;
+    }
+
+    function renderCategoryTabs() {
+      const container = document.getElementById('categoryTabs');
+      if (!container) return;
+
+      let html = `
+        <button type="button" onclick="filterCategory('all')" data-cat="all" class="cat-pill ${currentCategory === 'all' ? 'active bg-amber-500 text-slate-950 font-black' : 'bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold'} px-4 py-2 rounded-xl text-xs sm:text-sm transition-all shadow-sm cursor-pointer">
+          الكل (${allForms.length})
+        </button>
+      `;
+
+      allCategories.forEach(cat => {
+        const count = allForms.filter(f => isFormInCategory(f, cat.id)).length;
+        const isActive = currentCategory === cat.id;
+        const iconCls = (cat.icon || 'fa-folder').includes('fa-solid') || (cat.icon || '').includes('fa-regular') ? cat.icon : ('fa-solid ' + (cat.icon || 'fa-folder'));
+        html += `
+          <button type="button" onclick="filterCategory('${cat.id}')" data-cat="${cat.id}" class="cat-pill ${isActive ? 'active bg-amber-500 text-slate-950 font-black' : 'bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold'} px-4 py-2 rounded-xl text-xs sm:text-sm transition-all whitespace-nowrap flex items-center gap-1.5 shadow-sm cursor-pointer">
+            <i class="${iconCls} ${isActive ? 'text-slate-950' : 'text-amber-600'}"></i>
+            <span>${cat.name}</span>
+            <span class="text-[11px] opacity-75">(${count})</span>
+          </button>
+        `;
+      });
+
+      container.innerHTML = html;
+    }
+
+    async function loadCategories() {
       try {
         let res = null;
         try {
@@ -1833,15 +1867,28 @@
         } catch (e) {}
 
         if (!res || !res.ok) {
-          res = await fetch('./data/categories.json?t=' + Date.now(), { cache: 'no-store' });
+          try {
+            res = await fetch('./data/categories.json?t=' + Date.now(), { cache: 'no-store' });
+          } catch (e) {}
         }
 
-        const data = await res.json();
-        allCategories = Array.isArray(data) ? data : (data.categories || []);
-        renderCategoryTabs();
+        if (!res || !res.ok) {
+          try {
+            res = await fetch('https://basra-forms.vercel.app/data/categories.json?t=' + Date.now(), { cache: 'no-store' });
+          } catch (e) {}
+        }
+
+        if (res && res.ok) {
+          const data = await res.json();
+          const list = Array.isArray(data) ? data : (data.categories || []);
+          if (list && list.length > 0) {
+            allCategories = list;
+          }
+        }
       } catch (e) {
-        console.error('Error loading categories:', e);
+        console.warn('Fallback loading categories:', e);
       }
+      renderCategoryTabs();
     }
 
     async function loadForms() {
@@ -2045,7 +2092,7 @@
       const emptyMsg = document.getElementById('emptyMessage');
 
       const filtered = allForms.filter(f => {
-        const matchCat = (currentCategory === 'all' || f.category === currentCategory);
+        const matchCat = isFormInCategory(f, currentCategory);
         const matchQ = !q || (f.title && f.title.toLowerCase().includes(q)) || (f.description && f.description.toLowerCase().includes(q));
         return matchCat && matchQ;
       });
