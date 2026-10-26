@@ -525,9 +525,9 @@
 
             <!-- Action buttons -->
             <div class="flex items-end gap-2 pt-2 sm:pt-4">
-              <button onclick="loadAdminActivity()" class="bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5 border border-blue-200 transition-colors" title="تحديث السجل الآن">
-                <i class="fa-solid fa-arrows-rotate"></i>
-                <span>تحديث</span>
+              <button id="refreshActivityBtn" onclick="loadAdminActivity(true)" class="bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5 border border-blue-200 transition-all active:scale-95" title="تحديث السجل الآن">
+                <i id="refreshActivityIcon" class="fa-solid fa-arrows-rotate"></i>
+                <span id="refreshActivityText">تحديث</span>
               </button>
               <button onclick="clearActivityLogsTable()" class="bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5 border border-rose-200 transition-colors shadow-sm" title="حذف وتصفير جميع بيانات وسجلات الجدول بالكامل">
                 <i class="fa-solid fa-trash-can"></i>
@@ -2183,348 +2183,391 @@
       await syncWithCloud([], { actionName: willHide ? `إخفاء "${title}"` : `إظهار "${title}"` });
     }
 
-    // ================= ACTIVITY & AUDIT LOG FUNCTIONS =================
-    const DEFAULT_ACTIVITY_LOGS = [{"id": "act_1792991007927_63", "timestamp": "2026-10-26T05:03:27.927Z", "formattedTime": "٢٦‏/١٠‏/٢٠٢٦، ٠٨:٠٣:٢٧ ص", "centerCode": "2928", "centerName": "شط العرب 2", "formId": "form_1792961847784", "formTitle": "نموذج الخروج للواجب", "action": "view"}, {"id": "act_1792840030298_548", "timestamp": "2026-10-24T11:07:10.297Z", "formattedTime": "٢٤‏/١٠‏/٢٠٢٦، ٠٢:٠٧:١٠ م", "centerCode": "2928", "centerName": "شط العرب 2", "formId": "form_1792790662356", "formTitle": "نموذج المباشرة", "action": "view"}, {"id": "act_1792839970632_401", "timestamp": "2026-10-24T11:06:10.596Z", "formattedTime": "٢٤‏/١٠‏/٢٠٢٦، ٠٢:٠٦:١٠ م", "centerCode": "2928", "centerName": "شط العرب 2", "formId": "form_1792790662356", "formTitle": "نموذج المباشرة", "action": "view"}, {"id": "act_1792780253408_285", "timestamp": "2026-10-23T18:30:53.407Z", "formattedTime": "٢٣‏/١٠‏/٢٠٢٦، ٠٩:٣٠:٥٣ م", "centerCode": "2928", "centerName": "شط العرب 2", "formId": "form_19", "formTitle": "تسلسل الموظفين يكتب على النماذج", "action": "view"}, {"id": "act_1792780244548_982", "timestamp": "2026-10-23T18:30:44.547Z", "formattedTime": "٢٣‏/١٠‏/٢٠٢٦، ٠٩:٣٠:٤٤ م", "centerCode": "2928", "centerName": "شط العرب 2", "formId": "form_18", "formTitle": "نموذج سجل حضور وانصراف 2928 2026", "action": "view"}, {"id": "act_1792780237564_920", "timestamp": "2026-10-23T18:30:37.564Z", "formattedTime": "٢٣‏/١٠‏/٢٠٢٦، ٠٩:٣٠:٣٧ م", "centerCode": "2928", "centerName": "شط العرب 2", "formId": "form_14", "formTitle": "فورمة جدول بلاغ المحكمه (المفقودة)", "action": "view"}, {"id": "act_1792780224389_657", "timestamp": "2026-10-23T18:30:24.389Z", "formattedTime": "٢٣‏/١٠‏/٢٠٢٦، ٠٩:٣٠:٢٤ م", "centerCode": "2928", "centerName": "شط العرب 2", "formId": "form_13", "formTitle": "نموذج السجل الخاص بالبطاقات المفقودة", "action": "view"}, {"id": "act_1792780210616_385", "timestamp": "2026-10-23T18:30:10.615Z", "formattedTime": "٢٣‏/١٠‏/٢٠٢٦، ٠٩:٣٠:١٠ م", "centerCode": "2928", "centerName": "شط العرب 2", "formId": "form_11", "formTitle": "نموذج الاخبار", "action": "view"}, {"id": "act_1792780201779_276", "timestamp": "2026-10-23T18:30:01.779Z", "formattedTime": "٢٣‏/١٠‏/٢٠٢٦، ٠٩:٣٠:٠١ م", "centerCode": "2928", "centerName": "شط العرب 2", "formId": "form_09", "formTitle": "فورمة براءة ذمة", "action": "view"}, {"id": "act_1792780181766_770", "timestamp": "2026-10-23T18:29:41.765Z", "formattedTime": "٢٣‏/١٠‏/٢٠٢٦، ٠٩:٢٩:٤١ م", "centerCode": "2928", "centerName": "شط العرب 2", "formId": "form_10", "formTitle": "نموذج الفحص و المعالجة", "action": "view"}, {"id": "act_1792780166030_65", "timestamp": "2026-10-23T18:29:26.029Z", "formattedTime": "٢٣‏/١٠‏/٢٠٢٦، ٠٩:٢٩:٢٦ م", "centerCode": "2928", "centerName": "شط العرب 2", "formId": "form_08", "formTitle": "نموذج المباشرة", "action": "view"}, {"id": "act_1792780153199_57", "timestamp": "2026-10-23T18:29:13.199Z", "formattedTime": "٢٣‏/١٠‏/٢٠٢٦، ٠٩:٢٩:١٣ م", "centerCode": "2928", "centerName": "شط العرب 2", "formId": "form_06", "formTitle": "نموذج الاستمارة للاجازة الطويلة ترفق مع الطلب", "action": "view"}, {"id": "act_1792780128987_891", "timestamp": "2026-10-23T18:28:48.987Z", "formattedTime": "٢٣‏/١٠‏/٢٠٢٦، ٠٩:٢٨:٤٨ م", "centerCode": "2928", "centerName": "شط العرب 2", "formId": "form_07", "formTitle": "نموذج انفكاك", "action": "view"}, {"id": "act_1792780107804_578", "timestamp": "2026-10-23T18:28:27.803Z", "formattedTime": "٢٣‏/١٠‏/٢٠٢٦، ٠٩:٢٨:٢٧ م", "centerCode": "2928", "centerName": "شط العرب 2", "formId": "form_06", "formTitle": "نموذج الاستمارة للاجازة الطويلة ترفق مع الطلب", "action": "view"}, {"id": "act_1792780089526_726", "timestamp": "2026-10-23T18:28:09.525Z", "formattedTime": "٢٣‏/١٠‏/٢٠٢٦، ٠٩:٢٨:٠٩ م", "centerCode": "2928", "centerName": "شط العرب 2", "formId": "form_01", "formTitle": "نموذج طلب اجازة خاصه", "action": "view"}, {"id": "act_1792780051365_797", "timestamp": "2026-10-23T18:27:31.365Z", "formattedTime": "٢٣‏/١٠‏/٢٠٢٦، ٠٩:٢٧:٣١ م", "centerCode": "2928", "centerName": "شط العرب 2", "formId": "form_1792778792445", "formTitle": "نموذج طلب اجازة من 6 ايام و اكثر  ترسل للمكتب الوطني وتؤخذ باليد لمكتب انتخابات البصرة", "action": "print"}, {"id": "act_1792780048831_712", "timestamp": "2026-10-23T18:27:28.801Z", "formattedTime": "٢٣‏/١٠‏/٢٠٢٦، ٠٩:٢٧:٢٨ م", "centerCode": "2928", "centerName": "شط العرب 2", "formId": "form_1792778792445", "formTitle": "نموذج طلب اجازة من 6 ايام و اكثر  ترسل للمكتب الوطني وتؤخذ باليد لمكتب انتخابات البصرة", "action": "view"}, {"id": "act_1792777875449_392", "timestamp": "2026-10-23T17:51:15.449Z", "formattedTime": "٢٣‏/١٠‏/٢٠٢٦، ٠٨:٥١:١٥ م", "centerCode": "2928", "centerName": "شط العرب 2", "formId": "form_02", "formTitle": "نموذج طلب اجازة اعتيادية من 4 الى 5 ايام ترسل لمكتب انتخابات البصرة بالبريد", "action": "view"}, {"id": "act_1792777037671_230", "timestamp": "2026-10-23T17:37:17.671Z", "formattedTime": "٢٣‏/١٠‏/٢٠٢٦، ٠٨:٣٧:١٧ م", "centerCode": "2928", "centerName": "شط العرب 2", "formId": "form_01", "formTitle": "نموذج طلب اجازة خاصه", "action": "view"}, {"id": "act_1792776783512_730", "timestamp": "2026-10-23T17:33:03.512Z", "formattedTime": "٢٣‏/١٠‏/٢٠٢٦، ٠٨:٣٣:٠٣ م", "centerCode": "2928", "centerName": "شط العرب 2", "formId": "form_02", "formTitle": "نموذج طلب اجازة اعتيادية من 4 الى 5 ايام ترسل لمكتب انتخابات البصرة بالبريد", "action": "view"}, {"id": "act_1792776643533_47", "timestamp": "2026-10-23T17:30:43.532Z", "formattedTime": "٢٣‏/١٠‏/٢٠٢٦، ٠٨:٣٠:٤٣ م", "centerCode": "2928", "centerName": "شط العرب 2", "formId": "form_1792774834884", "formTitle": "نموذج الزمنية", "action": "view"}, {"id": "act_1792775852532_372", "timestamp": "2026-10-23T17:17:32.532Z", "formattedTime": "٢٣‏/١٠‏/٢٠٢٦، ٠٨:١٧:٣٢ م", "centerCode": "2928", "centerName": "شط العرب 2", "formId": "form_1792774834884", "formTitle": "نموذج الزمنية", "action": "print"}, {"id": "act_1792775790199_755", "timestamp": "2026-10-23T17:16:30.179Z", "formattedTime": "٢٣‏/١٠‏/٢٠٢٦، ٠٨:١٦:٣٠ م", "centerCode": "2928", "centerName": "شط العرب 2", "formId": "form_1792774834884", "formTitle": "نموذج الزمنية", "action": "view"}, {"id": "act_1792774916866_716", "timestamp": "2026-10-23T17:01:56.774Z", "formattedTime": "٢٣‏/١٠‏/٢٠٢٦، ٠٨:٠١:٥٦ م", "centerCode": "2928", "centerName": "شط العرب 2", "formId": "form_1792774834884", "formTitle": "نموذج الزمنية", "action": "view"}, {"id": "act_1792698698417_880", "timestamp": "2026-10-22T19:51:38.417Z", "formattedTime": "٢٢‏/١٠‏/٢٠٢٦، ١٠:٥١:٣٨ م", "centerCode": "2928", "centerName": "شط العرب 2", "formId": "form_02", "formTitle": "نموذج طلب اجازة اعتيادية من 4 الى 5 ايام ترسل لمكتب انتخابات البصرة بالبريد", "action": "view"}, {"id": "act_1792698683904_672", "timestamp": "2026-10-22T19:51:23.904Z", "formattedTime": "٢٢‏/١٠‏/٢٠٢٦، ١٠:٥١:٢٣ م", "centerCode": "2928", "centerName": "شط العرب 2", "formId": "form_03", "formTitle": "نموذج طلب اجازة من 6 ايام و اكثر  ترسل للمكتب الوطني وتؤخذ باليد لمكتب انتخابات البصرة", "action": "view"}, {"id": "act_1792698616979_305", "timestamp": "2026-10-22T19:50:16.979Z", "formattedTime": "٢٢‏/١٠‏/٢٠٢٦، ١٠:٥٠:١٦ م", "centerCode": "2928", "centerName": "شط العرب 2", "formId": "form_02", "formTitle": "نموذج طلب اجازة اعتيادية من 4 الى 5 ايام ترسل لمكتب انتخابات البصرة بالبريد", "action": "view"}, {"id": "act_1792698348721_785", "timestamp": "2026-10-22T19:45:48.720Z", "formattedTime": "٢٢‏/١٠‏/٢٠٢٦، ١٠:٤٥:٤٨ م", "centerCode": "2928", "centerName": "شط العرب 2", "formId": "form_01", "formTitle": "نموذج طلب اجازة خاصه", "action": "view"}, {"id": "act_1792695138783_127", "timestamp": "2026-10-22T18:52:18.783Z", "formattedTime": "٢٢‏/١٠‏/٢٠٢٦، ٠٩:٥٢:١٨ م", "centerCode": "2928", "centerName": "شط العرب 2", "formId": "form_02", "formTitle": "نموذج طلب اجازة اعتيادية من 4 الى 5 ايام ترسل لمكتب انتخابات البصرة بالبريد", "action": "print"}, {"id": "act_1792695135964_62", "timestamp": "2026-10-22T18:52:15.964Z", "formattedTime": "٢٢‏/١٠‏/٢٠٢٦، ٠٩:٥٢:١٥ م", "centerCode": "2928", "centerName": "شط العرب 2", "formId": "form_02", "formTitle": "نموذج طلب اجازة اعتيادية من 4 الى 5 ايام ترسل لمكتب انتخابات البصرة بالبريد", "action": "view"}, {"id": "act_1792695118975_913", "timestamp": "2026-10-22T18:51:58.975Z", "formattedTime": "٢٢‏/١٠‏/٢٠٢٦، ٠٩:٥١:٥٨ م", "centerCode": "2928", "centerName": "شط العرب 2", "formId": "form_01", "formTitle": "نموذج طلب اجازة خاصه", "action": "print"}, {"id": "act_1792695114564_649", "timestamp": "2026-10-22T18:51:54.541Z", "formattedTime": "٢٢‏/١٠‏/٢٠٢٦، ٠٩:٥١:٥٤ م", "centerCode": "2928", "centerName": "شط العرب 2", "formId": "form_01", "formTitle": "نموذج طلب اجازة خاصه", "action": "view"}];
-
-    function getFormDownloadCount(form) {
-      if (!form) return 0;
-      const baseDownloads = parseInt(form.downloads) || 0;
-      if (!Array.isArray(activityLogs) || activityLogs.length === 0) return baseDownloads;
-      const logDownloads = activityLogs.filter(l =>
-        l.action === 'download' && (l.formId === form.id || (l.formTitle && l.formTitle === form.title))
-      ).length;
-      return Math.max(baseDownloads, logDownloads);
-    }
-
-    function formatBaghdadTimestamp(item) {
-      if (item && item.formattedTime) return item.formattedTime;
-      if (!item || !item.timestamp) return '—';
-      try {
-        const d = new Date(item.timestamp);
-        if (!isNaN(d.getTime())) {
-          return new Intl.DateTimeFormat('ar-IQ', {
-            timeZone: 'Asia/Baghdad',
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit',
-            hour12: true
-          }).format(d);
-        }
-      } catch (e) {}
-      return item.timestamp;
-    }
-
-    function resolveCenterName(code, fallbackName) {
-      if (code && code !== 'غير محدد' && Array.isArray(allCentersList)) {
-        const found = allCentersList.find(c => String(c.code).trim() === String(code).trim());
-        if (found && found.name) return found.name;
-      }
-      return fallbackName || 'مركز غير مسجل';
-    }
-
-    function updateActivityStatsAndTopCenters() {
-      const logs = Array.isArray(activityLogs) ? activityLogs : [];
-      let totalDownloads = 0;
-      let totalViews = 0;
-      let totalPrints = 0;
-      let totalOffice = 0;
-
-      const centerStatsMap = {};
-
-      logs.forEach(item => {
-        const act = item.action || 'view';
-        if (act === 'download') totalDownloads++;
-        else if (act === 'view') totalViews++;
-        else if (act === 'print') totalPrints++;
-        else if (act === 'office') totalOffice++;
-
-        const code = (item.centerCode || '').trim();
-        if (code && code !== 'غير محدد' && code !== '--') {
-          if (!centerStatsMap[code]) {
-            centerStatsMap[code] = {
-              code: code,
-              name: resolveCenterName(code, item.centerName),
-              downloads: 0,
-              views: 0,
-              prints: 0,
-              office: 0,
-              total: 0
-            };
-          }
-          centerStatsMap[code].total++;
-          if (act === 'download') centerStatsMap[code].downloads++;
-          else if (act === 'view') centerStatsMap[code].views++;
-          else if (act === 'print') centerStatsMap[code].prints++;
-          else if (act === 'office') centerStatsMap[code].office++;
-        }
-      });
-
-      if (Array.isArray(adminFormsList)) {
-        const sumFormDownloads = adminFormsList.reduce((acc, f) => acc + (parseInt(f.downloads) || 0), 0);
-        if (sumFormDownloads > totalDownloads) {
-          totalDownloads = sumFormDownloads;
-        }
-      }
-
-      const activeCentersList = Object.values(centerStatsMap).sort((a, b) => {
-        if (b.total !== a.total) return b.total - a.total;
-        return b.downloads - a.downloads;
-      });
-
-      const elDl = document.getElementById('statDownloads');
-      const elVw = document.getElementById('statViews');
-      const elPr = document.getElementById('statPrints');
-      const elOf = document.getElementById('statOffice');
-      const elAc = document.getElementById('statActiveCenters');
-
-      if (elDl) elDl.innerText = totalDownloads;
-      if (elVw) elVw.innerText = totalViews;
-      if (elPr) elPr.innerText = totalPrints;
-      if (elOf) elOf.innerText = totalOffice;
-      if (elAc) elAc.innerText = activeCentersList.length;
-
-      renderTopCenters(activeCentersList.slice(0, 9));
-      renderAdminFormsTable();
-    }
-
-    async function loadAdminActivity() {
-      const combined = [];
-
-      // 1. Try Live Cloud Sync API (Vercel / GitHub) & Local Server
-      const cloudUrls = window.location.hostname.includes('vercel.app')
-        ? ['/api/sync?type=activity&t=' + Date.now(), './data/activity_log.json?t=' + Date.now()]
-        : [
-            'https://basra-forms.vercel.app/api/sync?type=activity&t=' + Date.now(),
-            'https://basra-forms.vercel.app/data/activity_log.json?t=' + Date.now(),
-            'http://localhost:3000/api/admin/activity?limit=2000&t=' + Date.now(),
-            './data/activity_log.json?t=' + Date.now()
-          ];
-
-      let fetchedFromCloud = false;
-      for (const url of cloudUrls) {
-        try {
-          const res = await fetch(url, { cache: 'no-store' });
-          if (res && res.ok) {
-            const data = await res.json();
-            const list = Array.isArray(data) ? data : (data.logs || []);
-            if (Array.isArray(list)) {
-              fetchedFromCloud = true;
-              if (list.length > 0) {
-                combined.push(...list);
-              }
-            }
-          }
-        } catch (e) {}
-      }
-
-      // 2. Also merge localStorage shared activity logs from same PC
-      try {
-        const localRaw = localStorage.getItem('basra_shared_activity_logs');
-        if (localRaw) {
-          const localList = JSON.parse(localRaw);
-          if (Array.isArray(localList)) combined.push(...localList);
-        }
-      } catch (e) {}
-
-      // 3. Fallback to embedded DEFAULT_ACTIVITY_LOGS if offline (file:///)
-      if (combined.length === 0 && !fetchedFromCloud && Array.isArray(DEFAULT_ACTIVITY_LOGS)) {
-        combined.push(...DEFAULT_ACTIVITY_LOGS);
-      }
-
-      // Deduplicate by id or (timestamp + centerCode + formId + action)
-      const seen = new Set();
-      const uniqueLogs = [];
-      for (const item of combined) {
-        if (!item) continue;
-        const key = item.id || `${item.timestamp}_${item.centerCode}_${item.formId}_${item.action}`;
-        if (!seen.has(key)) {
-          seen.add(key);
-          item.centerName = resolveCenterName(item.centerCode, item.centerName);
-          uniqueLogs.push(item);
-        }
-      }
-
-      // Sort newest first
-      uniqueLogs.sort((a, b) => {
-        const tA = a.timestamp ? new Date(a.timestamp).getTime() : 0;
-        const tB = b.timestamp ? new Date(b.timestamp).getTime() : 0;
-        return tB - tA;
-      });
-
-      activityLogs = uniqueLogs;
-      updateActivityStatsAndTopCenters();
-      filterActivityLogs();
-    }
-
-    function filterActivityLogs() {
-      const centerFilterEl = document.getElementById('activityCenterFilter');
-      const actionFilterEl = document.getElementById('activityActionFilter');
-      const searchInputEl = document.getElementById('activitySearchInput');
-
-      const centerFilter = centerFilterEl ? centerFilterEl.value : 'all';
-      const actionFilter = actionFilterEl ? actionFilterEl.value : 'all';
-      const query = (searchInputEl ? searchInputEl.value : '').trim().toLowerCase();
-
-      const filtered = activityLogs.filter(item => {
-        if (centerFilter !== 'all' && String(item.centerCode) !== String(centerFilter)) return false;
-        if (actionFilter !== 'all' && item.action !== actionFilter) return false;
-        if (query) {
-          const cCode = (item.centerCode || '').toLowerCase();
-          const cName = (item.centerName || '').toLowerCase();
-          const fTitle = (item.formTitle || '').toLowerCase();
-          return cCode.includes(query) || cName.includes(query) || fTitle.includes(query);
-        }
-        return true;
-      });
-
-      const countEl = document.getElementById('filteredLogsCount');
-      if (countEl) countEl.innerText = filtered.length;
-      renderActivityTable(filtered);
-    }
-
-    async function clearActivityLogsTable() {
-      if (!activityLogs || activityLogs.length === 0) {
-        showAppModal({
-          type: 'info',
-          icon: 'fa-solid fa-circle-info',
-          title: 'تنبيه',
-          message: 'جدول سجل نشاط المراكز فارغ بالفعل!',
-          confirmText: 'حسناً'
-        });
-        return;
-      }
-
-      const confirmed = await showAppModal({
-        type: 'danger',
-        icon: 'fa-solid fa-trash-can',
-        title: 'تأكيد حذف وتصفير سجل العمليات',
-        message: `هل أنت متأكد من حذف وتصفير جدول سجل نشاط المراكز بالكامل؟\n\nسيتم مسح جميع السجلات البالغ عددها (${activityLogs.length}) سجلاً وتصفير الإحصائيات.\nلا يمكن التراجع عن هذه العملية!`,
-        confirmText: 'نعم، حذف وتصفير الجدول',
-        cancelText: 'إلغاء التراجع',
-        isConfirm: true
-      });
-
-      if (!confirmed) return;
-
-      activityLogs = [];
-      try {
-        localStorage.removeItem('basra_shared_activity_logs');
-      } catch (e) {}
-
-      if (Array.isArray(adminFormsList)) {
-        adminFormsList.forEach(f => { f.downloads = 0; });
-      }
-
-      updateActivityStatsAndTopCenters();
-      filterActivityLogs();
-
-      // Clear on local server if running
-      fetch('http://localhost:3000/api/admin/activity/clear', { method: 'POST' }).catch(() => {});
-
-      // Clear on Cloud Sync
-      const syncUrl = window.location.hostname.includes('vercel.app')
-        ? '/api/sync'
-        : 'https://basra-forms.vercel.app/api/sync';
-      const adminKey = localStorage.getItem('basra_cloud_key') || 'BasraForms@2026';
-      fetch(syncUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-admin-key': adminKey
-        },
-        body: JSON.stringify({ activityLogs: [], forms: adminFormsList })
-      }).catch(() => {});
-
-      showAppModal({
-        type: 'success',
-        icon: 'fa-solid fa-circle-check',
-        title: 'تم الحذف والتصفير',
-        message: 'تم مسح وتصفير سجل نشاط المراكز وإحصائياته بنجاح',
-        confirmText: 'حسناً'
-      });
-    }
-
-    function resetActivityFilters() {
-      document.getElementById('activityCenterFilter').value = 'all';
-      document.getElementById('activityActionFilter').value = 'all';
-      document.getElementById('activitySearchInput').value = '';
-      filterActivityLogs();
-    }
-
-    function renderActivityTable(logs) {
-      const tbody = document.getElementById('activityLogsBody');
-      if (!tbody) return;
-      if (logs.length === 0) {
-        tbody.innerHTML = `
-          <tr>
-            <td colspan="5" class="p-8 text-center text-slate-400">
-              <i class="fa-solid fa-inbox text-3xl mb-2 block text-slate-300"></i>
-              لا توجد سجلات نشاط مطابقة حالياً
-            </td>
-          </tr>
-        `;
-        return;
-      }
-
-      tbody.innerHTML = logs.map(item => {
-        let actionBadge = '';
-        if (item.action === 'download') {
-          actionBadge = '<span class="bg-emerald-100 text-emerald-800 border border-emerald-300 px-2.5 py-1 rounded-lg text-xs font-black inline-flex items-center gap-1"><i class="fa-solid fa-download"></i> تنزيل ملف</span>';
-        } else if (item.action === 'view') {
-          actionBadge = '<span class="bg-blue-100 text-blue-800 border border-blue-300 px-2.5 py-1 rounded-lg text-xs font-black inline-flex items-center gap-1"><i class="fa-regular fa-eye"></i> عرض ومعاينة</span>';
-        } else if (item.action === 'print') {
-          actionBadge = '<span class="bg-purple-100 text-purple-800 border border-purple-300 px-2.5 py-1 rounded-lg text-xs font-black inline-flex items-center gap-1"><i class="fa-solid fa-print"></i> طباعة A4</span>';
-        } else if (item.action === 'office') {
-          actionBadge = '<span class="bg-amber-100 text-amber-800 border border-amber-300 px-2.5 py-1 rounded-lg text-xs font-black inline-flex items-center gap-1"><i class="fa-solid fa-file-export"></i> فتح عبر Office</span>';
-        } else {
-          actionBadge = `<span class="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-lg text-xs font-bold">${item.action}</span>`;
-        }
-
-        const timeDisplay = formatBaghdadTimestamp(item);
-        const cNameDisplay = resolveCenterName(item.centerCode, item.centerName);
-
-        return `
-          <tr class="hover:bg-slate-50 transition-colors">
-            <td class="p-3.5 text-slate-600 font-mono text-xs whitespace-nowrap font-bold" dir="rtl">${timeDisplay}</td>
-            <td class="p-3.5 font-bold font-mono text-blue-700 text-xs">${item.centerCode || 'غير محدد'}</td>
-            <td class="p-3.5 font-bold text-slate-900">${cNameDisplay}</td>
-            <td class="p-3.5 text-slate-800 font-medium">${item.formTitle || '—'}</td>
-            <td class="p-3.5 text-center">${actionBadge}</td>
-          </tr>
-        `;
-      }).join('');
-    }
-
-    function renderTopCenters(topCenters) {
-      const container = document.getElementById('topCentersContainer');
-      if (!topCenters || topCenters.length === 0) {
-        container.innerHTML = '<div class="col-span-3 text-center text-slate-400 py-4 text-xs">لا تتوفر إحصائيات مراكز كافية بعد</div>';
-        return;
-      }
-
-      container.innerHTML = topCenters.map((c, idx) => `
-        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-3 flex items-center justify-between">
-          <div class="flex items-center gap-2.5">
-            <div class="w-7 h-7 rounded-lg ${idx === 0 ? 'bg-amber-500 text-white font-black' : 'bg-slate-200 text-slate-700 font-bold'} flex items-center justify-center text-xs">
-              ${idx + 1}
-            </div>
-            <div>
-              <div class="text-xs font-black text-slate-900">مركز ${c.name}</div>
-              <div class="text-[11px] font-mono text-slate-500">رمز: ${c.code}</div>
-            </div>
-          </div>
-          <div class="flex items-center gap-1.5 text-xs">
-            <span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-bold" title="تنزيلات">${c.downloads || 0} 📥</span>
-            <span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded font-bold" title="عرض">${c.views || 0} 👁️</span>
-            ${c.prints ? `<span class="bg-purple-100 text-purple-800 px-2 py-0.5 rounded font-bold" title="طباعة">${c.prints} 🖨️</span>` : ''}
-          </div>
-        </div>
-      `).join('');
-    }
-
+    // ================= ACTIVITY & AUDIT LOG FUNCTIONS =================
+    const DEFAULT_ACTIVITY_LOGS = [{"id": "act_1792991007927_63", "timestamp": "2026-10-26T05:03:27.927Z", "formattedTime": "٢٦‏/١٠‏/٢٠٢٦، ٠٨:٠٣:٢٧ ص", "centerCode": "2928", "centerName": "شط العرب 2", "formId": "form_1792961847784", "formTitle": "نموذج الخروج للواجب", "action": "view"}, {"id": "act_1792840030298_548", "timestamp": "2026-10-24T11:07:10.297Z", "formattedTime": "٢٤‏/١٠‏/٢٠٢٦، ٠٢:٠٧:١٠ م", "centerCode": "2928", "centerName": "شط العرب 2", "formId": "form_1792790662356", "formTitle": "نموذج المباشرة", "action": "view"}, {"id": "act_1792839970632_401", "timestamp": "2026-10-24T11:06:10.596Z", "formattedTime": "٢٤‏/١٠‏/٢٠٢٦، ٠٢:٠٦:١٠ م", "centerCode": "2928", "centerName": "شط العرب 2", "formId": "form_1792790662356", "formTitle": "نموذج المباشرة", "action": "view"}, {"id": "act_1792780253408_285", "timestamp": "2026-10-23T18:30:53.407Z", "formattedTime": "٢٣‏/١٠‏/٢٠٢٦، ٠٩:٣٠:٥٣ م", "centerCode": "2928", "centerName": "شط العرب 2", "formId": "form_19", "formTitle": "تسلسل الموظفين يكتب على النماذج", "action": "view"}, {"id": "act_1792780244548_982", "timestamp": "2026-10-23T18:30:44.547Z", "formattedTime": "٢٣‏/١٠‏/٢٠٢٦، ٠٩:٣٠:٤٤ م", "centerCode": "2928", "centerName": "شط العرب 2", "formId": "form_18", "formTitle": "نموذج سجل حضور وانصراف 2928 2026", "action": "view"}, {"id": "act_1792780237564_920", "timestamp": "2026-10-23T18:30:37.564Z", "formattedTime": "٢٣‏/١٠‏/٢٠٢٦، ٠٩:٣٠:٣٧ م", "centerCode": "2928", "centerName": "شط العرب 2", "formId": "form_14", "formTitle": "فورمة جدول بلاغ المحكمه (المفقودة)", "action": "view"}, {"id": "act_1792780224389_657", "timestamp": "2026-10-23T18:30:24.389Z", "formattedTime": "٢٣‏/١٠‏/٢٠٢٦، ٠٩:٣٠:٢٤ م", "centerCode": "2928", "centerName": "شط العرب 2", "formId": "form_13", "formTitle": "نموذج السجل الخاص بالبطاقات المفقودة", "action": "view"}, {"id": "act_1792780210616_385", "timestamp": "2026-10-23T18:30:10.615Z", "formattedTime": "٢٣‏/١٠‏/٢٠٢٦، ٠٩:٣٠:١٠ م", "centerCode": "2928", "centerName": "شط العرب 2", "formId": "form_11", "formTitle": "نموذج الاخبار", "action": "view"}, {"id": "act_1792780201779_276", "timestamp": "2026-10-23T18:30:01.779Z", "formattedTime": "٢٣‏/١٠‏/٢٠٢٦، ٠٩:٣٠:٠١ م", "centerCode": "2928", "centerName": "شط العرب 2", "formId": "form_09", "formTitle": "فورمة براءة ذمة", "action": "view"}, {"id": "act_1792780181766_770", "timestamp": "2026-10-23T18:29:41.765Z", "formattedTime": "٢٣‏/١٠‏/٢٠٢٦، ٠٩:٢٩:٤١ م", "centerCode": "2928", "centerName": "شط العرب 2", "formId": "form_10", "formTitle": "نموذج الفحص و المعالجة", "action": "view"}, {"id": "act_1792780166030_65", "timestamp": "2026-10-23T18:29:26.029Z", "formattedTime": "٢٣‏/١٠‏/٢٠٢٦، ٠٩:٢٩:٢٦ م", "centerCode": "2928", "centerName": "شط العرب 2", "formId": "form_08", "formTitle": "نموذج المباشرة", "action": "view"}, {"id": "act_1792780153199_57", "timestamp": "2026-10-23T18:29:13.199Z", "formattedTime": "٢٣‏/١٠‏/٢٠٢٦، ٠٩:٢٩:١٣ م", "centerCode": "2928", "centerName": "شط العرب 2", "formId": "form_06", "formTitle": "نموذج الاستمارة للاجازة الطويلة ترفق مع الطلب", "action": "view"}, {"id": "act_1792780128987_891", "timestamp": "2026-10-23T18:28:48.987Z", "formattedTime": "٢٣‏/١٠‏/٢٠٢٦، ٠٩:٢٨:٤٨ م", "centerCode": "2928", "centerName": "شط العرب 2", "formId": "form_07", "formTitle": "نموذج انفكاك", "action": "view"}, {"id": "act_1792780107804_578", "timestamp": "2026-10-23T18:28:27.803Z", "formattedTime": "٢٣‏/١٠‏/٢٠٢٦، ٠٩:٢٨:٢٧ م", "centerCode": "2928", "centerName": "شط العرب 2", "formId": "form_06", "formTitle": "نموذج الاستمارة للاجازة الطويلة ترفق مع الطلب", "action": "view"}, {"id": "act_1792780089526_726", "timestamp": "2026-10-23T18:28:09.525Z", "formattedTime": "٢٣‏/١٠‏/٢٠٢٦، ٠٩:٢٨:٠٩ م", "centerCode": "2928", "centerName": "شط العرب 2", "formId": "form_01", "formTitle": "نموذج طلب اجازة خاصه", "action": "view"}, {"id": "act_1792780051365_797", "timestamp": "2026-10-23T18:27:31.365Z", "formattedTime": "٢٣‏/١٠‏/٢٠٢٦، ٠٩:٢٧:٣١ م", "centerCode": "2928", "centerName": "شط العرب 2", "formId": "form_1792778792445", "formTitle": "نموذج طلب اجازة من 6 ايام و اكثر  ترسل للمكتب الوطني وتؤخذ باليد لمكتب انتخابات البصرة", "action": "print"}, {"id": "act_1792780048831_712", "timestamp": "2026-10-23T18:27:28.801Z", "formattedTime": "٢٣‏/١٠‏/٢٠٢٦، ٠٩:٢٧:٢٨ م", "centerCode": "2928", "centerName": "شط العرب 2", "formId": "form_1792778792445", "formTitle": "نموذج طلب اجازة من 6 ايام و اكثر  ترسل للمكتب الوطني وتؤخذ باليد لمكتب انتخابات البصرة", "action": "view"}, {"id": "act_1792777875449_392", "timestamp": "2026-10-23T17:51:15.449Z", "formattedTime": "٢٣‏/١٠‏/٢٠٢٦، ٠٨:٥١:١٥ م", "centerCode": "2928", "centerName": "شط العرب 2", "formId": "form_02", "formTitle": "نموذج طلب اجازة اعتيادية من 4 الى 5 ايام ترسل لمكتب انتخابات البصرة بالبريد", "action": "view"}, {"id": "act_1792777037671_230", "timestamp": "2026-10-23T17:37:17.671Z", "formattedTime": "٢٣‏/١٠‏/٢٠٢٦، ٠٨:٣٧:١٧ م", "centerCode": "2928", "centerName": "شط العرب 2", "formId": "form_01", "formTitle": "نموذج طلب اجازة خاصه", "action": "view"}, {"id": "act_1792776783512_730", "timestamp": "2026-10-23T17:33:03.512Z", "formattedTime": "٢٣‏/١٠‏/٢٠٢٦، ٠٨:٣٣:٠٣ م", "centerCode": "2928", "centerName": "شط العرب 2", "formId": "form_02", "formTitle": "نموذج طلب اجازة اعتيادية من 4 الى 5 ايام ترسل لمكتب انتخابات البصرة بالبريد", "action": "view"}, {"id": "act_1792776643533_47", "timestamp": "2026-10-23T17:30:43.532Z", "formattedTime": "٢٣‏/١٠‏/٢٠٢٦، ٠٨:٣٠:٤٣ م", "centerCode": "2928", "centerName": "شط العرب 2", "formId": "form_1792774834884", "formTitle": "نموذج الزمنية", "action": "view"}, {"id": "act_1792775852532_372", "timestamp": "2026-10-23T17:17:32.532Z", "formattedTime": "٢٣‏/١٠‏/٢٠٢٦، ٠٨:١٧:٣٢ م", "centerCode": "2928", "centerName": "شط العرب 2", "formId": "form_1792774834884", "formTitle": "نموذج الزمنية", "action": "print"}, {"id": "act_1792775790199_755", "timestamp": "2026-10-23T17:16:30.179Z", "formattedTime": "٢٣‏/١٠‏/٢٠٢٦، ٠٨:١٦:٣٠ م", "centerCode": "2928", "centerName": "شط العرب 2", "formId": "form_1792774834884", "formTitle": "نموذج الزمنية", "action": "view"}, {"id": "act_1792774916866_716", "timestamp": "2026-10-23T17:01:56.774Z", "formattedTime": "٢٣‏/١٠‏/٢٠٢٦، ٠٨:٠١:٥٦ م", "centerCode": "2928", "centerName": "شط العرب 2", "formId": "form_1792774834884", "formTitle": "نموذج الزمنية", "action": "view"}, {"id": "act_1792698698417_880", "timestamp": "2026-10-22T19:51:38.417Z", "formattedTime": "٢٢‏/١٠‏/٢٠٢٦، ١٠:٥١:٣٨ م", "centerCode": "2928", "centerName": "شط العرب 2", "formId": "form_02", "formTitle": "نموذج طلب اجازة اعتيادية من 4 الى 5 ايام ترسل لمكتب انتخابات البصرة بالبريد", "action": "view"}, {"id": "act_1792698683904_672", "timestamp": "2026-10-22T19:51:23.904Z", "formattedTime": "٢٢‏/١٠‏/٢٠٢٦، ١٠:٥١:٢٣ م", "centerCode": "2928", "centerName": "شط العرب 2", "formId": "form_03", "formTitle": "نموذج طلب اجازة من 6 ايام و اكثر  ترسل للمكتب الوطني وتؤخذ باليد لمكتب انتخابات البصرة", "action": "view"}, {"id": "act_1792698616979_305", "timestamp": "2026-10-22T19:50:16.979Z", "formattedTime": "٢٢‏/١٠‏/٢٠٢٦، ١٠:٥٠:١٦ م", "centerCode": "2928", "centerName": "شط العرب 2", "formId": "form_02", "formTitle": "نموذج طلب اجازة اعتيادية من 4 الى 5 ايام ترسل لمكتب انتخابات البصرة بالبريد", "action": "view"}, {"id": "act_1792698348721_785", "timestamp": "2026-10-22T19:45:48.720Z", "formattedTime": "٢٢‏/١٠‏/٢٠٢٦، ١٠:٤٥:٤٨ م", "centerCode": "2928", "centerName": "شط العرب 2", "formId": "form_01", "formTitle": "نموذج طلب اجازة خاصه", "action": "view"}, {"id": "act_1792695138783_127", "timestamp": "2026-10-22T18:52:18.783Z", "formattedTime": "٢٢‏/١٠‏/٢٠٢٦، ٠٩:٥٢:١٨ م", "centerCode": "2928", "centerName": "شط العرب 2", "formId": "form_02", "formTitle": "نموذج طلب اجازة اعتيادية من 4 الى 5 ايام ترسل لمكتب انتخابات البصرة بالبريد", "action": "print"}, {"id": "act_1792695135964_62", "timestamp": "2026-10-22T18:52:15.964Z", "formattedTime": "٢٢‏/١٠‏/٢٠٢٦، ٠٩:٥٢:١٥ م", "centerCode": "2928", "centerName": "شط العرب 2", "formId": "form_02", "formTitle": "نموذج طلب اجازة اعتيادية من 4 الى 5 ايام ترسل لمكتب انتخابات البصرة بالبريد", "action": "view"}, {"id": "act_1792695118975_913", "timestamp": "2026-10-22T18:51:58.975Z", "formattedTime": "٢٢‏/١٠‏/٢٠٢٦، ٠٩:٥١:٥٨ م", "centerCode": "2928", "centerName": "شط العرب 2", "formId": "form_01", "formTitle": "نموذج طلب اجازة خاصه", "action": "print"}, {"id": "act_1792695114564_649", "timestamp": "2026-10-22T18:51:54.541Z", "formattedTime": "٢٢‏/١٠‏/٢٠٢٦، ٠٩:٥١:٥٤ م", "centerCode": "2928", "centerName": "شط العرب 2", "formId": "form_01", "formTitle": "نموذج طلب اجازة خاصه", "action": "view"}];
+
+    function getFormDownloadCount(form) {
+      if (!form) return 0;
+      const baseDownloads = parseInt(form.downloads) || 0;
+      if (!Array.isArray(activityLogs) || activityLogs.length === 0) return baseDownloads;
+      const logDownloads = activityLogs.filter(l =>
+        l.action === 'download' && (l.formId === form.id || (l.formTitle && l.formTitle === form.title))
+      ).length;
+      return Math.max(baseDownloads, logDownloads);
+    }
+
+    function formatBaghdadTimestamp(item) {
+      if (item && item.formattedTime) return item.formattedTime;
+      if (!item || !item.timestamp) return '—';
+      try {
+        const d = new Date(item.timestamp);
+        if (!isNaN(d.getTime())) {
+          return new Intl.DateTimeFormat('ar-IQ', {
+            timeZone: 'Asia/Baghdad',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: true
+          }).format(d);
+        }
+      } catch (e) {}
+      return item.timestamp;
+    }
+
+    function resolveCenterName(code, fallbackName) {
+      if (code && code !== 'غير محدد' && Array.isArray(allCentersList)) {
+        const found = allCentersList.find(c => String(c.code).trim() === String(code).trim());
+        if (found && found.name) return found.name;
+      }
+      return fallbackName || 'مركز غير مسجل';
+    }
+
+    function updateActivityStatsAndTopCenters() {
+      const logs = Array.isArray(activityLogs) ? activityLogs : [];
+      let totalDownloads = 0;
+      let totalViews = 0;
+      let totalPrints = 0;
+      let totalOffice = 0;
+
+      const centerStatsMap = {};
+
+      logs.forEach(item => {
+        const act = item.action || 'view';
+        if (act === 'download') totalDownloads++;
+        else if (act === 'view') totalViews++;
+        else if (act === 'print') totalPrints++;
+        else if (act === 'office') totalOffice++;
+
+        const code = (item.centerCode || '').trim();
+        if (code && code !== 'غير محدد' && code !== '--') {
+          if (!centerStatsMap[code]) {
+            centerStatsMap[code] = {
+              code: code,
+              name: resolveCenterName(code, item.centerName),
+              downloads: 0,
+              views: 0,
+              prints: 0,
+              office: 0,
+              total: 0
+            };
+          }
+          centerStatsMap[code].total++;
+          if (act === 'download') centerStatsMap[code].downloads++;
+          else if (act === 'view') centerStatsMap[code].views++;
+          else if (act === 'print') centerStatsMap[code].prints++;
+          else if (act === 'office') centerStatsMap[code].office++;
+        }
+      });
+
+      if (Array.isArray(adminFormsList)) {
+        const sumFormDownloads = adminFormsList.reduce((acc, f) => acc + (parseInt(f.downloads) || 0), 0);
+        if (sumFormDownloads > totalDownloads) {
+          totalDownloads = sumFormDownloads;
+        }
+      }
+
+      const activeCentersList = Object.values(centerStatsMap).sort((a, b) => {
+        if (b.total !== a.total) return b.total - a.total;
+        return b.downloads - a.downloads;
+      });
+
+      const elDl = document.getElementById('statDownloads');
+      const elVw = document.getElementById('statViews');
+      const elPr = document.getElementById('statPrints');
+      const elOf = document.getElementById('statOffice');
+      const elAc = document.getElementById('statActiveCenters');
+
+      if (elDl) elDl.innerText = totalDownloads;
+      if (elVw) elVw.innerText = totalViews;
+      if (elPr) elPr.innerText = totalPrints;
+      if (elOf) elOf.innerText = totalOffice;
+      if (elAc) elAc.innerText = activeCentersList.length;
+
+      renderTopCenters(activeCentersList.slice(0, 9));
+      renderAdminFormsTable();
+    }
+
+    let refreshBtnTimer = null;
+    async function loadAdminActivity(isManual = false) {
+      const btn = document.getElementById('refreshActivityBtn');
+      const icon = document.getElementById('refreshActivityIcon');
+      const textEl = document.getElementById('refreshActivityText');
+
+      if (isManual) {
+        if (refreshBtnTimer) clearTimeout(refreshBtnTimer);
+        if (btn) {
+          btn.disabled = true;
+          btn.className = 'bg-blue-600 text-white font-bold px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5 border border-blue-600 transition-all shadow-sm cursor-wait';
+        }
+        if (icon) icon.className = 'fa-solid fa-arrows-rotate fa-spin';
+        if (textEl) textEl.innerText = 'جاري التحديث...';
+        if (typeof showSyncToast === 'function') {
+          showSyncToast('جاري تحديث وجلب أحدث سجلات نشاط المراكز...', 'loading', 0);
+        }
+      }
+
+      const startTime = Date.now();
+      const combined = [];
+
+      // 1. Try Live Cloud Sync API (Vercel / GitHub) & Local Server
+      const cloudUrls = window.location.hostname.includes('vercel.app')
+        ? ['/api/sync?type=activity&t=' + Date.now(), './data/activity_log.json?t=' + Date.now()]
+        : [
+            'https://basra-forms.vercel.app/api/sync?type=activity&t=' + Date.now(),
+            'https://basra-forms.vercel.app/data/activity_log.json?t=' + Date.now(),
+            'http://localhost:3000/api/admin/activity?limit=2000&t=' + Date.now(),
+            './data/activity_log.json?t=' + Date.now()
+          ];
+
+      let fetchedFromCloud = false;
+      for (const url of cloudUrls) {
+        try {
+          const res = await fetch(url, { cache: 'no-store' });
+          if (res && res.ok) {
+            const data = await res.json();
+            const list = Array.isArray(data) ? data : (data.logs || []);
+            if (Array.isArray(list)) {
+              fetchedFromCloud = true;
+              if (list.length > 0) {
+                combined.push(...list);
+              }
+            }
+          }
+        } catch (e) {}
+      }
+
+      // 2. Also merge localStorage shared activity logs from same PC
+      try {
+        const localRaw = localStorage.getItem('basra_shared_activity_logs');
+        if (localRaw) {
+          const localList = JSON.parse(localRaw);
+          if (Array.isArray(localList)) combined.push(...localList);
+        }
+      } catch (e) {}
+
+      // 3. Fallback to embedded DEFAULT_ACTIVITY_LOGS if offline (file:///)
+      if (combined.length === 0 && !fetchedFromCloud && Array.isArray(DEFAULT_ACTIVITY_LOGS)) {
+        combined.push(...DEFAULT_ACTIVITY_LOGS);
+      }
+
+      // Deduplicate by id or (timestamp + centerCode + formId + action)
+      const seen = new Set();
+      const uniqueLogs = [];
+      for (const item of combined) {
+        if (!item) continue;
+        const key = item.id || `${item.timestamp}_${item.centerCode}_${item.formId}_${item.action}`;
+        if (!seen.has(key)) {
+          seen.add(key);
+          item.centerName = resolveCenterName(item.centerCode, item.centerName);
+          uniqueLogs.push(item);
+        }
+      }
+
+      // Sort newest first
+      uniqueLogs.sort((a, b) => {
+        const tA = a.timestamp ? new Date(a.timestamp).getTime() : 0;
+        const tB = b.timestamp ? new Date(b.timestamp).getTime() : 0;
+        return tB - tA;
+      });
+
+      if (isManual) {
+        const elapsed = Date.now() - startTime;
+        if (elapsed < 500) {
+          await new Promise(r => setTimeout(r, 500 - elapsed));
+        }
+      }
+
+      activityLogs = uniqueLogs;
+      updateActivityStatsAndTopCenters();
+      filterActivityLogs();
+
+      if (isManual) {
+        if (btn) {
+          btn.disabled = false;
+          btn.className = 'bg-emerald-600 text-white font-bold px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5 border border-emerald-600 transition-all shadow-sm';
+        }
+        if (icon) icon.className = 'fa-solid fa-circle-check';
+        if (textEl) textEl.innerText = 'تم التحديث ✓';
+        if (typeof showSyncToast === 'function') {
+          showSyncToast(`تم تحديث سجل النشاط بنجاح (عدد العمليات: ${activityLogs.length})`, 'success', 3000);
+        }
+        refreshBtnTimer = setTimeout(() => {
+          if (btn) btn.className = 'bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5 border border-blue-200 transition-all active:scale-95';
+          if (icon) icon.className = 'fa-solid fa-arrows-rotate';
+          if (textEl) textEl.innerText = 'تحديث';
+        }, 2000);
+      }
+    }
+
+    function filterActivityLogs() {
+      const centerFilterEl = document.getElementById('activityCenterFilter');
+      const actionFilterEl = document.getElementById('activityActionFilter');
+      const searchInputEl = document.getElementById('activitySearchInput');
+
+      const centerFilter = centerFilterEl ? centerFilterEl.value : 'all';
+      const actionFilter = actionFilterEl ? actionFilterEl.value : 'all';
+      const query = (searchInputEl ? searchInputEl.value : '').trim().toLowerCase();
+
+      const filtered = activityLogs.filter(item => {
+        if (centerFilter !== 'all' && String(item.centerCode) !== String(centerFilter)) return false;
+        if (actionFilter !== 'all' && item.action !== actionFilter) return false;
+        if (query) {
+          const cCode = (item.centerCode || '').toLowerCase();
+          const cName = (item.centerName || '').toLowerCase();
+          const fTitle = (item.formTitle || '').toLowerCase();
+          return cCode.includes(query) || cName.includes(query) || fTitle.includes(query);
+        }
+        return true;
+      });
+
+      const countEl = document.getElementById('filteredLogsCount');
+      if (countEl) countEl.innerText = filtered.length;
+      renderActivityTable(filtered);
+    }
+
+    async function clearActivityLogsTable() {
+      if (!activityLogs || activityLogs.length === 0) {
+        showAppModal({
+          type: 'info',
+          icon: 'fa-solid fa-circle-info',
+          title: 'تنبيه',
+          message: 'جدول سجل نشاط المراكز فارغ بالفعل!',
+          confirmText: 'حسناً'
+        });
+        return;
+      }
+
+      const confirmed = await showAppModal({
+        type: 'danger',
+        icon: 'fa-solid fa-trash-can',
+        title: 'تأكيد حذف وتصفير سجل العمليات',
+        message: `هل أنت متأكد من حذف وتصفير جدول سجل نشاط المراكز بالكامل؟\n\nسيتم مسح جميع السجلات البالغ عددها (${activityLogs.length}) سجلاً وتصفير الإحصائيات.\nلا يمكن التراجع عن هذه العملية!`,
+        confirmText: 'نعم، حذف وتصفير الجدول',
+        cancelText: 'إلغاء التراجع',
+        isConfirm: true
+      });
+
+      if (!confirmed) return;
+
+      activityLogs = [];
+      try {
+        localStorage.removeItem('basra_shared_activity_logs');
+      } catch (e) {}
+
+      if (Array.isArray(adminFormsList)) {
+        adminFormsList.forEach(f => { f.downloads = 0; });
+      }
+
+      updateActivityStatsAndTopCenters();
+      filterActivityLogs();
+
+      // Clear on local server if running
+      fetch('http://localhost:3000/api/admin/activity/clear', { method: 'POST' }).catch(() => {});
+
+      // Clear on Cloud Sync
+      const syncUrl = window.location.hostname.includes('vercel.app')
+        ? '/api/sync'
+        : 'https://basra-forms.vercel.app/api/sync';
+      const adminKey = localStorage.getItem('basra_cloud_key') || 'BasraForms@2026';
+      fetch(syncUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-key': adminKey
+        },
+        body: JSON.stringify({ activityLogs: [], forms: adminFormsList })
+      }).catch(() => {});
+
+      showAppModal({
+        type: 'success',
+        icon: 'fa-solid fa-circle-check',
+        title: 'تم الحذف والتصفير',
+        message: 'تم مسح وتصفير سجل نشاط المراكز وإحصائياته بنجاح',
+        confirmText: 'حسناً'
+      });
+    }
+
+    function resetActivityFilters() {
+      document.getElementById('activityCenterFilter').value = 'all';
+      document.getElementById('activityActionFilter').value = 'all';
+      document.getElementById('activitySearchInput').value = '';
+      filterActivityLogs();
+    }
+
+    function renderActivityTable(logs) {
+      const tbody = document.getElementById('activityLogsBody');
+      if (!tbody) return;
+      if (logs.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="5" class="p-8 text-center text-slate-400">
+              <i class="fa-solid fa-inbox text-3xl mb-2 block text-slate-300"></i>
+              لا توجد سجلات نشاط مطابقة حالياً
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = logs.map(item => {
+        let actionBadge = '';
+        if (item.action === 'download') {
+          actionBadge = '<span class="bg-emerald-100 text-emerald-800 border border-emerald-300 px-2.5 py-1 rounded-lg text-xs font-black inline-flex items-center gap-1"><i class="fa-solid fa-download"></i> تنزيل ملف</span>';
+        } else if (item.action === 'view') {
+          actionBadge = '<span class="bg-blue-100 text-blue-800 border border-blue-300 px-2.5 py-1 rounded-lg text-xs font-black inline-flex items-center gap-1"><i class="fa-regular fa-eye"></i> عرض ومعاينة</span>';
+        } else if (item.action === 'print') {
+          actionBadge = '<span class="bg-purple-100 text-purple-800 border border-purple-300 px-2.5 py-1 rounded-lg text-xs font-black inline-flex items-center gap-1"><i class="fa-solid fa-print"></i> طباعة A4</span>';
+        } else if (item.action === 'office') {
+          actionBadge = '<span class="bg-amber-100 text-amber-800 border border-amber-300 px-2.5 py-1 rounded-lg text-xs font-black inline-flex items-center gap-1"><i class="fa-solid fa-file-export"></i> فتح عبر Office</span>';
+        } else {
+          actionBadge = `<span class="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-lg text-xs font-bold">${item.action}</span>`;
+        }
+
+        const timeDisplay = formatBaghdadTimestamp(item);
+        const cNameDisplay = resolveCenterName(item.centerCode, item.centerName);
+
+        return `
+          <tr class="hover:bg-slate-50 transition-colors">
+            <td class="p-3.5 text-slate-600 font-mono text-xs whitespace-nowrap font-bold" dir="rtl">${timeDisplay}</td>
+            <td class="p-3.5 font-bold font-mono text-blue-700 text-xs">${item.centerCode || 'غير محدد'}</td>
+            <td class="p-3.5 font-bold text-slate-900">${cNameDisplay}</td>
+            <td class="p-3.5 text-slate-800 font-medium">${item.formTitle || '—'}</td>
+            <td class="p-3.5 text-center">${actionBadge}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderTopCenters(topCenters) {
+      const container = document.getElementById('topCentersContainer');
+      if (!topCenters || topCenters.length === 0) {
+        container.innerHTML = '<div class="col-span-3 text-center text-slate-400 py-4 text-xs">لا تتوفر إحصائيات مراكز كافية بعد</div>';
+        return;
+      }
+
+      container.innerHTML = topCenters.map((c, idx) => `
+        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-3 flex items-center justify-between">
+          <div class="flex items-center gap-2.5">
+            <div class="w-7 h-7 rounded-lg ${idx === 0 ? 'bg-amber-500 text-white font-black' : 'bg-slate-200 text-slate-700 font-bold'} flex items-center justify-center text-xs">
+              ${idx + 1}
+            </div>
+            <div>
+              <div class="text-xs font-black text-slate-900">مركز ${c.name}</div>
+              <div class="text-[11px] font-mono text-slate-500">رمز: ${c.code}</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-1.5 text-xs">
+            <span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-bold" title="تنزيلات">${c.downloads || 0} 📥</span>
+            <span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded font-bold" title="عرض">${c.views || 0} 👁️</span>
+            ${c.prints ? `<span class="bg-purple-100 text-purple-800 px-2 py-0.5 rounded font-bold" title="طباعة">${c.prints} 🖨️</span>` : ''}
+          </div>
+        </div>
+      `).join('');
+    }
+
     // ================= MULTI-PAGE FORM VIEWER FOR ADMIN =================
     let activeAdminForm = null;
     let boxIdCounter = 0;
