@@ -45,6 +45,13 @@ namespace BasraUpdater
         // Publish Actions
         private Button btnPublish;
         private Button btnOpenFolder;
+
+        // Rollback GroupBox (Two Previous Versions)
+        private GroupBox grpRollback;
+        private Button btnRollback1;
+        private Button btnRollback2;
+        private Label lblRollbackHint;
+
         private ProgressBar progressBar;
         private Label lblStatus;
 
@@ -58,6 +65,7 @@ namespace BasraUpdater
         private string CLOUD_ADMIN_BACKUP = "https://alichbasi75-dotcom.github.io/basra-forms/version-admin.json";
 
         private string workspaceDir = @"C:\Users\ali\.gemini\antigravity\scratch\basra_forms_system";
+        private string desktopDir = @"C:\Users\ali\Desktop\منظومة_استمارات_مكتب_انتخابات_البصرة";
         private string selectedFilePath = "";
 
         public MainForm()
@@ -69,7 +77,7 @@ namespace BasraUpdater
         private void InitializeComponent()
         {
             this.Text = "أداة تحديث ورفع منظومة استمارات البصرة (المراكز والمسؤول بشكل منفصل)";
-            this.Size = new Size(670, 750);
+            this.Size = new Size(670, 845);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
@@ -288,7 +296,7 @@ namespace BasraUpdater
             btnPublish = new Button();
             btnPublish.Text = "🚀 رفع ونشر التحديث إلى السحاب (مقفول حتى مطابقة الملف)";
             btnPublish.Font = new Font("Segoe UI", 11f, FontStyle.Bold);
-            btnPublish.Location = new Point(20, 563);
+            btnPublish.Location = new Point(20, 560);
             btnPublish.Size = new Size(430, 46);
             btnPublish.BackColor = Color.FromArgb(148, 163, 184);
             btnPublish.ForeColor = Color.White;
@@ -302,7 +310,7 @@ namespace BasraUpdater
             btnOpenFolder = new Button();
             btnOpenFolder.Text = "📂 مجلد المنظومة";
             btnOpenFolder.Font = new Font("Segoe UI", 9f, FontStyle.Bold);
-            btnOpenFolder.Location = new Point(460, 563);
+            btnOpenFolder.Location = new Point(460, 560);
             btnOpenFolder.Size = new Size(170, 46);
             btnOpenFolder.BackColor = Color.FromArgb(241, 245, 249);
             btnOpenFolder.ForeColor = Color.FromArgb(51, 65, 85);
@@ -312,9 +320,54 @@ namespace BasraUpdater
             };
             this.Controls.Add(btnOpenFolder);
 
+            // 7. Step 4: Rollback to Two Previous Versions
+            grpRollback = new GroupBox();
+            grpRollback.Text = "4. الرجوع لنسختين سابقتين بعد التحديث (للبرنامج المحدد أعلاه):";
+            grpRollback.Font = new Font("Segoe UI", 9.5f, FontStyle.Bold);
+            grpRollback.ForeColor = Color.FromArgb(30, 41, 59);
+            grpRollback.Location = new Point(20, 614);
+            grpRollback.Size = new Size(610, 95);
+            grpRollback.BackColor = Color.White;
+
+            btnRollback1 = new Button();
+            btnRollback1.Text = "⏪ رجوع للنسخة السابقة (1)";
+            btnRollback1.Font = new Font("Segoe UI", 9f, FontStyle.Bold);
+            btnRollback1.Location = new Point(310, 25);
+            btnRollback1.Size = new Size(285, 38);
+            btnRollback1.BackColor = Color.FromArgb(254, 243, 199);
+            btnRollback1.ForeColor = Color.FromArgb(146, 64, 14);
+            btnRollback1.FlatStyle = FlatStyle.Flat;
+            btnRollback1.FlatAppearance.BorderColor = Color.FromArgb(245, 158, 11);
+            btnRollback1.Cursor = Cursors.Hand;
+            btnRollback1.Click += (s, e) => RollbackToSlot(1);
+            grpRollback.Controls.Add(btnRollback1);
+
+            btnRollback2 = new Button();
+            btnRollback2.Text = "⏮️ رجوع للنسخة الأقدم (2)";
+            btnRollback2.Font = new Font("Segoe UI", 9f, FontStyle.Bold);
+            btnRollback2.Location = new Point(15, 25);
+            btnRollback2.Size = new Size(285, 38);
+            btnRollback2.BackColor = Color.FromArgb(224, 231, 255);
+            btnRollback2.ForeColor = Color.FromArgb(55, 48, 163);
+            btnRollback2.FlatStyle = FlatStyle.Flat;
+            btnRollback2.FlatAppearance.BorderColor = Color.FromArgb(99, 102, 241);
+            btnRollback2.Cursor = Cursors.Hand;
+            btnRollback2.Click += (s, e) => RollbackToSlot(2);
+            grpRollback.Controls.Add(btnRollback2);
+
+            lblRollbackHint = new Label();
+            lblRollbackHint.Text = "💡 يتم حفظ آخر نسختين سابقتين تلقائياً عند كل تحديث، ويمكنك استرجاع أي منهما ورفعها للمنصة فوراً.";
+            lblRollbackHint.Font = new Font("Segoe UI", 8f, FontStyle.Bold);
+            lblRollbackHint.ForeColor = Color.FromArgb(100, 116, 139);
+            lblRollbackHint.Location = new Point(15, 68);
+            lblRollbackHint.Size = new Size(580, 20);
+            grpRollback.Controls.Add(lblRollbackHint);
+
+            this.Controls.Add(grpRollback);
+
             // Progress Bar
             progressBar = new ProgressBar();
-            progressBar.Location = new Point(20, 617);
+            progressBar.Location = new Point(20, 717);
             progressBar.Size = new Size(610, 16);
             progressBar.Visible = false;
             this.Controls.Add(progressBar);
@@ -324,11 +377,331 @@ namespace BasraUpdater
             lblStatus.Text = "اختر البرنامج أولاً (المراكز أو المسؤول)، ثم اختر الملف المطابق لتفعيل الرفع.";
             lblStatus.Font = new Font("Segoe UI", 9f, FontStyle.Bold);
             lblStatus.ForeColor = Color.FromArgb(71, 85, 105);
-            lblStatus.Location = new Point(20, 638);
+            lblStatus.Location = new Point(20, 738);
             lblStatus.Size = new Size(610, 60);
             this.Controls.Add(lblStatus);
 
             OnTargetChanged();
+        }
+
+        private void RunGitCommand(string args, int timeoutMs)
+        {
+            try
+            {
+                string lockFile = Path.Combine(workspaceDir, ".git", "index.lock");
+                if (File.Exists(lockFile)) { try { File.Delete(lockFile); } catch { } }
+                ProcessStartInfo psi = new ProcessStartInfo("git", args);
+                psi.WorkingDirectory = workspaceDir;
+                psi.EnvironmentVariables["HOME"] = workspaceDir;
+                psi.EnvironmentVariables["GIT_TERMINAL_PROMPT"] = "0";
+                psi.EnvironmentVariables["GIT_EDITOR"] = "true";
+                psi.CreateNoWindow = true;
+                psi.UseShellExecute = false;
+                Process p = Process.Start(psi);
+                if (!p.WaitForExit(timeoutMs)) { try { p.Kill(); } catch { } }
+            }
+            catch { }
+        }
+
+        private string GetBackupPrefix(bool isAdmin)
+        {
+            return isAdmin ? "admin" : "centers";
+        }
+
+        private string GetBackupHtmlPath(bool isAdmin, int slot)
+        {
+            string dir = Path.Combine(workspaceDir, "backups");
+            return Path.Combine(dir, string.Format("{0}_prev{1}.html", GetBackupPrefix(isAdmin), slot));
+        }
+
+        private string GetBackupMetaPath(bool isAdmin, int slot)
+        {
+            string dir = Path.Combine(workspaceDir, "backups");
+            return Path.Combine(dir, string.Format("{0}_prev{1}.txt", GetBackupPrefix(isAdmin), slot));
+        }
+
+        private string GetBackupVersionLabel(bool isAdmin, int slot)
+        {
+            try
+            {
+                string metaPath = GetBackupMetaPath(isAdmin, slot);
+                string htmlPath = GetBackupHtmlPath(isAdmin, slot);
+                if (File.Exists(metaPath) && File.Exists(htmlPath))
+                {
+                    string raw = File.ReadAllText(metaPath).Trim();
+                    string[] parts = raw.Split('|');
+                    if (parts.Length >= 2)
+                        return string.Format("الإصدار {0} ({1})", parts[0], parts[1]);
+                    if (parts.Length == 1 && parts[0].Length > 0)
+                        return "الإصدار " + parts[0];
+                }
+            }
+            catch { }
+            return "";
+        }
+
+        private string GetBackupVersionNumber(bool isAdmin, int slot)
+        {
+            try
+            {
+                string metaPath = GetBackupMetaPath(isAdmin, slot);
+                if (File.Exists(metaPath))
+                {
+                    string raw = File.ReadAllText(metaPath).Trim();
+                    string[] parts = raw.Split('|');
+                    if (parts.Length >= 1 && parts[0].Trim().Length > 0)
+                        return parts[0].Trim();
+                }
+            }
+            catch { }
+            return isAdmin ? "2.0.2" : "2.0.7";
+        }
+
+        private void UpdateRollbackButtonsUI()
+        {
+            if (btnRollback1 == null || btnRollback2 == null) return;
+            bool isAdmin = rbAdmin.Checked;
+
+            string lbl1 = GetBackupVersionLabel(isAdmin, 1);
+            bool has1 = File.Exists(GetBackupHtmlPath(isAdmin, 1)) && !string.IsNullOrEmpty(lbl1);
+            btnRollback1.Enabled = has1;
+            btnRollback1.Text = has1
+                ? "⏪ رجوع للنسخة السابقة (1): " + lbl1
+                : "⏪ النسخة السابقة (1): غير متوفرة بعد";
+
+            string lbl2 = GetBackupVersionLabel(isAdmin, 2);
+            bool has2 = File.Exists(GetBackupHtmlPath(isAdmin, 2)) && !string.IsNullOrEmpty(lbl2);
+            btnRollback2.Enabled = has2;
+            btnRollback2.Text = has2
+                ? "⏮️ رجوع للنسخة الأقدم (2): " + lbl2
+                : "⏮️ النسخة الأقدم (2): غير متوفرة بعد";
+        }
+
+        private void SaveBackupBeforeUpdate(bool isAdmin, string currentVerBeforeUpdate)
+        {
+            try
+            {
+                string bDir = Path.Combine(workspaceDir, "backups");
+                if (!Directory.Exists(bDir)) Directory.CreateDirectory(bDir);
+
+                string currentActiveHtml = Path.Combine(workspaceDir, isAdmin ? "admin.html" : "index.html");
+                if (!File.Exists(currentActiveHtml)) return;
+
+                string p1Html = GetBackupHtmlPath(isAdmin, 1);
+                string p1Meta = GetBackupMetaPath(isAdmin, 1);
+                string p2Html = GetBackupHtmlPath(isAdmin, 2);
+                string p2Meta = GetBackupMetaPath(isAdmin, 2);
+
+                // Shift prev1 -> prev2
+                if (File.Exists(p1Html))
+                {
+                    SafeCopy(p1Html, p2Html);
+                    if (File.Exists(p1Meta)) SafeCopy(p1Meta, p2Meta);
+                }
+
+                // Save current active -> prev1
+                SafeCopy(currentActiveHtml, p1Html);
+                string datePart = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
+                File.WriteAllText(p1Meta, string.Format("{0}|{1}", currentVerBeforeUpdate, datePart));
+
+                // Mirror backups to Desktop folder if present
+                if (Directory.Exists(desktopDir))
+                {
+                    string dBackups = Path.Combine(desktopDir, "backups");
+                    if (!Directory.Exists(dBackups)) Directory.CreateDirectory(dBackups);
+                    foreach (string f in Directory.GetFiles(bDir))
+                    {
+                        SafeCopy(f, Path.Combine(dBackups, Path.GetFileName(f)));
+                    }
+                }
+            }
+            catch { }
+        }
+
+        private void RollbackToSlot(int slot)
+        {
+            bool isAdminTarget = rbAdmin.Checked;
+            string htmlBackup = GetBackupHtmlPath(isAdminTarget, slot);
+            if (!File.Exists(htmlBackup))
+            {
+                MessageBox.Show("نسخة الاسترجاع المطلوبة غير متوفرة حالياً.", "تنبيه", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            string targetName = isAdminTarget ? "برنامج المسؤول فقط (لوحة الإدارة)" : "برنامج مراكز التسجيل فقط (بوابة المراكز)";
+            string fname = isAdminTarget ? "admin.html" : "index.html";
+            string restoredVer = GetBackupVersionNumber(isAdminTarget, slot);
+            string slotTitle = slot == 1 ? "النسخة السابقة الأولى (1)" : "النسخة السابقة الأقدم (2)";
+
+            string confirmMsg = string.Format(
+                "هل أنت متأكد من رغبتك في الرجوع إلى {0} ورفعها إلى المنصة السحابية؟\n\n" +
+                "• البرنامج المحدد: {1}\n" +
+                "• الملف المسترجع: {2}\n" +
+                "• رقم إصدار النسخة المسترجعة: {3}\n\n" +
+                "سيتم استرجاع هذه النسخة محلياً ورفعها مباشرة إلى المنصة السحابية دون المساس بالبرنامج الآخر.",
+                slotTitle, targetName, fname, restoredVer
+            );
+
+            DialogResult res = MessageBox.Show(confirmMsg, "تأكيد الرجوع لنسخة سابقة", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            if (res != DialogResult.Yes) return;
+
+            btnPublish.Enabled = false;
+            btnBrowseFile.Enabled = false;
+            btnRollback1.Enabled = false;
+            btnRollback2.Enabled = false;
+            rbCenters.Enabled = false;
+            rbAdmin.Enabled = false;
+            txtNewVer.Enabled = false;
+            progressBar.Visible = true;
+            progressBar.Style = ProgressBarStyle.Marquee;
+
+            lblStatus.Text = "جاري استرجاع النسخة السابقة ومزامنتها مع المنصة...";
+            lblStatus.ForeColor = Color.FromArgb(180, 83, 9);
+
+            System.Threading.ThreadPool.QueueUserWorkItem(delegate
+            {
+                try
+                {
+                    string lockFile = Path.Combine(workspaceDir, ".git", "index.lock");
+                    if (File.Exists(lockFile)) { try { File.Delete(lockFile); } catch { } }
+                    string rebaseDir = Path.Combine(workspaceDir, ".git", "rebase-merge");
+                    if (Directory.Exists(rebaseDir)) { try { Directory.Delete(rebaseDir, true); } catch { } }
+
+                    // 1. Sync with remote first (immune to unstaged local changes)
+                    RunGitCommand("fetch origin main", 20000);
+                    RunGitCommand("checkout origin/main -- data/ public/data/", 10000);
+                    RunGitCommand("reset --soft origin/main", 10000);
+                    RunGitCommand("reset", 10000);
+
+                    // 2. Restore backup HTML file to workspace and Desktop
+                    string gitAddArgs = "";
+                    string nowIso = DateTime.UtcNow.ToString("o");
+
+                    if (isAdminTarget)
+                    {
+                        SafeCopy(htmlBackup, Path.Combine(workspaceDir, "admin.html"));
+                        SafeCopy(htmlBackup, Path.Combine(workspaceDir, "public", "admin.html"));
+                        if (Directory.Exists(desktopDir))
+                        {
+                            SafeCopy(htmlBackup, Path.Combine(desktopDir, "admin.html"));
+                            SafeCopy(htmlBackup, Path.Combine(desktopDir, "public", "admin.html"));
+                        }
+                        cloudAdminVersion = restoredVer;
+
+                        string adminJson = string.Format("{{\n  \"version\": \"{0}\",\n  \"updatedAt\": \"{1}\",\n  \"system\": \"admin\"\n}}", restoredVer, nowIso);
+                        File.WriteAllText(Path.Combine(workspaceDir, "version-admin.json"), adminJson);
+                        File.WriteAllText(Path.Combine(workspaceDir, "public", "version-admin.json"), adminJson);
+
+                        gitAddArgs = "admin.html public/admin.html version-admin.json public/version-admin.json";
+                    }
+                    else
+                    {
+                        SafeCopy(htmlBackup, Path.Combine(workspaceDir, "index.html"));
+                        SafeCopy(htmlBackup, Path.Combine(workspaceDir, "public", "index.html"));
+                        SafeCopy(htmlBackup, Path.Combine(workspaceDir, "public", "center.html"));
+                        if (Directory.Exists(desktopDir))
+                        {
+                            SafeCopy(htmlBackup, Path.Combine(desktopDir, "index.html"));
+                            SafeCopy(htmlBackup, Path.Combine(desktopDir, "public", "index.html"));
+                            SafeCopy(htmlBackup, Path.Combine(desktopDir, "public", "center.html"));
+                        }
+                        cloudCentersVersion = restoredVer;
+
+                        string centersJson = string.Format("{{\n  \"version\": \"{0}\",\n  \"updatedAt\": \"{1}\",\n  \"system\": \"centers\"\n}}", restoredVer, nowIso);
+                        File.WriteAllText(Path.Combine(workspaceDir, "version-centers.json"), centersJson);
+                        File.WriteAllText(Path.Combine(workspaceDir, "public", "version-centers.json"), centersJson);
+
+                        gitAddArgs = "index.html public/index.html public/center.html version-centers.json public/version-centers.json";
+                    }
+
+                    string combinedJson = string.Format(
+                        "{{\n  \"centersVersion\": \"{0}\",\n  \"adminVersion\": \"{1}\",\n  \"version\": \"{2}\",\n  \"updatedAt\": \"{3}\",\n  \"target\": \"{4}\",\n  \"file\": \"{5}\"\n}}",
+                        cloudCentersVersion, cloudAdminVersion, restoredVer, nowIso, targetName, fname
+                    );
+                    File.WriteAllText(Path.Combine(workspaceDir, "version.json"), combinedJson);
+                    File.WriteAllText(Path.Combine(workspaceDir, "public", "version.json"), combinedJson);
+                    gitAddArgs += " version.json public/version.json";
+
+                    // 3. Git Add, Commit, Push
+                    ProcessStartInfo psiAdd = new ProcessStartInfo("git", "add " + gitAddArgs);
+                    psiAdd.WorkingDirectory = workspaceDir;
+                    psiAdd.EnvironmentVariables["HOME"] = workspaceDir;
+                    psiAdd.EnvironmentVariables["GIT_TERMINAL_PROMPT"] = "0";
+                    psiAdd.CreateNoWindow = true;
+                    psiAdd.UseShellExecute = false;
+                    Process pAdd = Process.Start(psiAdd);
+                    if (!pAdd.WaitForExit(15000)) { try { pAdd.Kill(); } catch { } }
+
+                    string commitMsg = string.Format("استرجاع {0} إلى {1} (الإصدار {2})", targetName, slotTitle, restoredVer);
+                    ProcessStartInfo psiCommit = new ProcessStartInfo("git", string.Format("commit -m \"{0}\"", commitMsg));
+                    psiCommit.WorkingDirectory = workspaceDir;
+                    psiCommit.EnvironmentVariables["HOME"] = workspaceDir;
+                    psiCommit.EnvironmentVariables["GIT_TERMINAL_PROMPT"] = "0";
+                    psiCommit.CreateNoWindow = true;
+                    psiCommit.UseShellExecute = false;
+                    Process pCommit = Process.Start(psiCommit);
+                    if (!pCommit.WaitForExit(15000)) { try { pCommit.Kill(); } catch { } }
+
+                    ProcessStartInfo psiPush = new ProcessStartInfo("git", "push origin main");
+                    psiPush.WorkingDirectory = workspaceDir;
+                    psiPush.EnvironmentVariables["HOME"] = workspaceDir;
+                    psiPush.EnvironmentVariables["GIT_TERMINAL_PROMPT"] = "0";
+                    psiPush.CreateNoWindow = true;
+                    psiPush.UseShellExecute = false;
+                    psiPush.RedirectStandardError = true;
+                    Process pPush = Process.Start(psiPush);
+                    string pushErr = pPush.StandardError.ReadToEnd();
+                    if (!pPush.WaitForExit(30000)) { try { pPush.Kill(); } catch { } }
+
+                    this.Invoke((MethodInvoker)delegate {
+                        progressBar.Visible = false;
+                        if (pPush.ExitCode == 0)
+                        {
+                            lblStatus.Text = string.Format("تم الرجوع بنجاح إلى {0} (الإصدار {1}) ورفعها للمنصة السحابية! ✅", slotTitle, restoredVer);
+                            lblStatus.ForeColor = Color.FromArgb(16, 185, 129);
+                            OnTargetChanged();
+                            MessageBox.Show(
+                                string.Format(
+                                    "تم استرجاع النسخة السابقة ورفعها للمنصة بنجاح! ✅\n\n" +
+                                    "• البرنامج: {0}\n" +
+                                    "• النسخة المسترجعة: {1}\n" +
+                                    "• رقم الإصدار الفعال الآن: {2}",
+                                    targetName, slotTitle, restoredVer
+                                ),
+                                "تم استرجاع النسخة بنجاح",
+                                MessageBoxButtons.OK,
+                                MessageBoxIcon.Information
+                            );
+                        }
+                        else
+                        {
+                            lblStatus.Text = "حدث خطأ أثناء رفع النسخة المسترجعة للسحاب.";
+                            lblStatus.ForeColor = Color.FromArgb(225, 29, 72);
+                            MessageBox.Show("تعذر رفع النسخة المسترجعة للسحاب:\n" + pushErr, "خطأ", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+                    });
+                }
+                catch (Exception ex)
+                {
+                    this.Invoke((MethodInvoker)delegate {
+                        progressBar.Visible = false;
+                        lblStatus.Text = "خطأ أثناء الاسترجاع: " + ex.Message;
+                        lblStatus.ForeColor = Color.FromArgb(225, 29, 72);
+                        MessageBox.Show("حدث خطأ أثناء استرجاع النسخة:\n" + ex.Message, "خطأ", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    });
+                }
+                finally
+                {
+                    this.Invoke((MethodInvoker)delegate {
+                        btnBrowseFile.Enabled = true;
+                        rbCenters.Enabled = true;
+                        rbAdmin.Enabled = true;
+                        txtNewVer.Enabled = true;
+                        UpdateRollbackButtonsUI();
+                        ValidateAll();
+                    });
+                }
+            });
         }
 
         private string GetCurrentTargetCloudVersion()
@@ -359,6 +732,7 @@ namespace BasraUpdater
                 SuggestNextVersion(cloudCentersVersion);
             }
 
+            UpdateRollbackButtonsUI();
             ValidateAll();
         }
 
@@ -689,7 +1063,7 @@ namespace BasraUpdater
                 "• الهدف المعتمد: {0}\n" +
                 "• الملف المختار: {1}\n" +
                 "• رقم الإصدار الجديد لهذا البرنامج: {2}\n\n" +
-                "ملاحظة: سيتم تحديث هذا البرنامج وإصداره فقط دون المساس بإصدار البرنامج الآخر إطلاقاً.",
+                "ملاحظة: سيتم حفظ النسخة الحالية في سجل الاسترجاع وتحديث هذا البرنامج فقط دون المساس بالبرنامج الآخر.",
                 targetName, fname, newVer
             );
 
@@ -698,6 +1072,8 @@ namespace BasraUpdater
 
             btnPublish.Enabled = false;
             btnBrowseFile.Enabled = false;
+            btnRollback1.Enabled = false;
+            btnRollback2.Enabled = false;
             rbCenters.Enabled = false;
             rbAdmin.Enabled = false;
             txtNewVer.Enabled = false;
@@ -708,6 +1084,8 @@ namespace BasraUpdater
             lblStatus.ForeColor = Color.FromArgb(2, 132, 199);
 
             bool isAdminTarget = rbAdmin.Checked;
+            string curVerBeforeUpdate = isAdminTarget ? cloudAdminVersion : cloudCentersVersion;
+
             System.Threading.ThreadPool.QueueUserWorkItem(delegate
             {
                 try
@@ -718,21 +1096,17 @@ namespace BasraUpdater
                     string rebaseDir = Path.Combine(workspaceDir, ".git", "rebase-merge");
                     if (Directory.Exists(rebaseDir)) { try { Directory.Delete(rebaseDir, true); } catch { } }
 
-                    // 1. Sync with remote FIRST before applying our file so there is NEVER a rebase conflict
+                    // 1. Sync with remote FIRST before applying our file (immune to unstaged local changes)
                     this.Invoke((MethodInvoker)delegate {
                         lblStatus.Text = "جاري مزامنة الفرع السحابي...";
                     });
-                    ProcessStartInfo psiPull = new ProcessStartInfo("git", "pull --rebase -X theirs --autostash origin main");
-                    psiPull.WorkingDirectory = workspaceDir;
-                    psiPull.EnvironmentVariables["HOME"] = workspaceDir;
-                    psiPull.EnvironmentVariables["GIT_TERMINAL_PROMPT"] = "0";
-                    psiPull.EnvironmentVariables["GIT_EDITOR"] = "true";
-                    psiPull.CreateNoWindow = true;
-                    psiPull.UseShellExecute = false;
-                    Process pPull = Process.Start(psiPull);
-                    if (!pPull.WaitForExit(20000)) { try { pPull.Kill(); } catch { } }
-                    if (Directory.Exists(rebaseDir)) { try { Directory.Delete(rebaseDir, true); } catch { } }
-                    if (File.Exists(lockFile)) { try { File.Delete(lockFile); } catch { } }
+                    RunGitCommand("fetch origin main", 20000);
+                    RunGitCommand("checkout origin/main -- data/ public/data/", 10000);
+                    RunGitCommand("reset --soft origin/main", 10000);
+                    RunGitCommand("reset", 10000);
+
+                    // 1b. Save current version into the 2-version rollback history before overwriting!
+                    SaveBackupBeforeUpdate(isAdminTarget, curVerBeforeUpdate);
 
                     // 2. Now copy the selected file and update version JSONs on top of latest branch
                     this.Invoke((MethodInvoker)delegate {
@@ -745,6 +1119,11 @@ namespace BasraUpdater
                     {
                         SafeCopy(selectedFilePath, Path.Combine(workspaceDir, "admin.html"));
                         SafeCopy(selectedFilePath, Path.Combine(workspaceDir, "public", "admin.html"));
+                        if (Directory.Exists(desktopDir))
+                        {
+                            SafeCopy(selectedFilePath, Path.Combine(desktopDir, "admin.html"));
+                            SafeCopy(selectedFilePath, Path.Combine(desktopDir, "public", "admin.html"));
+                        }
                         cloudAdminVersion = newVer;
 
                         string adminJson = string.Format("{{\n  \"version\": \"{0}\",\n  \"updatedAt\": \"{1}\",\n  \"system\": \"admin\"\n}}", newVer, nowIso);
@@ -758,6 +1137,12 @@ namespace BasraUpdater
                         SafeCopy(selectedFilePath, Path.Combine(workspaceDir, "index.html"));
                         SafeCopy(selectedFilePath, Path.Combine(workspaceDir, "public", "index.html"));
                         SafeCopy(selectedFilePath, Path.Combine(workspaceDir, "public", "center.html"));
+                        if (Directory.Exists(desktopDir))
+                        {
+                            SafeCopy(selectedFilePath, Path.Combine(desktopDir, "index.html"));
+                            SafeCopy(selectedFilePath, Path.Combine(desktopDir, "public", "index.html"));
+                            SafeCopy(selectedFilePath, Path.Combine(desktopDir, "public", "center.html"));
+                        }
                         cloudCentersVersion = newVer;
 
                         string centersJson = string.Format("{{\n  \"version\": \"{0}\",\n  \"updatedAt\": \"{1}\",\n  \"system\": \"centers\"\n}}", newVer, nowIso);
@@ -823,6 +1208,7 @@ namespace BasraUpdater
                         {
                             lblStatus.Text = string.Format("اكتمل الرفع بنجاح! تم تحديث {0} إلى الإصدار ({1}) أونلاين 🚀", targetName, newVer);
                             lblStatus.ForeColor = Color.FromArgb(16, 185, 129);
+                            UpdateRollbackButtonsUI();
 
                             MessageBox.Show(
                                 string.Format(
@@ -830,7 +1216,7 @@ namespace BasraUpdater
                                     "• النظام المحدث: {0}\n" +
                                     "• الملف المرفوع: {1}\n" +
                                     "• رقم الإصدار الجديد: {2}\n\n" +
-                                    "تم تحديث هذا البرنامج أونلاين دون تغيير إصدار البرنامج الآخر نهائياً.",
+                                    "تم حفظ النسخة السابقة تلقائياً في أزرار الاسترجاع بالأسفل في حال رغبتك بالرجوع إليها.",
                                     targetName, fname, newVer
                                 ),
                                 "اكتمل التحديث السحابي بنجاح",
@@ -869,6 +1255,7 @@ namespace BasraUpdater
                         rbCenters.Enabled = true;
                         rbAdmin.Enabled = true;
                         txtNewVer.Enabled = true;
+                        UpdateRollbackButtonsUI();
                         ValidateAll();
                     });
                 }
