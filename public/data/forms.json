@@ -167,7 +167,7 @@
     "originalName": "نموذج انفكاك.docx",
     "fileSize": "16.4 KB",
     "uploadDate": "2026-10-23",
-    "updatedDate": "2026-10-23",
+    "updatedDate": "2026-10-26",
     "version": "v1.0",
     "description": "كتاب انفكاك موظف مركز التسجيل للتمتع بالإجازة الممنوحة.",
     "fillableTemplateId": null,
@@ -178,7 +178,8 @@
     ],
     "pageCount": 1,
     "sheetImage": "/sheets/form_1792783929926_sheet.png",
-    "isOffice": true
+    "isOffice": true,
+    "categoryName": "إجازات ومباشرات"
   },
   {
     "id": "form_1792780898589",
