@@ -2037,16 +2037,77 @@
       downloadFileWithPicker(downloadUrl, downloadName);
     }
 
-    // Track activity in backend for admin oversight
+    // Track activity in backend, cloud, and localStorage for accurate admin oversight
     async function trackActivity(formId, formTitle, action) {
       try {
-        const centerCode = activeCenter ? activeCenter.code : (localStorage.getItem('basra_simple_center_code') || 'غير محدد');
-        const centerName = activeCenter ? activeCenter.name : (localStorage.getItem('basra_simple_center_name') || 'غير محدد');
+        let centerCode = activeCenter ? activeCenter.code : (localStorage.getItem('basra_simple_center_code') || 'غير محدد');
+        let centerName = activeCenter ? activeCenter.name : (localStorage.getItem('basra_simple_center_name') || 'غير محدد');
 
-        fetch('/api/activity', {
+        if (centerCode && centerCode !== 'غير محدد' && typeof allCenters !== 'undefined' && Array.isArray(allCenters)) {
+          const found = allCenters.find(c => String(c.code).trim() === String(centerCode).trim());
+          if (found && found.name) centerName = found.name;
+        }
+
+        const now = new Date();
+        let formattedTime = '';
+        try {
+          formattedTime = new Intl.DateTimeFormat('ar-IQ', {
+            timeZone: 'Asia/Baghdad',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: true
+          }).format(now);
+        } catch (e) {
+          formattedTime = now.toLocaleString('ar-IQ');
+        }
+
+        const entry = {
+          id: 'act_' + Date.now() + '_' + Math.round(Math.random() * 1000),
+          timestamp: now.toISOString(),
+          formattedTime: formattedTime,
+          centerCode: centerCode,
+          centerName: centerName,
+          formId: formId || '',
+          formTitle: formTitle || '',
+          action: action || 'view'
+        };
+
+        // 1. Update local form download counter if action is download
+        if (action === 'download' && formId && Array.isArray(allForms)) {
+          const fObj = allForms.find(item => item.id === formId);
+          if (fObj) fObj.downloads = (fObj.downloads || 0) + 1;
+        }
+
+        // 2. Store in localStorage so local admin.html on the same machine sees it immediately
+        try {
+          const localLogsRaw = localStorage.getItem('basra_shared_activity_logs');
+          const localLogs = localLogsRaw ? JSON.parse(localLogsRaw) : [];
+          localLogs.unshift(entry);
+          if (localLogs.length > 2000) localLogs.length = 2000;
+          localStorage.setItem('basra_shared_activity_logs', JSON.stringify(localLogs));
+        } catch (lsErr) {}
+
+        // 3. Send to local server if running (localhost:3000)
+        fetch('http://localhost:3000/api/activity', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ centerCode, centerName, formId, formTitle, action })
+          body: JSON.stringify(entry),
+          keepalive: true
+        }).catch(() => {});
+
+        // 4. Send to Cloud Sync API so online admin sees all 76 centers' activities & downloads
+        const cloudUrl = window.location.hostname.includes('vercel.app')
+          ? '/api/sync'
+          : 'https://basra-forms.vercel.app/api/sync';
+        fetch(cloudUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ activityEntry: entry }),
+          keepalive: true
         }).catch(() => {});
       } catch (e) {
         // Silently ignore
