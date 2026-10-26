@@ -487,31 +487,12 @@ namespace BasraUpdater
                 {
                     wc.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
 
-                    try
-                    {
-                        string localCPath = Path.Combine(workspaceDir, "version-centers.json");
-                        if (File.Exists(localCPath))
-                        {
-                            Match mLC = Regex.Match(File.ReadAllText(localCPath), "\"version\"\\s*:\\s*\"([^\"]+)\"");
-                            if (mLC.Success && CompareVersions(mLC.Groups[1].Value, cloudCentersVersion) > 0)
-                                cloudCentersVersion = mLC.Groups[1].Value;
-                        }
-                        string localAPath = Path.Combine(workspaceDir, "version-admin.json");
-                        if (File.Exists(localAPath))
-                        {
-                            Match mLA = Regex.Match(File.ReadAllText(localAPath), "\"version\"\\s*:\\s*\"([^\"]+)\"");
-                            if (mLA.Success && CompareVersions(mLA.Groups[1].Value, cloudAdminVersion) > 0)
-                                cloudAdminVersion = mLA.Groups[1].Value;
-                        }
-                    }
-                    catch {}
-
                     // 1. Fetch Centers Version
                     try
                     {
                         string jsonC = wc.DownloadString(CLOUD_CENTERS_URL + "?t=" + DateTime.Now.Ticks);
                         Match mC = Regex.Match(jsonC, "\"version\"\\s*:\\s*\"([^\"]+)\"");
-                        if (mC.Success && CompareVersions(mC.Groups[1].Value, cloudCentersVersion) > 0) cloudCentersVersion = mC.Groups[1].Value;
+                        if (mC.Success) cloudCentersVersion = mC.Groups[1].Value;
                     }
                     catch
                     {
@@ -529,7 +510,7 @@ namespace BasraUpdater
                     {
                         string jsonA = wc.DownloadString(CLOUD_ADMIN_URL + "?t=" + DateTime.Now.Ticks);
                         Match mA = Regex.Match(jsonA, "\"version\"\\s*:\\s*\"([^\"]+)\"");
-                        if (mA.Success && CompareVersions(mA.Groups[1].Value, cloudAdminVersion) > 0) cloudAdminVersion = mA.Groups[1].Value;
+                        if (mA.Success) cloudAdminVersion = mA.Groups[1].Value;
                     }
                     catch
                     {
@@ -537,7 +518,7 @@ namespace BasraUpdater
                         {
                             string jsonA = wc.DownloadString(CLOUD_ADMIN_BACKUP + "?t=" + DateTime.Now.Ticks);
                             Match mA = Regex.Match(jsonA, "\"version\"\\s*:\\s*\"([^\"]+)\"");
-                            if (mA.Success && CompareVersions(mA.Groups[1].Value, cloudAdminVersion) > 0) cloudAdminVersion = mA.Groups[1].Value;
+                            if (mA.Success) cloudAdminVersion = mA.Groups[1].Value;
                         }
                         catch {}
                     }
@@ -741,7 +722,7 @@ namespace BasraUpdater
                     this.Invoke((MethodInvoker)delegate {
                         lblStatus.Text = "جاري مزامنة الفرع السحابي...";
                     });
-                    ProcessStartInfo psiPull = new ProcessStartInfo("git", "pull --rebase -X theirs origin main");
+                    ProcessStartInfo psiPull = new ProcessStartInfo("git", "pull --rebase -X theirs --autostash origin main");
                     psiPull.WorkingDirectory = workspaceDir;
                     psiPull.EnvironmentVariables["HOME"] = workspaceDir;
                     psiPull.EnvironmentVariables["GIT_TERMINAL_PROMPT"] = "0";

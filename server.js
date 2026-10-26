@@ -45,17 +45,11 @@ function readJson(filename, defaultValue = []) {
 
 function writeJson(filename, data) {
   const filePath = path.join(DATA_DIR, filename);
-  const content = JSON.stringify(data, null, 2);
-  fs.writeFileSync(filePath, content, 'utf8');
-  try {
-    const pubDataDir = path.join(PUBLIC_DIR, 'data');
-    if (!fs.existsSync(pubDataDir)) fs.mkdirSync(pubDataDir, { recursive: true });
-    fs.writeFileSync(path.join(pubDataDir, filename), content, 'utf8');
-  } catch (e) {}
+  fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
 }
 
 // Activity logging for Centers (views, downloads, prints)
-function logActivity(centerCode, centerName, formId, formTitle, action, customId, customTimestamp, customFormattedTime) {
+function logActivity(centerCode, centerName, formId, formTitle, action) {
   try {
     const logs = readJson('activity_log.json', []);
     const now = new Date();
@@ -70,24 +64,13 @@ function logActivity(centerCode, centerName, formId, formTitle, action, customId
       second: '2-digit',
       hour12: true
     });
-
-    let resolvedName = centerName || 'غير محدد';
-    if (centerCode && (!resolvedName || resolvedName === 'غير محدد' || resolvedName.startsWith('مركز '))) {
-      const centers = readJson('centers.json', []);
-      const found = centers.find(c => String(c.code) === String(centerCode));
-      if (found && found.name) resolvedName = found.name;
-    }
-
-    const entryId = customId || ('act_' + Date.now() + '_' + Math.round(Math.random() * 1000));
-    const existing = logs.find(l => l.id === entryId);
-    if (existing) return existing;
-
+    
     const entry = {
-      id: entryId,
-      timestamp: customTimestamp || now.toISOString(),
-      formattedTime: customFormattedTime || timeFormatter.format(now),
+      id: 'act_' + Date.now() + '_' + Math.round(Math.random() * 1000),
+      timestamp: now.toISOString(),
+      formattedTime: timeFormatter.format(now),
       centerCode: centerCode || 'غير محدد',
-      centerName: resolvedName,
+      centerName: centerName || 'غير محدد',
       formId: formId || '',
       formTitle: formTitle || '',
       action: action || 'view' // 'view' (عرض), 'download' (تنزيل), 'print' (طباعة), 'office' (فتح بأوفيس)
@@ -95,18 +78,6 @@ function logActivity(centerCode, centerName, formId, formTitle, action, customId
     logs.unshift(entry);
     if (logs.length > 2000) logs.length = 2000;
     writeJson('activity_log.json', logs);
-
-    if (action === 'download' && formId) {
-      try {
-        const forms = readJson('forms.json', []);
-        const fIdx = forms.findIndex(f => f.id === formId);
-        if (fIdx !== -1) {
-          forms[fIdx].downloads = (forms[fIdx].downloads || 0) + 1;
-          writeJson('forms.json', forms);
-        }
-      } catch (e) {}
-    }
-
     return entry;
   } catch (err) {
     console.error('Error logging activity:', err);
@@ -245,17 +216,11 @@ app.get('/api/forms/:id/download', (req, res) => {
   });
 });
 
-// Endpoint to log user actions (view, download, print, office open)
+// Endpoint to log user actions (view, print, office open)
 app.post('/api/activity', (req, res) => {
-  const { id, timestamp, formattedTime, centerCode, centerName, formId, formTitle, action } = req.body || {};
-  const entry = logActivity(centerCode, centerName, formId, formTitle, action, id, timestamp, formattedTime);
+  const { centerCode, centerName, formId, formTitle, action } = req.body;
+  const entry = logActivity(centerCode, centerName, formId, formTitle, action);
   res.json({ success: true, entry });
-});
-
-// Admin endpoint to clear activity logs
-app.post('/api/admin/activity/clear', (req, res) => {
-  writeJson('activity_log.json', []);
-  res.json({ success: true });
 });
 
 // Admin endpoint to view center activity logs
