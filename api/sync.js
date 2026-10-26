@@ -16,6 +16,66 @@ module.exports = async function handler(req, res) {
   const owner = process.env.GH_OWNER || 'alichbasi75-dotcom';
   const repo = process.env.GH_REPO || 'basra-forms';
 
+  // Helper to fetch JSON file from GitHub
+  async function fetchGitHubJson(filePath) {
+    const ghHeaders = {
+      'Accept': 'application/vnd.github.raw',
+      'User-Agent': 'Basra-Forms'
+    };
+    if (ghToken) ghHeaders['Authorization'] = `Bearer ${ghToken}`;
+    const ghRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`, {
+      headers: ghHeaders
+    });
+    if (ghRes.ok) {
+      return await ghRes.json();
+    }
+    return null;
+  }
+
+  // Helper to upload or update a file in GitHub repository
+  async function uploadToGitHub(filePath, base64Content, commitMessage) {
+    const url = `https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`;
+    let sha = null;
+    try {
+      const getRes = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${ghToken}`,
+          'Accept': 'application/vnd.github+json',
+          'User-Agent': 'Basra-Forms-Sync'
+        }
+      });
+      if (getRes.ok) {
+        const getData = await getRes.json();
+        sha = getData.sha;
+      }
+    } catch (e) {
+      // file doesn't exist yet
+    }
+
+    const putBody = {
+      message: commitMessage,
+      content: base64Content
+    };
+    if (sha) putBody.sha = sha;
+
+    const putRes = await fetch(url, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${ghToken}`,
+        'Accept': 'application/vnd.github+json',
+        'Content-Type': 'application/json',
+        'User-Agent': 'Basra-Forms-Sync'
+      },
+      body: JSON.stringify(putBody)
+    });
+
+    if (!putRes.ok) {
+      const errData = await putRes.text();
+      throw new Error(`Failed to upload ${filePath}: ${errData}`);
+    }
+    return true;
+  }
+
   // Instant Real-Time Data GET API (Bypasses Vercel static build delay)
   if (req.method === 'GET') {
     const type = req.query ? req.query.type : null;
@@ -29,17 +89,8 @@ module.exports = async function handler(req, res) {
         return res.status(200).json(global._latestForms);
       }
       try {
-        const ghHeaders = {
-          'Accept': 'application/vnd.github.raw',
-          'User-Agent': 'Basra-Forms'
-        };
-        if (ghToken) ghHeaders['Authorization'] = `Bearer ${ghToken}`;
-
-        const ghRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/data/forms.json`, {
-          headers: ghHeaders
-        });
-        if (ghRes.ok) {
-          const liveForms = await ghRes.json();
+        const liveForms = await fetchGitHubJson('data/forms.json');
+        if (Array.isArray(liveForms)) {
           global._latestForms = liveForms;
           return res.status(200).json(liveForms);
         }
@@ -54,17 +105,8 @@ module.exports = async function handler(req, res) {
         return res.status(200).json(global._latestCategories);
       }
       try {
-        const ghHeaders = {
-          'Accept': 'application/vnd.github.raw',
-          'User-Agent': 'Basra-Forms'
-        };
-        if (ghToken) ghHeaders['Authorization'] = `Bearer ${ghToken}`;
-
-        const ghRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/data/categories.json`, {
-          headers: ghHeaders
-        });
-        if (ghRes.ok) {
-          const liveCats = await ghRes.json();
+        const liveCats = await fetchGitHubJson('data/categories.json');
+        if (Array.isArray(liveCats)) {
           global._latestCategories = liveCats;
           return res.status(200).json(liveCats);
         }
@@ -73,10 +115,27 @@ module.exports = async function handler(req, res) {
       }
     }
 
+    // Return live activity logs instantly (0 delay)
+    if (type === 'activity') {
+      if (global._latestActivityLogs && Array.isArray(global._latestActivityLogs)) {
+        return res.status(200).json(global._latestActivityLogs);
+      }
+      try {
+        const liveLogs = await fetchGitHubJson('data/activity_log.json');
+        if (Array.isArray(liveLogs)) {
+          global._latestActivityLogs = liveLogs;
+          return res.status(200).json(liveLogs);
+        }
+      } catch (e) {
+        console.error('Fetch live activity logs error:', e);
+      }
+      return res.status(200).json([]);
+    }
+
     return res.status(200).json({
       status: 'active',
       service: 'Basra Registration Centers Cloud Sync Relay',
-      version: '1.2.0'
+      version: '1.3.0'
     });
   }
 
@@ -84,7 +143,58 @@ module.exports = async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  // 1. Verify Secret Key
+  // Public Center Activity Logging (does not require admin secret)
+  if (req.body && req.body.activityEntry) {
+    try {
+      const entry = req.body.activityEntry;
+      let logs = global._latestActivityLogs;
+      if (!Array.isArray(logs)) {
+        logs = (await fetchGitHubJson('data/activity_log.json')) || [];
+      }
+      if (!logs.some(l => l.id === entry.id)) {
+        logs.unshift(entry);
+        if (logs.length > 2000) logs.length = 2000;
+      }
+      global._latestActivityLogs = logs;
+
+      if (ghToken) {
+        const logsBase64 = Buffer.from(JSON.stringify(logs, null, 2), 'utf-8').toString('base64');
+        await uploadToGitHub('data/activity_log.json', logsBase64, `تسجيل نشاط مركز ${entry.centerCode || ''} (${entry.action || ''})`);
+        try {
+          await uploadToGitHub('public/data/activity_log.json', logsBase64, `تسجيل نشاط مركز (public)`);
+        } catch (e) {}
+
+        // If action is download, increment form download count in forms.json
+        if (entry.action === 'download' && entry.formId) {
+          try {
+            let currentForms = global._latestForms;
+            if (!Array.isArray(currentForms)) {
+              currentForms = await fetchGitHubJson('data/forms.json');
+            }
+            if (Array.isArray(currentForms)) {
+              const fIdx = currentForms.findIndex(f => f.id === entry.formId);
+              if (fIdx !== -1) {
+                currentForms[fIdx].downloads = (currentForms[fIdx].downloads || 0) + 1;
+                global._latestForms = currentForms;
+                const formsB64 = Buffer.from(JSON.stringify(currentForms, null, 2), 'utf-8').toString('base64');
+                await uploadToGitHub('data/forms.json', formsB64, `تحديث عداد تنزيلات النموذج ${entry.formId}`);
+                try {
+                  await uploadToGitHub('public/data/forms.json', formsB64, `تحديث عداد تنزيلات النموذج (public)`);
+                } catch (e) {}
+              }
+            }
+          } catch (e) {}
+        }
+      }
+
+      return res.status(200).json({ success: true, entry, total: logs.length });
+    } catch (err) {
+      console.error('Activity log sync error:', err);
+      return res.status(200).json({ success: false, error: err.message });
+    }
+  }
+
+  // 1. Verify Secret Key for Admin operations
   const clientKey = req.headers['x-admin-key'] || (req.headers.authorization ? req.headers.authorization.replace('Bearer ', '') : '');
   const isKeyValid = clientKey && (clientKey === adminSecret || clientKey === 'BasraForms@2026' || clientKey === 'basra2026');
   if (!isKeyValid) {
@@ -102,52 +212,18 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    const { forms, categories, files } = req.body || {};
+    const { forms, categories, files, activityLogs } = req.body || {};
     const updatedItems = [];
 
-    // Helper to upload or update a file in GitHub repository
-    async function uploadToGitHub(filePath, base64Content, commitMessage) {
-      const url = `https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`;
-      
-      let sha = null;
+    // Clear or update activity_log.json if provided by Admin
+    if (activityLogs && Array.isArray(activityLogs)) {
+      global._latestActivityLogs = activityLogs;
+      const logsBase64 = Buffer.from(JSON.stringify(activityLogs, null, 2), 'utf-8').toString('base64');
+      await uploadToGitHub('data/activity_log.json', logsBase64, 'تحديث سجل نشاط المراكز من لوحة المسؤول');
       try {
-        const getRes = await fetch(url, {
-          headers: {
-            'Authorization': `Bearer ${ghToken}`,
-            'Accept': 'application/vnd.github+json',
-            'User-Agent': 'Basra-Forms-Sync'
-          }
-        });
-        if (getRes.ok) {
-          const getData = await getRes.json();
-          sha = getData.sha;
-        }
-      } catch (e) {
-        // file doesn't exist yet
-      }
-
-      const putBody = {
-        message: commitMessage,
-        content: base64Content
-      };
-      if (sha) putBody.sha = sha;
-
-      const putRes = await fetch(url, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${ghToken}`,
-          'Accept': 'application/vnd.github+json',
-          'Content-Type': 'application/json',
-          'User-Agent': 'Basra-Forms-Sync'
-        },
-        body: JSON.stringify(putBody)
-      });
-
-      if (!putRes.ok) {
-        const errData = await putRes.text();
-        throw new Error(`Failed to upload ${filePath}: ${errData}`);
-      }
-      return true;
+        await uploadToGitHub('public/data/activity_log.json', logsBase64, 'تحديث سجل نشاط المراكز (public)');
+      } catch (e) {}
+      updatedItems.push('data/activity_log.json');
     }
 
     // 2. Upload forms.json if provided
