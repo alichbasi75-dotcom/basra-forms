@@ -146,7 +146,7 @@
     "originalName": "نموذج فحص ومعالجة.doc",
     "fileSize": "309.0 KB",
     "uploadDate": "2026-10-23",
-    "updatedDate": "2026-10-23",
+    "updatedDate": "2026-10-26",
     "version": "v1.0",
     "description": "خاص بفحص ومعالجة الموظف الذي ينوي طلب إجازة مرضية.",
     "fillableTemplateId": null,
@@ -157,7 +157,8 @@
     ],
     "pageCount": 1,
     "sheetImage": "/sheets/form_1792790583961_sheet.png",
-    "isOffice": true
+    "isOffice": true,
+    "categoryName": "إجازات ومباشرات"
   },
   {
     "id": "form_1792783929926",
