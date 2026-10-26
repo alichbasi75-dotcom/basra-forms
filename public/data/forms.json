@@ -191,7 +191,7 @@
     "originalName": "نموذج طلب اجازة خاصه.docx",
     "fileSize": "13.0 KB",
     "uploadDate": "2026-10-23",
-    "updatedDate": "2026-10-23",
+    "updatedDate": "2026-10-26",
     "version": "v1.0",
     "description": "ترسل لوحدة شؤون المراكز - خاصة بطلب إجازة اعتيادية قصيرة من يوم إلى 3 أيام.",
     "fillableTemplateId": null,
@@ -202,7 +202,8 @@
       "/sheets/form_1792780898589_page_1.png"
     ],
     "pageCount": 1,
-    "sheetImage": "/sheets/form_1792780898589_sheet.png"
+    "sheetImage": "/sheets/form_1792780898589_sheet.png",
+    "categoryName": "إجازات ومباشرات"
   },
   {
     "id": "form_09",
