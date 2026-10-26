@@ -13,10 +13,5 @@
     "id": "legal",
     "name": "الشؤون القانونية والمحاضر",
     "icon": "fa-solid fa-scale-balanced"
-  },
-  {
-    "id": "admin",
-    "name": "الإدارية والمالية والمخازن",
-    "icon": "fa-solid fa-boxes-stacked"
   }
 ]
