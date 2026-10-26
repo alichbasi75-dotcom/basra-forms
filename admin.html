@@ -4051,6 +4051,403 @@
       } catch(e) {}
     }
     loadVersionInfo();
+
+    // ================= MULTI-PC UNIFIED ADMIN DB ENGINE + 1-MINUTE AUTO-SYNC =================
+    let _adminActivityCountdown = 60;
+    let _lastActivityCount = -1;
+    let _lastTopActivityId = '';
+    let _baselineFormsMap = {};
+    let _baselineCatsMap = {};
+    let _baselineFormsRaw = '[]';
+    let _baselineCatsRaw = '[]';
+    let _isSyncingWrite = false;
+
+    function normalizeItemForDiff(obj) {
+      if (!obj) return '';
+      const copy = Object.assign({}, obj);
+      delete copy.syncVersion;
+      delete copy.downloads;
+      return JSON.stringify(copy);
+    }
+
+    function computeAdminFormsSig(arr) {
+      if (!Array.isArray(arr)) return '';
+      return arr.map(f => `${f.id}:${f.title}:${f.category}:${Boolean(f.hidden)}:${f.updatedDate || ''}:${f.fileName || ''}:${f.syncVersion || ''}`).join('|');
+    }
+
+    function computeAdminCatsSig(arr) {
+      if (!Array.isArray(arr)) return '';
+      return arr.map(c => `${c.id}:${c.name}:${c.icon || ''}`).join('|');
+    }
+
+    function recordAdminBaseline() {
+      if (Array.isArray(adminFormsList) && adminFormsList.length > 0) {
+        _baselineFormsMap = {};
+        adminFormsList.forEach(f => {
+          if (f && f.id) _baselineFormsMap[f.id] = normalizeItemForDiff(f);
+        });
+        _baselineFormsRaw = JSON.stringify(adminFormsList);
+      }
+      if (Array.isArray(adminCategoriesList) && adminCategoriesList.length > 0) {
+        _baselineCatsMap = {};
+        adminCategoriesList.forEach(c => {
+          if (c && c.id) _baselineCatsMap[c.id] = JSON.stringify(c);
+        });
+        _baselineCatsRaw = JSON.stringify(adminCategoriesList);
+      }
+    }
+
+    // Wrap syncWithCloud to enforce:
+    // 1. Offline Write Lock (prevents database divergence when offline)
+    // 2. Pre-Write Live Server Fetch & Atomic Diff Merge (prevents one Admin PC from overwriting another)
+    const _baseSyncWithCloud = typeof syncWithCloud === 'function' ? syncWithCloud : null;
+    if (_baseSyncWithCloud) {
+      syncWithCloud = async function(extraFiles = [], options = {}) {
+        const actionName = options.actionName || 'التعديلات';
+        const statusPill = document.getElementById('cloudSyncStatusPill');
+        const syncBtn = document.getElementById('headerCloudSyncBtn');
+        _isSyncingWrite = true;
+
+        try {
+          // Compute atomic diff vs baseline BEFORE fetching live server state
+          const upsertForms = [];
+          const deletedFormIds = [];
+          const currentFormIds = new Set();
+
+          if (Array.isArray(adminFormsList)) {
+            adminFormsList.forEach(f => {
+              if (!f || !f.id) return;
+              currentFormIds.add(f.id);
+              const norm = normalizeItemForDiff(f);
+              if (!_baselineFormsMap[f.id] || _baselineFormsMap[f.id] !== norm) {
+                upsertForms.push(JSON.parse(JSON.stringify(f)));
+              }
+            });
+          }
+          Object.keys(_baselineFormsMap).forEach(oldId => {
+            if (!currentFormIds.has(oldId)) {
+              deletedFormIds.push(oldId);
+            }
+          });
+
+          const upsertCategories = [];
+          const deletedCatIds = [];
+          const currentCatIds = new Set();
+
+          if (Array.isArray(adminCategoriesList)) {
+            adminCategoriesList.forEach(c => {
+              if (!c || !c.id) return;
+              currentCatIds.add(c.id);
+              const norm = JSON.stringify(c);
+              if (!_baselineCatsMap[c.id] || _baselineCatsMap[c.id] !== norm) {
+                upsertCategories.push(JSON.parse(JSON.stringify(c)));
+              }
+            });
+          }
+          Object.keys(_baselineCatsMap).forEach(oldId => {
+            if (!currentCatIds.has(oldId)) {
+              deletedCatIds.push(oldId);
+            }
+          });
+
+          showAppModal({
+            title: 'جاري المزامنة الموحدة مع السيرفر...',
+            message: `يتم الآن فحص القاعدة المركزية ودمج (${actionName}) بشكل موحد لجميع حاسبات المسؤولين والمراكز الـ 76...`,
+            type: 'loading'
+          });
+          showSyncToast(`جاري دمج ومزامنة ${actionName} مع القاعدة المركزية...`, 'loading', 0);
+
+          const baseApi = window.location.hostname.includes('vercel.app')
+            ? '/api/sync'
+            : 'https://basra-forms.vercel.app/api/sync';
+
+          // Step 1: Pre-Write Live Server Fetch (also verifies active internet connection)
+          let liveServerForms = null;
+          let liveServerCats = null;
+          try {
+            const [fRes, cRes] = await Promise.all([
+              fetch(baseApi + '?type=forms&t=' + Date.now(), { cache: 'no-store' }),
+              fetch(baseApi + '?type=categories&t=' + Date.now(), { cache: 'no-store' })
+            ]);
+            if (fRes && fRes.ok) liveServerForms = await fRes.json();
+            if (cRes && cRes.ok) liveServerCats = await cRes.json();
+          } catch (netErr) {
+            liveServerForms = null;
+          }
+
+          // Rule 4: Offline Write Lock — prevent split-brain database if offline!
+          if (!Array.isArray(liveServerForms)) {
+            try {
+              if (_baselineFormsRaw && _baselineFormsRaw !== '[]') adminFormsList = JSON.parse(_baselineFormsRaw);
+              if (_baselineCatsRaw && _baselineCatsRaw !== '[]') adminCategoriesList = JSON.parse(_baselineCatsRaw);
+              if (typeof updateFormsCounts === 'function') updateFormsCounts();
+              if (typeof renderAdminFormsTable === 'function') renderAdminFormsTable();
+              if (typeof renderCategoriesManagement === 'function') renderCategoriesManagement();
+            } catch (e) {}
+
+            showSyncToast('تم إيقاف التعديل: لا يوجد اتصال بالسيرفر المركزي', 'error', 4500);
+            showAppModal({
+              type: 'warning',
+              icon: 'fa-solid fa-lock',
+              title: 'قفل التعديل لحماية وحدة قاعدة البيانات',
+              message: 'لا يتوفر اتصال بالسيرفر السحابي المركزي حالياً.\n\nتم منع التعديل مؤقتاً لمنع اختلاف وتعدد قواعد البيانات بين حاسبات المسؤولين. يمكنك التصفح والمعاينة، وعند عودة الإنترنت يمكنك إجراء التعديلات بأمان.',
+              confirmText: 'حسناً فهمت',
+              isConfirm: false
+            });
+            return false;
+          }
+
+          // Step 2: Merge this PC's atomic operations onto the latest live server lists
+          const newSyncVersion = Date.now();
+          const delFormSet = new Set(deletedFormIds);
+          let mergedForms = liveServerForms.filter(f => f && !delFormSet.has(f.id));
+          for (const uf of upsertForms) {
+            uf.syncVersion = newSyncVersion;
+            const idx = mergedForms.findIndex(x => x && x.id === uf.id);
+            if (idx !== -1) mergedForms[idx] = uf;
+            else mergedForms.unshift(uf);
+          }
+
+          let mergedCats = Array.isArray(liveServerCats) ? liveServerCats : adminCategoriesList;
+          const delCatSet = new Set(deletedCatIds);
+          mergedCats = mergedCats.filter(c => c && !delCatSet.has(c.id));
+          for (const uc of upsertCategories) {
+            const idx = mergedCats.findIndex(x => x && x.id === uc.id);
+            if (idx !== -1) mergedCats[idx] = uc;
+            else mergedCats.push(uc);
+          }
+
+          adminFormsList = mergedForms;
+          adminCategoriesList = mergedCats;
+
+          // Step 3: Push Atomic Operation + Merged State to Cloud Server
+          const adminKey = localStorage.getItem('basra_cloud_key') || 'BasraForms@2026';
+          const res = await fetch(baseApi, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-admin-key': adminKey
+            },
+            body: JSON.stringify({
+              forms: adminFormsList,
+              categories: adminCategoriesList,
+              files: extraFiles || [],
+              atomicOp: {
+                upsertForms: upsertForms,
+                deletedFormIds: deletedFormIds,
+                upsertCategories: upsertCategories,
+                deletedCatIds: deletedCatIds
+              }
+            })
+          });
+
+          const data = await res.json();
+          if (res.ok && data.success) {
+            if (Array.isArray(data.forms)) adminFormsList = data.forms;
+            if (Array.isArray(data.categories)) adminCategoriesList = data.categories;
+            recordAdminBaseline();
+
+            if (typeof updateFormsCounts === 'function') updateFormsCounts();
+            if (typeof renderAdminFormsTable === 'function') renderAdminFormsTable();
+            if (typeof renderCategoriesManagement === 'function') renderCategoriesManagement();
+
+            // Persist unified state to local EXE storage if running via AdminApp.exe
+            if (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost') {
+              fetch('/local-api/save-admin-db', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  syncVersion: newSyncVersion,
+                  forms: adminFormsList,
+                  categories: adminCategoriesList
+                })
+              }).catch(() => {});
+            }
+
+            if (statusPill) {
+              statusPill.className = 'hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300';
+              statusPill.innerHTML = '<i class="fa-solid fa-cloud-check text-emerald-600"></i> <span>متصل بالقاعدة الموحدة</span>';
+            }
+            if (syncBtn) {
+              syncBtn.disabled = false;
+              syncBtn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up text-sm"></i> <span>مزامنة السحاب ☁️</span>';
+            }
+
+            showSyncToast(`تم حفظ ودمج ${actionName} في القاعدة المركزية الموحدة بنجاح 🚀`, 'success', 3500);
+            showAppModal({
+              type: 'success',
+              icon: 'fa-solid fa-cloud-arrow-up',
+              title: 'تمت المزامنة الموحدة بنجاح!',
+              message: `تم حفظ (${actionName}) في قاعدة البيانات المركزية الموحدة، وتعميمها فوراً على كافة حاسبات المسؤولين ومراكز التسجيل الـ 76 🚀`,
+              confirmText: 'ممتاز',
+              isConfirm: false
+            });
+            return true;
+          } else {
+            throw new Error(data.error || 'فشلت المزامنة مع السيرفر');
+          }
+        } catch (err) {
+          console.error('Unified Cloud Sync Error:', err);
+          showSyncToast(`تعذر إتمام المزامنة السحابية: ${err.message}`, 'error', 4500);
+          showAppModal({
+            type: 'danger',
+            icon: 'fa-solid fa-triangle-exclamation',
+            title: 'تعذر المزامنة مع القاعدة المركزية',
+            message: `حدث خطأ أثناء الاتصال بالسيرفر المركزي: ${err.message}`,
+            confirmText: 'حسناً',
+            isConfirm: false
+          });
+          return false;
+        } finally {
+          _isSyncingWrite = false;
+        }
+      };
+    }
+
+    function createAdminActivitySensorBar() {
+      if (document.getElementById('exeAdminSensorBar')) return;
+      const bar = document.createElement('div');
+      bar.id = 'exeAdminSensorBar';
+      bar.className = 'fixed bottom-3 left-3 z-50 bg-slate-900/95 text-white border border-slate-700 rounded-2xl px-3.5 py-2 shadow-xl flex items-center gap-2.5 text-xs font-bold backdrop-blur-md print:hidden';
+      bar.innerHTML = `
+        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span>القاعدة الموحدة متصلة • فحص التحديثات والسجل خلال <span id="exeAdminTimerVal" class="text-amber-400 font-mono">60</span>ث</span>
+        <button onclick="pollActivityLogsEveryMinute(true)" class="bg-blue-600 hover:bg-blue-500 text-white px-2 py-0.5 rounded-lg text-[11px] transition-colors flex items-center gap-1" title="فحص القاعدة المركزية والسجل الآن">
+          <i id="exeAdminPollIcon" class="fa-solid fa-rotate"></i>
+          <span>فحص الآن</span>
+        </button>
+      `;
+      document.body.appendChild(bar);
+    }
+
+    async function pollActivityLogsEveryMinute(isManual = false) {
+      if (_isSyncingWrite) return;
+      const icon = document.getElementById('exeAdminPollIcon');
+      if (icon) icon.className = 'fa-solid fa-rotate fa-spin';
+
+      try {
+        const oldFormsSig = computeAdminFormsSig(adminFormsList);
+        const oldCatsSig = computeAdminCatsSig(adminCategoriesList);
+
+        let remoteForms = null;
+        let remoteCats = null;
+
+        // 1. If running inside AdminApp.exe local server, check & download any new files added by other Admin PCs
+        if (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost') {
+          try {
+            const localCheck = await fetch('/local-api/check-admin-updates?t=' + Date.now(), { cache: 'no-store' });
+            if (localCheck && localCheck.ok) {
+              const lcData = await localCheck.json();
+              if (lcData.uiUpdated) {
+                if (typeof showSyncToast === 'function') {
+                  showSyncToast('تم تنزيل تحديث جديد لواجهة برنامج المسؤول، جاري التحديث...', 'success', 2000);
+                }
+                setTimeout(() => window.location.reload(), 1000);
+                return;
+              }
+              if (Array.isArray(lcData.forms) && lcData.forms.length > 0) remoteForms = lcData.forms;
+              if (Array.isArray(lcData.categories) && lcData.categories.length > 0) remoteCats = lcData.categories;
+            }
+          } catch (e) {}
+        }
+
+        // 2. Also fetch live forms & categories directly from Cloud Server if not already fetched
+        if (!remoteForms) {
+          const baseApi = window.location.hostname.includes('vercel.app')
+            ? '/api/sync'
+            : 'https://basra-forms.vercel.app/api/sync';
+          const [fRes, cRes] = await Promise.all([
+            fetch(baseApi + '?type=forms&t=' + Date.now(), { cache: 'no-store' }).catch(() => null),
+            fetch(baseApi + '?type=categories&t=' + Date.now(), { cache: 'no-store' }).catch(() => null)
+          ]);
+          if (fRes && fRes.ok) {
+            const fj = await fRes.json();
+            if (Array.isArray(fj) && fj.length > 0) remoteForms = fj;
+          }
+          if (cRes && cRes.ok) {
+            const cj = await cRes.json();
+            if (Array.isArray(cj) && cj.length > 0) remoteCats = cj;
+          }
+        }
+
+        // 3. Check if another Admin PC modified the Forms or Categories database
+        let dbUpdatedFromOtherAdmin = false;
+        if (Array.isArray(remoteCats) && remoteCats.length > 0) {
+          const newCatsSig = computeAdminCatsSig(remoteCats);
+          if (oldCatsSig && newCatsSig !== oldCatsSig) {
+            dbUpdatedFromOtherAdmin = true;
+          }
+          adminCategoriesList = remoteCats;
+        }
+        if (Array.isArray(remoteForms) && remoteForms.length > 0) {
+          const newFormsSig = computeAdminFormsSig(remoteForms);
+          if (oldFormsSig && newFormsSig !== oldFormsSig) {
+            dbUpdatedFromOtherAdmin = true;
+          }
+          adminFormsList = remoteForms;
+        }
+
+        recordAdminBaseline();
+
+        if (dbUpdatedFromOtherAdmin) {
+          if (typeof populateCategorySelects === 'function') populateCategorySelects();
+          if (typeof renderCategoriesManagement === 'function') renderCategoriesManagement();
+          if (typeof updateFormsCounts === 'function') updateFormsCounts();
+          if (typeof renderAdminFormsTable === 'function') renderAdminFormsTable();
+          if (typeof showSyncToast === 'function') {
+            showSyncToast('🔄 تم تحديث قاعدة بيانات النماذج تلقائياً إثر تعديل من حاسبة مسؤول أخرى!', 'success', 4500);
+          }
+        }
+
+        // 4. Refresh Activity Log & notify if new Center operations arrived
+        await loadAdminActivity(isManual);
+
+        if (Array.isArray(activityLogs)) {
+          const topId = activityLogs.length > 0 ? (activityLogs[0].id || '') : '';
+          if (_lastActivityCount !== -1 && activityLogs.length > _lastActivityCount && topId !== _lastTopActivityId) {
+            const diff = activityLogs.length - _lastActivityCount;
+            const latest = activityLogs[0];
+            if (typeof showSyncToast === 'function') {
+              showSyncToast(`🔔 تم رصد (${diff}) نشاط جديد من مركز ${latest.centerName || latest.centerCode} وتحديث السجل تلقائياً!`, 'success', 4000);
+            }
+          }
+          _lastActivityCount = activityLogs.length;
+          _lastTopActivityId = topId;
+        }
+      } catch (e) {
+        console.warn('Multi-admin 1-minute sync warning:', e);
+      } finally {
+        _adminActivityCountdown = 60;
+        if (icon) icon.className = 'fa-solid fa-rotate';
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      createAdminActivitySensorBar();
+      setTimeout(() => {
+        recordAdminBaseline();
+        pollActivityLogsEveryMinute(false);
+      }, 1200);
+
+      // Sync automatically when Admin window regains focus (e.g. switching between PCs or windows)
+      window.addEventListener('focus', () => {
+        if (_adminActivityCountdown < 45 && !_isSyncingWrite) {
+          pollActivityLogsEveryMinute(false);
+        }
+      });
+
+      // Check server every 60 seconds (1 minute) for both Multi-Admin DB updates and Activity Log updates
+      setInterval(() => {
+        _adminActivityCountdown--;
+        const tEl = document.getElementById('exeAdminTimerVal');
+        if (tEl && _adminActivityCountdown >= 0) tEl.innerText = _adminActivityCountdown;
+        if (_adminActivityCountdown <= 0) {
+          _adminActivityCountdown = 60;
+          pollActivityLogsEveryMinute(false);
+        }
+      }, 1000);
+    });
+
 </script>
 </body>
 

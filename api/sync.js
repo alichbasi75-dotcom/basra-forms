@@ -94,11 +94,8 @@ module.exports = async function handler(req, res) {
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '0');
 
-    // Return live forms instantly (0 delay)
+    // Return live forms instantly (always fresh from GitHub across all Admin PCs)
     if (type === 'forms') {
-      if (global._latestForms && Array.isArray(global._latestForms)) {
-        return res.status(200).json(global._latestForms);
-      }
       try {
         const liveForms = await fetchGitHubJson('data/forms.json');
         if (Array.isArray(liveForms)) {
@@ -108,13 +105,13 @@ module.exports = async function handler(req, res) {
       } catch (e) {
         console.error('Fetch live forms error:', e);
       }
+      if (global._latestForms && Array.isArray(global._latestForms)) {
+        return res.status(200).json(global._latestForms);
+      }
     }
 
-    // Return live categories instantly (0 delay)
+    // Return live categories instantly (always fresh from GitHub across all Admin PCs)
     if (type === 'categories') {
-      if (global._latestCategories && Array.isArray(global._latestCategories)) {
-        return res.status(200).json(global._latestCategories);
-      }
       try {
         const liveCats = await fetchGitHubJson('data/categories.json');
         if (Array.isArray(liveCats)) {
@@ -123,6 +120,9 @@ module.exports = async function handler(req, res) {
         }
       } catch (e) {
         console.error('Fetch live categories error:', e);
+      }
+      if (global._latestCategories && Array.isArray(global._latestCategories)) {
+        return res.status(200).json(global._latestCategories);
       }
     }
 
@@ -243,8 +243,11 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    const { forms, categories, files, activityLogs } = req.body || {};
+    const { forms, categories, files, activityLogs, atomicOp } = req.body || {};
     const updatedItems = [];
+    const syncVersion = Date.now();
+    let finalForms = null;
+    let finalCategories = null;
 
     // Clear or update activity_log.json if provided by Admin
     if (activityLogs && Array.isArray(activityLogs)) {
@@ -257,8 +260,42 @@ module.exports = async function handler(req, res) {
       updatedItems.push('data/activity_log.json');
     }
 
-    // 2. Upload forms.json if provided
-    if (forms && Array.isArray(forms)) {
+    // 2. Upload forms.json (with Atomic Merge if atomicOp is provided so multiple Admin PCs never overwrite each other)
+    if (atomicOp && (Array.isArray(atomicOp.upsertForms) || Array.isArray(atomicOp.deletedFormIds))) {
+      let currentServerForms = [];
+      try {
+        currentServerForms = (await fetchGitHubJson('data/forms.json')) || [];
+      } catch (e) {
+        currentServerForms = Array.isArray(forms) ? forms : [];
+      }
+      if (!Array.isArray(currentServerForms)) currentServerForms = [];
+
+      const delSet = new Set(Array.isArray(atomicOp.deletedFormIds) ? atomicOp.deletedFormIds : []);
+      currentServerForms = currentServerForms.filter(f => f && !delSet.has(f.id));
+
+      if (Array.isArray(atomicOp.upsertForms)) {
+        for (const uf of atomicOp.upsertForms) {
+          if (!uf || !uf.id) continue;
+          uf.syncVersion = syncVersion;
+          const idx = currentServerForms.findIndex(x => x && x.id === uf.id);
+          if (idx !== -1) {
+            currentServerForms[idx] = uf;
+          } else {
+            currentServerForms.unshift(uf);
+          }
+        }
+      }
+      finalForms = currentServerForms;
+      global._latestForms = finalForms;
+      const formsBase64 = Buffer.from(JSON.stringify(finalForms, null, 2), 'utf-8').toString('base64');
+      await uploadToGitHub('data/forms.json', formsBase64, 'تحديث موحد لقاعدة بيانات النماذج من لوحة المسؤول');
+      try {
+        await uploadToGitHub('public/data/forms.json', formsBase64, 'تحديث موحد لقاعدة بيانات النماذج (public)');
+      } catch (e) {}
+      updatedItems.push('data/forms.json');
+    } else if (forms && Array.isArray(forms)) {
+      forms.forEach(f => { if (f && !f.syncVersion) f.syncVersion = syncVersion; });
+      finalForms = forms;
       global._latestForms = forms;
       const formsBase64 = Buffer.from(JSON.stringify(forms, null, 2), 'utf-8').toString('base64');
       await uploadToGitHub('data/forms.json', formsBase64, 'تحديث قاعدة بيانات النماذج من لوحة المسؤول');
@@ -270,8 +307,40 @@ module.exports = async function handler(req, res) {
       updatedItems.push('data/forms.json');
     }
 
-    // 3. Upload categories.json if provided
-    if (categories && Array.isArray(categories)) {
+    // 3. Upload categories.json (with Atomic Merge if atomicOp is provided)
+    if (atomicOp && (Array.isArray(atomicOp.upsertCategories) || Array.isArray(atomicOp.deletedCatIds))) {
+      let currentServerCats = [];
+      try {
+        currentServerCats = (await fetchGitHubJson('data/categories.json')) || [];
+      } catch (e) {
+        currentServerCats = Array.isArray(categories) ? categories : [];
+      }
+      if (!Array.isArray(currentServerCats)) currentServerCats = [];
+
+      const delCatSet = new Set(Array.isArray(atomicOp.deletedCatIds) ? atomicOp.deletedCatIds : []);
+      currentServerCats = currentServerCats.filter(c => c && !delCatSet.has(c.id));
+
+      if (Array.isArray(atomicOp.upsertCategories)) {
+        for (const uc of atomicOp.upsertCategories) {
+          if (!uc || !uc.id) continue;
+          const idx = currentServerCats.findIndex(x => x && x.id === uc.id);
+          if (idx !== -1) {
+            currentServerCats[idx] = uc;
+          } else {
+            currentServerCats.push(uc);
+          }
+        }
+      }
+      finalCategories = currentServerCats;
+      global._latestCategories = finalCategories;
+      const catBase64 = Buffer.from(JSON.stringify(finalCategories, null, 2), 'utf-8').toString('base64');
+      await uploadToGitHub('data/categories.json', catBase64, 'تحديث موحد للتصنيفات من لوحة المسؤول');
+      try {
+        await uploadToGitHub('public/data/categories.json', catBase64, 'تحديث موحد للتصنيفات (public)');
+      } catch (e) {}
+      updatedItems.push('data/categories.json');
+    } else if (categories && Array.isArray(categories)) {
+      finalCategories = categories;
       global._latestCategories = categories;
       const catBase64 = Buffer.from(JSON.stringify(categories, null, 2), 'utf-8').toString('base64');
       await uploadToGitHub('data/categories.json', catBase64, 'تحديث التصنيفات من لوحة المسؤول');
@@ -303,7 +372,10 @@ module.exports = async function handler(req, res) {
 
     return res.status(200).json({
       success: true,
-      message: 'تم نشر وتحديث المنظومة بنجاح لجميع المراكز أونلاين!',
+      message: 'تم نشر وتحديث المنظومة بنجاح لجميع المراكز وحاسبات المسؤولين أونلاين!',
+      syncVersion: syncVersion,
+      forms: finalForms,
+      categories: finalCategories,
       updatedItemsCount: updatedItems.length,
       updatedItems: updatedItems
     });

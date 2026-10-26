@@ -9,19 +9,18 @@
     "originalName": "زمنية لسنة 2023.doc",
     "fileSize": "357.0 KB",
     "uploadDate": "2026-10-25",
-    "updatedDate": "2026-10-26",
+    "updatedDate": "2026-10-25",
     "version": "v1.0",
     "description": "نموذج الزمنية",
     "fillableTemplateId": null,
-    "hidden": true,
+    "hidden": false,
     "downloads": 0,
     "pages": [
       "/sheets/form_1792961892317_page_1.png"
     ],
     "pageCount": 1,
     "sheetImage": "/sheets/form_1792961892317_sheet.png",
-    "isOffice": true,
-    "syncVersion": 1793040861810
+    "isOffice": true
   },
   {
     "id": "form_1792961847784",
@@ -44,8 +43,7 @@
     ],
     "pageCount": 1,
     "sheetImage": "/sheets/form_1792961847784_sheet.png",
-    "isOffice": true,
-    "syncVersion": 1793040861810
+    "isOffice": true
   },
   {
     "id": "form_1792961704382",
@@ -68,8 +66,7 @@
     ],
     "pageCount": 1,
     "sheetImage": "/sheets/form_1792961704382_sheet.png",
-    "isOffice": true,
-    "syncVersion": 1793040861810
+    "isOffice": true
   },
   {
     "id": "form_1792960378733",
@@ -92,8 +89,7 @@
     ],
     "pageCount": 1,
     "sheetImage": "/sheets/form_1792960378733_sheet.png",
-    "isOffice": true,
-    "syncVersion": 1793040861810
+    "isOffice": true
   },
   {
     "id": "form_1792957024209",
@@ -116,8 +112,7 @@
     ],
     "pageCount": 1,
     "sheetImage": "/sheets/form_1792957024209_sheet.png",
-    "isOffice": true,
-    "syncVersion": 1793040861810
+    "isOffice": true
   },
   {
     "id": "form_1792790662356",
@@ -140,8 +135,7 @@
     "pageCount": 1,
     "sheetImage": "/sheets/form_1792790662356_sheet.png",
     "isOffice": true,
-    "categoryName": "إجازات ومباشرات",
-    "syncVersion": 1793040861810
+    "categoryName": "إجازات ومباشرات"
   },
   {
     "id": "form_1792790583961",
@@ -164,8 +158,7 @@
     "pageCount": 1,
     "sheetImage": "/sheets/form_1792790583961_sheet.png",
     "isOffice": true,
-    "categoryName": "إجازات ومباشرات",
-    "syncVersion": 1793040861810
+    "categoryName": "إجازات ومباشرات"
   },
   {
     "id": "form_1792783929926",
@@ -188,8 +181,7 @@
     "pageCount": 1,
     "sheetImage": "/sheets/form_1792783929926_sheet.png",
     "isOffice": true,
-    "categoryName": "إجازات ومباشرات",
-    "syncVersion": 1793040861810
+    "categoryName": "إجازات ومباشرات"
   },
   {
     "id": "form_1792780898589",
@@ -212,8 +204,7 @@
     ],
     "pageCount": 1,
     "sheetImage": "/sheets/form_1792780898589_sheet.png",
-    "categoryName": "إجازات ومباشرات",
-    "syncVersion": 1793040861810
+    "categoryName": "إجازات ومباشرات"
   },
   {
     "id": "form_09",
@@ -237,8 +228,7 @@
       "/sheets/form_09_page_1.png"
     ],
     "pageCount": 1,
-    "hidden": false,
-    "syncVersion": 1793040861810
+    "hidden": false
   },
   {
     "id": "form_11",
@@ -262,8 +252,7 @@
       "/sheets/form_11_page_1.png"
     ],
     "pageCount": 1,
-    "hidden": false,
-    "syncVersion": 1793040861810
+    "hidden": false
   },
   {
     "id": "form_12",
@@ -287,8 +276,7 @@
       "/sheets/form_12_page_1.png"
     ],
     "pageCount": 1,
-    "hidden": false,
-    "syncVersion": 1793040861810
+    "hidden": false
   },
   {
     "id": "form_17",
@@ -312,8 +300,7 @@
       "/sheets/form_17_page_1.png"
     ],
     "pageCount": 1,
-    "hidden": false,
-    "syncVersion": 1793040861810
+    "hidden": false
   },
   {
     "id": "form_18",
@@ -339,8 +326,7 @@
       "/sheets/form_18_page_3.png"
     ],
     "pageCount": 3,
-    "hidden": false,
-    "syncVersion": 1793040861810
+    "hidden": false
   },
   {
     "id": "form_19",
@@ -376,7 +362,6 @@
       "/sheets/form_19_page_13.png"
     ],
     "pageCount": 13,
-    "hidden": false,
-    "syncVersion": 1793040861810
+    "hidden": false
   }
 ]
