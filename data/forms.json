@@ -123,7 +123,7 @@
     "originalName": "نموذج المباشرة.doc",
     "fileSize": "308.5 KB",
     "uploadDate": "2026-10-23",
-    "updatedDate": "2026-10-24",
+    "updatedDate": "2026-10-26",
     "version": "v1.0",
     "description": "إشعار مباشرة الموظف بالدوام الرسمي بعد انتهاء مدة الإجازة.",
     "fillableTemplateId": null,
@@ -134,7 +134,8 @@
     ],
     "pageCount": 1,
     "sheetImage": "/sheets/form_1792790662356_sheet.png",
-    "isOffice": true
+    "isOffice": true,
+    "categoryName": "إجازات ومباشرات"
   },
   {
     "id": "form_1792790583961",
