@@ -2322,6 +2322,7 @@
             './data/activity_log.json?t=' + Date.now()
           ];
 
+      const clearedAt = parseInt(localStorage.getItem('basra_activity_cleared_at') || '0');
       let fetchedFromCloud = false;
       for (const url of cloudUrls) {
         try {
@@ -2334,6 +2335,8 @@
               if (list.length > 0) {
                 combined.push(...list);
               }
+              // Stop at the first authoritative endpoint so stale static CDN/local files do not resurrect deleted logs
+              break;
             }
           }
         } catch (e) {}
@@ -2349,15 +2352,19 @@
       } catch (e) {}
 
       // 3. Fallback to embedded DEFAULT_ACTIVITY_LOGS if offline (file:///)
-      if (combined.length === 0 && !fetchedFromCloud && Array.isArray(DEFAULT_ACTIVITY_LOGS)) {
+      if (combined.length === 0 && !fetchedFromCloud && !clearedAt && Array.isArray(DEFAULT_ACTIVITY_LOGS)) {
         combined.push(...DEFAULT_ACTIVITY_LOGS);
       }
 
-      // Deduplicate by id or (timestamp + centerCode + formId + action)
+      // Deduplicate by id or (timestamp + centerCode + formId + action) and ignore logs older than clearedAt
       const seen = new Set();
       const uniqueLogs = [];
       for (const item of combined) {
         if (!item) continue;
+        if (clearedAt && item.timestamp) {
+          const tItem = new Date(item.timestamp).getTime();
+          if (!isNaN(tItem) && tItem <= clearedAt) continue;
+        }
         const key = item.id || `${item.timestamp}_${item.centerCode}_${item.formId}_${item.action}`;
         if (!seen.has(key)) {
           seen.add(key);
@@ -2454,8 +2461,10 @@
 
       activityLogs = [];
       try {
+        localStorage.setItem('basra_activity_cleared_at', String(Date.now()));
         localStorage.removeItem('basra_shared_activity_logs');
       } catch (e) {}
+      fetch('/local-api/clear-activity', { method: 'POST' }).catch(() => {});
 
       if (Array.isArray(adminFormsList)) {
         adminFormsList.forEach(f => { f.downloads = 0; });
