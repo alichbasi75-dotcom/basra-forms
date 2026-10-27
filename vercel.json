@@ -2,6 +2,8 @@
   "cleanUrls": true,
   "rewrites": [
     { "source": "/admin", "destination": "/admin.html" },
-    { "source": "/center", "destination": "/index.html" }
+    { "source": "/center", "destination": "/index.html" },
+    { "source": "/install-center", "destination": "/install-center.html" },
+    { "source": "/install-admin", "destination": "/install-admin.html" }
   ]
 }
