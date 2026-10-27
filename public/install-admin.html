@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>تثبيت برنامج المسؤول | مكتب انتخابات البصرة</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    body { font-family: 'Cairo', sans-serif; }
+  </style>
+</head>
+<body class="bg-slate-950 text-white min-h-screen flex items-center justify-center p-4">
+
+  <div class="max-w-xl w-full bg-slate-900/95 border-2 border-sky-500/40 rounded-3xl p-6 sm:p-8 shadow-2xl text-center">
+    <div class="w-20 h-20 rounded-3xl bg-gradient-to-br from-slate-800 to-slate-950 border-2 border-sky-400 flex items-center justify-center text-4xl text-sky-400 mx-auto mb-4 shadow-lg">
+      <i class="fa-solid fa-user-shield"></i>
+    </div>
+
+    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-500/20 border border-sky-400/40 text-sky-300 text-xs font-bold mb-3">
+      <i class="fa-solid fa-shield-halved"></i>
+      <span>المثبت الذكي الآلي لحاسبة المسؤول (الإدارة المركزية)</span>
+    </div>
+
+    <h1 class="text-2xl sm:text-3xl font-black text-white mb-2">تثبيت برنامج المسؤول على الحاسبة</h1>
+    <p class="text-sm text-slate-300 mb-6">
+      يقوم المثبت تلقائياً باختيار القرص المتوفر وتنزيل برنامج المسؤول وقاعدة البيانات الموحدة (مع استكمال التنزيل تلقائياً عند ضعف أو انقطاع الإنترنت) ووضع اختصار البرنامج على سطح المكتب.
+    </p>
+
+    <!-- Auto-Download Status Banner -->
+    <div id="autoStartBanner" class="bg-emerald-950/70 border border-emerald-500/40 rounded-2xl p-3.5 mb-5 text-emerald-300 text-xs sm:text-sm font-bold flex items-center justify-center gap-2">
+      <i class="fa-solid fa-circle-notch fa-spin text-emerald-400"></i>
+      <span id="statusMsg">بدأ تنزيل مثبت برنامج المسؤول تلقائياً... افتح الملف فور اكتمال تنزيله</span>
+    </div>
+
+    <!-- Primary Download Button -->
+    <a id="directDownloadLink" href="./installers/Basra_Admin_Setup.exe" download="مثبت_برنامج_المسؤول.exe"
+       class="w-full bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white font-black text-base sm:text-lg py-4 px-6 rounded-2xl shadow-xl flex items-center justify-center gap-3 transition-all active:scale-95 mb-3">
+      <i class="fa-solid fa-download text-xl"></i>
+      <span>تنزيل وتثبيت برنامج المسؤول (EXE) الآن</span>
+    </a>
+
+    <p class="text-[11px] text-slate-400 mb-6">
+      إذا لم يبدأ التنزيل تلقائياً خلال ثوانٍ، اضغط على الزر الأزرق أعلاه ثم شغّل الملف <strong class="text-sky-300">مثبت_برنامج_المسؤول.exe</strong>
+    </p>
+
+    <!-- How it works steps -->
+    <div class="bg-slate-950/80 border border-slate-800 rounded-2xl p-4 text-right space-y-2.5 text-xs sm:text-sm text-slate-300">
+      <div class="font-black text-sky-400 mb-1 flex items-center gap-2">
+        <i class="fa-solid fa-gears"></i>
+        <span>ماذا يفعل المثبت تلقائياً عند تشغيله؟</span>
+      </div>
+      <div class="flex items-start gap-2">
+        <span class="bg-sky-600 text-white w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">1</span>
+        <span>يختار تلقائياً القرص المتوفر في الحاسبة (<code>D:\</code> أو <code>E:\</code> أو <code>C:\</code>) وينشئ مجلد برنامج المسؤول فيه.</span>
+      </div>
+      <div class="flex items-start gap-2">
+        <span class="bg-sky-600 text-white w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">2</span>
+        <span>يضع <strong>شورت كت (Shortcut)</strong> باسم <strong>«برنامج المسؤول - مكتب انتخابات البصرة»</strong> على سطح المكتب مباشرة.</span>
+      </div>
+      <div class="flex items-start gap-2">
+        <span class="bg-sky-600 text-white w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">3</span>
+        <span>ينزل قاعدة البيانات الموحدة والنماذج وسجل النشاطات، وعند ضعف أو انقطاع الإنترنت يستكمل التنزيل تلقائياً من حيث توقف فور عودة الاتصال ثم يفتح البرنامج.</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    window.addEventListener('DOMContentLoaded', function() {
+      setTimeout(function() {
+        var link = document.getElementById('directDownloadLink');
+        if (link) link.click();
+        setTimeout(function() {
+          var msg = document.getElementById('statusMsg');
+          if (msg) msg.textContent = 'تم بدء تنزيل (مثبت_برنامج_المسؤول.exe) ✓ اضغط على الملف بعد التنزيل لبدء التثبيت الآلي';
+        }, 2000);
+      }, 800);
+    });
+  </script>
+</body>
+</html>
