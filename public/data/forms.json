@@ -57,11 +57,11 @@
     "originalName": "طلب اجازة اعتيادية لسنة 2023.doc",
     "fileSize": "357.5 KB",
     "uploadDate": "2026-10-25",
-    "updatedDate": "2026-10-25",
+    "updatedDate": "2026-10-27",
     "version": "v1.0",
     "description": "ترسل لوحدة شؤون المراكز - خاصة بطلب إجازة اعتيادية قصيرة من يوم إلى 3 أيام.",
     "fillableTemplateId": null,
-    "hidden": false,
+    "hidden": true,
     "downloads": 0,
     "pages": [
       "/sheets/form_1792961704382_page_1.png"
@@ -69,7 +69,7 @@
     "pageCount": 1,
     "sheetImage": "/sheets/form_1792961704382_sheet.png",
     "isOffice": true,
-    "syncVersion": 1793133354027
+    "syncVersion": 1793135880770
   },
   {
     "id": "form_1792960378733",
