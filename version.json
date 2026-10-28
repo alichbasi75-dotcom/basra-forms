@@ -1,8 +1,8 @@
 {
-  "centersVersion": "2.1.4",
+  "centersVersion": "2.1.5",
   "adminVersion": "2.1.4",
-  "version": "2.1.4",
-  "updatedAt": "2026-10-28T20:38:28.6905356Z",
-  "target": "برنامج المسؤول فقط (لوحة الإدارة)",
-  "file": "admin.html"
+  "version": "2.1.5",
+  "updatedAt": "2026-10-28T21:02:55.7764793Z",
+  "target": "برنامج مراكز التسجيل فقط (بوابة المراكز)",
+  "file": "index.html"
 }
