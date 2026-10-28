@@ -1,13 +1,13 @@
 [
   {
-    "id": "act_1793207946256_994",
-    "timestamp": "2026-10-28T17:19:06.256Z",
-    "formattedTime": "٢٨‏/١٠‏/٢٠٢٦، ٠٨:١٩:٠٦ م",
+    "id": "act_1793207994274_88",
+    "timestamp": "2026-10-28T17:19:54.274Z",
+    "formattedTime": "٢٨‏/١٠‏/٢٠٢٦، ٠٨:١٩:٥٤ م",
     "centerCode": "2928",
     "centerName": "شط العرب 2",
     "formId": "form_1792961892317",
     "formTitle": "نموذج الزمنية",
-    "action": "view"
+    "action": "print"
   },
   {
     "id": "act_1793207845727_582",
@@ -957,6 +957,16 @@
     "centerName": "شط العرب 2",
     "formId": "form_11",
     "formTitle": "نموذج الاخبار",
+    "action": "view"
+  },
+  {
+    "id": "act_1793207946256_994",
+    "timestamp": "2026-10-28T17:19:06.256Z",
+    "formattedTime": "٢٨‏/١٠‏/٢٠٢٦، ٠٨:١٩:٠٦ م",
+    "centerCode": "2928",
+    "centerName": "شط العرب 2",
+    "formId": "form_1792961892317",
+    "formTitle": "نموذج الزمنية",
     "action": "view"
   }
 ]
