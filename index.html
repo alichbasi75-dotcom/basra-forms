@@ -4,6 +4,20 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>بوابة مراكز التسجيل | نماذج مكتب انتخابات البصرة 2026</title>
+  <script>
+    if (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost') {
+      try { fetch('/local-api/heartbeat?t=' + Date.now(), { cache: 'no-store' }).catch(function(){}); } catch(e){}
+      setInterval(function() {
+        try { fetch('/local-api/heartbeat?t=' + Date.now(), { cache: 'no-store' }).catch(function(){}); } catch(e){}
+      }, 1200);
+      function _notifySysExit() {
+        try { if (navigator.sendBeacon) navigator.sendBeacon('/local-api/shutdown'); } catch(e){}
+        try { var x = new XMLHttpRequest(); x.open('GET', '/local-api/shutdown', false); x.send(); } catch(e){}
+      }
+      window.addEventListener('beforeunload', _notifySysExit);
+      window.addEventListener('pagehide', _notifySysExit);
+    }
+  </script>
   <link rel="icon" type="image/png" sizes="512x512" href="./icons/center_preview.png">
   <link rel="shortcut icon" href="./icons/center_app.ico">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -3339,28 +3353,6 @@
       }, 2500);
 
       // Tick every 1 second and trigger server check every 60 seconds (1 minute)
-      
-      // Keep local EXE server alive while window is open & notify instant exit on close
-      if (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost') {
-        setInterval(() => {
-          fetch('/local-api/heartbeat?t=' + Date.now(), { cache: 'no-store' }).catch(() => {});
-        }, 1200);
-
-        function _notifySysExit() {
-          try {
-            if (navigator.sendBeacon) {
-              navigator.sendBeacon('/local-api/shutdown');
-            }
-          } catch(e) {}
-          try {
-            const x = new XMLHttpRequest();
-            x.open('GET', '/local-api/shutdown', false);
-            x.send();
-          } catch(e) {}
-        }
-        window.addEventListener('beforeunload', _notifySysExit);
-        window.addEventListener('pagehide', _notifySysExit);
-      }
 
       setInterval(() => {
         _centerSyncCountdown--;
