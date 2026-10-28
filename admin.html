@@ -1,9 +1,11 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>لوحة تحكم المسؤول | مكتب انتخابات محافظة البصرة</title>
+  <link rel="icon" type="image/png" sizes="512x512" href="./icons/admin_preview.png">
+  <link rel="shortcut icon" href="./icons/admin_app.ico">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
@@ -232,12 +234,6 @@
         </button>
       </form>
 
-      <div class="mt-6 pt-4 border-t border-slate-100">
-        <a href="/center" class="text-xs font-bold text-amber-600 hover:underline">
-          <i class="fa-solid fa-arrow-right ml-1"></i> الانتقال إلى رابط المراكز
-        </a>
-      </div>
-
     </div>
   </div>
 
@@ -280,12 +276,6 @@
             <i class="fa-solid fa-cloud-arrow-up text-sm"></i>
             <span>مزامنة السحاب ☁️</span>
           </button>
-
-          <!-- Centers Direct Link -->
-          <a href="./index.html" target="_blank" class="text-xs bg-blue-50 hover:bg-blue-100 text-blue-800 font-bold px-3 py-2 rounded-xl border border-blue-300 flex items-center gap-1.5 transition-colors" title="فتح واجهة مراكز التسجيل الـ 76">
-            <i class="fa-solid fa-building-columns"></i>
-            <span>رابط المراكز (الـ 76)</span>
-          </a>
 
           <!-- Logout Button -->
           <button onclick="handleLogout()" class="text-xs bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold px-3 py-2 rounded-xl border border-rose-200 flex items-center gap-1.5 transition-colors" title="تسجيل الخروج من لوحة الإدارة">
@@ -1407,29 +1397,36 @@
       if (!img._errStep) img._errStep = 1;
       else img._errStep++;
 
-      // Step 1: Try alternate sheet paths (local relative vs Vercel cloud)
-      if (img._errStep === 1 && origSrc) {
-        const cleanPath = (origSrc || '').replace(/^\.?\//, '');
-        if (!img.src.includes('basra-forms.vercel.app')) {
-          img.src = 'https://basra-forms.vercel.app/' + cleanPath;
-          return;
-        }
+      // Extract sheet file name
+      const cleanPath = (origSrc || '').replace(/^\.?\//, '');
+      const sName = cleanPath.split('/').pop();
+
+      // Step 1: Try Vercel Cloud
+      if (img._errStep === 1 && sName) {
+        img.src = 'https://basra-forms.vercel.app/sheets/' + encodeURIComponent(sName);
+        return;
       }
 
-      // Step 2: If it is a direct image file, try uploads folder
+      // Step 2: Try GitHub Pages Cloud Backup
+      if (img._errStep === 2 && sName) {
+        img.src = 'https://alichbasi75-dotcom.github.io/basra-forms/sheets/' + encodeURIComponent(sName);
+        return;
+      }
+
+      // Step 3: If it is a direct image file in uploads
       const isImgFile = ['.png', '.jpg', '.jpeg', '.webp'].some(ext => (fileName || '').toLowerCase().endsWith(ext));
       if (isImgFile && fileName) {
-        if (img._errStep === 2) {
+        if (img._errStep === 3) {
           img.src = './uploads/' + fileName;
           return;
         }
-        if (img._errStep === 3) {
-          img.src = 'https://basra-forms.vercel.app/uploads/' + fileName;
+        if (img._errStep === 4) {
+          img.src = 'https://basra-forms.vercel.app/uploads/' + encodeURIComponent(fileName);
           return;
         }
       }
 
-      // Step 3: If it is a PDF file, render dynamically into img.src so text boxes stay interactive!
+      // Step 4: If it is a PDF file, render dynamically into img.src
       const isPdf = (active && active.fileType === 'pdf') || (fileName && fileName.toLowerCase().endsWith('.pdf'));
       if (isPdf && window.pdfjsLib && !img._pdfRenderAttempted) {
         img._pdfRenderAttempted = true;
@@ -1459,37 +1456,28 @@
         }
       }
 
-      // Step 4: If it is an Office file (.doc, .docx, .xls, .xlsx), fetch and render onto A4 sheet image so text boxes work 100%!
-      const isOfficeFile = (active && (active.isOffice || ['docx', 'doc', 'xlsx', 'xls'].includes(active.fileType)))
-        || ['.docx', '.doc', '.xlsx', '.xls'].some(ext => (fileName || '').toLowerCase().endsWith(ext));
-      if (isOfficeFile && !img._officeRenderAttempted) {
-        img._officeRenderAttempted = true;
-        const targetFile = (active && active.fileName) ? active.fileName : fileName;
-        const ext = (active && active.fileType) ? active.fileType : (targetFile || '').split('.').pop();
-        const title = active ? active.title : '';
-        const urlsToTry = [
-          `./uploads/${targetFile}`,
-          `https://basra-forms.vercel.app/uploads/${targetFile}`
-        ];
-        for (const u of urlsToTry) {
-          try {
-            const resp = await fetch(u);
-            if (resp.ok) {
-              const buf = await resp.arrayBuffer();
-              const dataUrls = await renderOfficeBufferToDataUrls(buf, ext, title);
-              if (dataUrls && dataUrls.length > 0) {
-                const pNum = parseInt((img.id || '').replace('sheetImage_', '')) || 1;
-                img.src = dataUrls[Math.min(pNum - 1, dataUrls.length - 1)];
-                return;
-              }
-            }
-          } catch (offErr) {
-            console.warn('Office dynamic sheet render warning:', offErr);
-          }
-        }
+      // STRICT USER RULE: NEVER allow displaying in simplified/plain text format for official approved forms!
+      // If the official template image cannot be loaded, strictly block fallback canvas rendering and display official error card.
+      img.style.display = 'none';
+      const rot = img.closest('.page-rotatable-inner') || img.parentElement;
+      if (rot && !rot.querySelector('.sheet-error-notice')) {
+        const notice = document.createElement('div');
+        notice.className = 'sheet-error-notice';
+        notice.style.cssText = 'background:#fef2f2; border:2px dashed #dc2626; border-radius:14px; padding:40px 24px; text-align:center; color:#991b1b; margin:30px 15px; box-shadow:0 10px 25px rgba(220,38,38,0.08);';
+        notice.innerHTML = `
+          <div style="font-size:48px; color:#dc2626; margin-bottom:14px;"><i class="fa-solid fa-triangle-exclamation"></i></div>
+          <h3 style="font-size:21px; font-weight:800; color:#991b1b; margin-bottom:10px;">تنبيه: تعذر تحميل النسخة المعتمدة الرسمية لهذا النموذج</h3>
+          <p style="font-size:14.5px; line-height:1.8; color:#7f1d1d; margin-bottom:16px;">
+            حفاظاً على الاعتماد الإداري والقانوني الرسمي وتجنب استخدام نسخ غير مطابقة، <b>تم حظر عرض هذا النموذج بالشكل البسيط</b>.
+          </p>
+          <div style="background:#fee2e2; border-radius:10px; padding:12px 18px; font-size:13.5px; color:#b91c1c; display:inline-block; font-weight:600;">
+            <i class="fa-solid fa-cloud-arrow-down ml-1"></i> يرجى التأكد من تشغيل «برنامج التحديث» لتنزيل قوالب النماذج الأصلية على هذا الجهاز (${sName || fileName || ''})
+          </div>
+        `;
+        rot.appendChild(notice);
       }
 
-      console.warn('Could not load sheet image:', origSrc);
+      console.warn('Strictly blocked simple view for missing official template:', origSrc);
     }
 
     function checkAuth() {
@@ -2048,7 +2036,7 @@
 
         if (!res || !res.ok) {
           try {
-            res = await fetch('https://basra-forms.vercel.app/data/forms.json?t=' + Date.now(), { cache: 'no-store' });
+            res = await fetch('https://basra-forms.vercel.app/api/sync?type=forms&t=' + Date.now(), { cache: 'no-store' });
           } catch (e) {}
         }
 
@@ -2399,7 +2387,7 @@
         if (icon) icon.className = 'fa-solid fa-circle-check';
         if (textEl) textEl.innerText = 'تم التحديث ✓';
         if (typeof showSyncToast === 'function') {
-          showSyncToast(`تم تحديث سجل النشاط بنجاح (عدد العمليات: ${activityLogs.length})`, 'success', 3000);
+          showSyncToast('تم تحديث سجل النشاط بنجاح ✓', 'success', 3000);
         }
         refreshBtnTimer = setTimeout(() => {
           if (btn) btn.className = 'bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5 border border-blue-200 transition-all active:scale-95';
@@ -4052,6 +4040,7 @@
     }
     loadVersionInfo();
 
+
     // ================= MULTI-PC UNIFIED ADMIN DB ENGINE + 1-MINUTE AUTO-SYNC =================
     let _adminActivityCountdown = 60;
     let _lastActivityCount = -1;
@@ -4311,10 +4300,10 @@
       bar.className = 'fixed bottom-3 left-3 z-50 bg-slate-900/95 text-white border border-slate-700 rounded-2xl px-3.5 py-2 shadow-xl flex items-center gap-2.5 text-xs font-bold backdrop-blur-md print:hidden';
       bar.innerHTML = `
         <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-        <span>القاعدة الموحدة متصلة • فحص التحديثات والسجل خلال <span id="exeAdminTimerVal" class="text-amber-400 font-mono">60</span>ث</span>
-        <button onclick="pollActivityLogsEveryMinute(true)" class="bg-blue-600 hover:bg-blue-500 text-white px-2 py-0.5 rounded-lg text-[11px] transition-colors flex items-center gap-1" title="فحص القاعدة المركزية والسجل الآن">
+        <span id="exeAdminSyncText">المزامنة التلقائية: فحص السيرفر كل <span id="exeAdminTimerVal" class="text-amber-400 font-mono">60</span>ث</span>
+        <button onclick="pollActivityLogsEveryMinute(true)" class="bg-blue-600 hover:bg-blue-500 text-white px-2 py-0.5 rounded-lg text-[11px] transition-colors flex items-center gap-1" title="مزامنة فورية الآن">
           <i id="exeAdminPollIcon" class="fa-solid fa-rotate"></i>
-          <span>فحص الآن</span>
+          <span>مزامنة الآن</span>
         </button>
       `;
       document.body.appendChild(bar);
@@ -4323,7 +4312,7 @@
     async function pollActivityLogsEveryMinute(isManual = false) {
       if (_isSyncingWrite) return;
       const icon = document.getElementById('exeAdminPollIcon');
-      if (icon) icon.className = 'fa-solid fa-rotate fa-spin';
+      if (isManual && icon) icon.className = 'fa-solid fa-rotate fa-spin';
 
       try {
         const oldFormsSig = computeAdminFormsSig(adminFormsList);
@@ -4331,6 +4320,7 @@
 
         let remoteForms = null;
         let remoteCats = null;
+        let dbUpdatedFromOtherAdmin = false;
 
         // 1. If running inside AdminApp.exe local server, check & download any new files added by other Admin PCs
         if (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost') {
@@ -4340,19 +4330,20 @@
               const lcData = await localCheck.json();
               if (lcData.uiUpdated) {
                 if (typeof showSyncToast === 'function') {
-                  showSyncToast('تم تنزيل تحديث جديد لواجهة برنامج المسؤول، جاري التحديث...', 'success', 2000);
+                  showSyncToast('🔔 تم اكتشاف تحديث جديد لواجهة المسؤول...', 'success', 2000);
                 }
                 setTimeout(() => window.location.reload(), 1000);
                 return;
               }
+              if (lcData.hasChanges) dbUpdatedFromOtherAdmin = true;
               if (Array.isArray(lcData.forms) && lcData.forms.length > 0) remoteForms = lcData.forms;
               if (Array.isArray(lcData.categories) && lcData.categories.length > 0) remoteCats = lcData.categories;
             }
           } catch (e) {}
         }
 
-        // 2. Also fetch live forms & categories directly from Cloud Server if not already fetched
-        if (!remoteForms) {
+        // 2. Also fetch live forms & categories directly from Cloud Server as backup
+        if (!remoteForms || !dbUpdatedFromOtherAdmin) {
           const baseApi = window.location.hostname.includes('vercel.app')
             ? '/api/sync'
             : 'https://basra-forms.vercel.app/api/sync';
@@ -4371,54 +4362,49 @@
         }
 
         // 3. Check if another Admin PC modified the Forms or Categories database
-        let dbUpdatedFromOtherAdmin = false;
         if (Array.isArray(remoteCats) && remoteCats.length > 0) {
           const newCatsSig = computeAdminCatsSig(remoteCats);
           if (oldCatsSig && newCatsSig !== oldCatsSig) {
             dbUpdatedFromOtherAdmin = true;
           }
           adminCategoriesList = remoteCats;
+          if (dbUpdatedFromOtherAdmin) {
+            if (typeof renderAdminCategoriesTable === 'function') renderAdminCategoriesTable();
+            if (typeof populateCategoryDropdowns === 'function') populateCategoryDropdowns();
+            if (typeof updateFilterButtonsUI === 'function') updateFilterButtonsUI();
+          }
         }
+
         if (Array.isArray(remoteForms) && remoteForms.length > 0) {
           const newFormsSig = computeAdminFormsSig(remoteForms);
-          if (oldFormsSig && newFormsSig !== oldFormsSig) {
+          if ((oldFormsSig && newFormsSig !== oldFormsSig) || remoteForms.length !== adminFormsList.length) {
             dbUpdatedFromOtherAdmin = true;
           }
           adminFormsList = remoteForms;
+          if (dbUpdatedFromOtherAdmin) {
+            if (typeof renderAdminFormsTable === 'function') renderAdminFormsTable();
+            if (typeof updateFormsCounts === 'function') updateFormsCounts();
+            if (typeof updateFilterButtonsUI === 'function') updateFilterButtonsUI();
+            updateDashboardStats();
+          }
         }
-
-        recordAdminBaseline();
 
         if (dbUpdatedFromOtherAdmin) {
-          if (typeof populateCategorySelects === 'function') populateCategorySelects();
-          if (typeof renderCategoriesManagement === 'function') renderCategoriesManagement();
-          if (typeof updateFormsCounts === 'function') updateFormsCounts();
-          if (typeof renderAdminFormsTable === 'function') renderAdminFormsTable();
           if (typeof showSyncToast === 'function') {
-            showSyncToast('🔄 تم تحديث قاعدة بيانات النماذج تلقائياً إثر تعديل من حاسبة مسؤول أخرى!', 'success', 4500);
+            showSyncToast('🔔 تم استلام تحديثات جديدة وتحديث النماذج تلقائياً ✓', 'success', 3000);
+          }
+        } else if (isManual) {
+          if (typeof showSyncToast === 'function') {
+            showSyncToast('جميع النماذج وسجل النشاط محدثة ومتطابقة مع السيرفر ✓', 'info', 2000);
           }
         }
-
-        // 4. Refresh Activity Log & notify if new Center operations arrived
-        await loadAdminActivity(isManual);
-
-        if (Array.isArray(activityLogs)) {
-          const topId = activityLogs.length > 0 ? (activityLogs[0].id || '') : '';
-          if (_lastActivityCount !== -1 && activityLogs.length > _lastActivityCount && topId !== _lastTopActivityId) {
-            const diff = activityLogs.length - _lastActivityCount;
-            const latest = activityLogs[0];
-            if (typeof showSyncToast === 'function') {
-              showSyncToast(`🔔 تم رصد (${diff}) نشاط جديد من مركز ${latest.centerName || latest.centerCode} وتحديث السجل تلقائياً!`, 'success', 4000);
-            }
-          }
-          _lastActivityCount = activityLogs.length;
-          _lastTopActivityId = topId;
-        }
-      } catch (e) {
-        console.warn('Multi-admin 1-minute sync warning:', e);
+      } catch (err) {
+        console.warn('Admin live sync warning:', err);
       } finally {
         _adminActivityCountdown = 60;
         if (icon) icon.className = 'fa-solid fa-rotate';
+        const st = document.getElementById('exeAdminSyncText');
+        if (st) st.innerHTML = 'المزامنة التلقائية: فحص السيرفر كل <span id="exeAdminTimerVal" class="text-amber-400 font-mono">60</span>ث';
       }
     }
 
@@ -4437,6 +4423,29 @@
       });
 
       // Check server every 60 seconds (1 minute) for both Multi-Admin DB updates and Activity Log updates
+      
+      // Keep local EXE server alive while window is open & notify instant exit on close
+      if (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost') {
+        setInterval(() => {
+          fetch('/local-api/heartbeat?t=' + Date.now(), { cache: 'no-store' }).catch(() => {});
+        }, 1200);
+
+        function _notifySysExit() {
+          try {
+            if (navigator.sendBeacon) {
+              navigator.sendBeacon('/local-api/shutdown');
+            }
+          } catch(e) {}
+          try {
+            const x = new XMLHttpRequest();
+            x.open('GET', '/local-api/shutdown', false);
+            x.send();
+          } catch(e) {}
+        }
+        window.addEventListener('beforeunload', _notifySysExit);
+        window.addEventListener('pagehide', _notifySysExit);
+      }
+
       setInterval(() => {
         _adminActivityCountdown--;
         const tEl = document.getElementById('exeAdminTimerVal');
