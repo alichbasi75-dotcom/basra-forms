@@ -1,0 +1,3376 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>بوابة مراكز التسجيل | نماذج مكتب انتخابات البصرة 2026</title>
+  <link rel="icon" type="image/png" sizes="512x512" href="./icons/center_preview.png">
+  <link rel="shortcut icon" href="./icons/center_app.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    body { font-family: 'Cairo', sans-serif; }
+    .scroll-touch-x {
+      overflow-x: auto !important;
+      -webkit-overflow-scrolling: touch;
+    }
+    .scroll-touch-x::-webkit-scrollbar {
+      height: 5px;
+    }
+    .scroll-touch-x::-webkit-scrollbar-track {
+      background: rgba(0,0,0,0.05);
+      border-radius: 4px;
+    }
+    .scroll-touch-x::-webkit-scrollbar-thumb {
+      background: rgba(0,0,0,0.25);
+      border-radius: 4px;
+    }
+    
+    /* Interactive Sheet Canvas */
+    .sheet-wrapper {
+      position: relative;
+      width: 100%;
+      max-width: 820px;
+      margin: 0 auto 24px auto;
+      background: #fff;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.22);
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      overflow: visible;
+      transition: width 0.15s ease-out;
+    }
+    .sheet-bg {
+      width: 100%;
+      height: auto;
+      display: block;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    /* Scroll area with vertical scrollbar on the RIGHT side */
+    #sheetScrollArea {
+      direction: ltr !important; /* Puts vertical scrollbar on the RIGHT edge! */
+      overflow-x: auto !important;
+      overflow-y: auto !important;
+      scroll-behavior: smooth;
+    }
+    #sheetScrollArea > * {
+      direction: rtl !important; /* Preserves proper Arabic RTL inside */
+    }
+    #sheetScrollArea::-webkit-scrollbar {
+      width: 12px;
+      height: 14px;
+    }
+    #sheetScrollArea::-webkit-scrollbar-track {
+      background: #cbd5e1;
+      border-radius: 8px;
+    }
+    #sheetScrollArea::-webkit-scrollbar-thumb {
+      background: #475569;
+      border-radius: 8px;
+      border: 3px solid #cbd5e1;
+    }
+    #sheetScrollArea::-webkit-scrollbar-thumb:hover {
+      background: #1e293b;
+    }
+
+    /* Draggable & Resizable Box */
+    .drag-box {
+      position: absolute;
+      border: 1.5px dashed rgba(59, 130, 246, 0.45);
+      background: rgba(239, 246, 255, 0.35) !important;
+      box-shadow: none;
+      z-index: 30;
+      border-radius: 4px;
+      display: flex;
+      min-width: 30px;
+      min-height: 22px;
+      touch-action: none;
+      transition: border-color 0.15s ease, background 0.15s ease;
+    }
+    .drag-box:hover,
+    .drag-box.is-focused,
+    .drag-box.active {
+      border: 1.5px dashed #2563eb;
+      background: rgba(255, 255, 255, 0.12) !important;
+    }
+
+    /* When the box contains text AND is not hovered or focused: hide border so it blends seamlessly into the sheet */
+    .drag-box.has-text:not(:hover):not(.is-focused):not(.active) {
+      border-color: transparent;
+      background: transparent !important;
+    }
+
+    /* Floating action bar ABOVE the text box so it never pushes the text down */
+    .drag-bar {
+      position: absolute;
+      top: -24px;
+      right: 0;
+      background: #1e3a8a;
+      color: #fff;
+      padding: 1px 6px;
+      font-size: 11px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      cursor: grab;
+      user-select: none;
+      border-radius: 4px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.15s ease;
+      height: 22px;
+      white-space: nowrap;
+      z-index: 40;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+    }
+    .drag-box:hover .drag-bar,
+    .drag-box.is-focused .drag-bar,
+    .drag-box.active .drag-bar {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .drag-bar:active {
+      cursor: grabbing;
+      background: #d97706;
+    }
+
+    .drag-textarea {
+      flex: 1;
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: transparent !important;
+      padding: 1px 3px;
+      font-family: 'Cairo', 'Traditional Arabic', serif;
+      font-size: 16px;
+      font-weight: 800;
+      color: #000;
+      resize: none;
+      outline: none;
+      line-height: 1.25;
+      overflow: hidden;
+      direction: rtl;
+      text-align: right;
+    }
+    .drag-textarea::placeholder {
+      color: rgba(100, 116, 139, 0.6);
+      font-size: 13px;
+      font-weight: normal;
+    }
+    /* Placeholder remains visible when empty so the user knows the box is there */
+    .drag-textarea::placeholder {
+      color: rgba(100, 116, 139, 0.65);
+    }
+
+    .resize-handle {
+      position: absolute;
+      bottom: -4px;
+      left: -4px;
+      width: 14px;
+      height: 14px;
+      background: #2563eb;
+      cursor: sw-resize;
+      border-top-right-radius: 4px;
+      border-bottom-left-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 8px;
+      user-select: none;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.15s ease;
+      z-index: 35;
+    }
+    .drag-box:hover .resize-handle,
+    .drag-box.is-focused .resize-handle,
+    .drag-box.active .resize-handle {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .drag-box:hover .resize-handle {
+      background: #f59e0b;
+    }
+  </style>
+    <!-- PDF.js & Office Sheet Renderers (Mammoth + SheetJS) for in-browser sheet rendering -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script>
+    if (window.pdfjsLib) {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    }
+  </script>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col">
+
+  <!-- Welcome Gatekeeper Modal (طلب رقم مركز التسجيل أولاً للدخول) -->
+  <div id="gatekeeperModal" class="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="bg-white border-2 border-slate-300 rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl text-center">
+      
+      <!-- Close button if center already set -->
+      <div id="gateCloseBtnWrap" class="hidden text-left -mt-2 mb-2 flex justify-start">
+        <button type="button" onclick="closeGatekeeperModal()" class="bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white font-black text-xs px-3.5 py-1.5 rounded-xl flex items-center gap-1.5 shadow-md transition-all active:scale-95 border border-red-400" title="إغلاق">
+          <i class="fa-solid fa-xmark text-sm"></i>
+          <span>إغلاق</span>
+        </button>
+      </div>
+
+      <div class="w-16 h-16 rounded-2xl bg-amber-500 text-slate-950 flex items-center justify-center text-3xl mx-auto mb-4 shadow-lg shadow-amber-500/30">
+        <i class="fa-solid fa-landmark"></i>
+      </div>
+
+      <h2 class="text-xl font-black text-slate-900 leading-tight">المفوضية العليا المستقلة للانتخابات</h2>
+      <p class="text-xs font-bold text-amber-700 mt-0.5">مكتب انتخابات محافظة البصرة</p>
+      <div class="inline-block bg-slate-100 text-slate-700 text-xs font-bold px-3 py-1 rounded-full mt-2 mb-6">
+        منظومة نماذج واستمارات مراكز التسجيل (76 مركزاً)
+      </div>
+
+                  <div class="bg-slate-50 border-2 border-slate-200 rounded-2xl p-4 text-right mb-5 focus-within:border-amber-500 transition-colors">
+        <label class="block text-xs font-black text-slate-800 mb-2 flex items-center gap-2">
+          <i class="fa-solid fa-id-card text-amber-600 text-base"></i>
+          <span>يرجى إدخال رقم مركز التسجيل الخاص بك للدخول:</span>
+        </label>
+        <input type="text" id="gateCenterInput" maxlength="4" inputmode="numeric" pattern="[0-9]*" placeholder="مثال: 2928" oninput="onGateInput(this.value)" onchange="onGateInput(this.value)" onkeyup="onGateInput(this.value)" onpaste="setTimeout(function(){onGateInput(document.getElementById('gateCenterInput').value)}, 20)" onkeydown="if(event.key === 'Enter') submitGatekeeper()" class="w-full bg-white border-2 border-slate-300 focus:border-amber-500 rounded-xl px-4 py-3 text-center text-2xl font-black text-slate-900 focus:outline-none font-mono tracking-widest placeholder:text-sm placeholder:font-normal placeholder:tracking-normal placeholder:text-slate-400" autofocus>
+        
+        <!-- Live Center Match Badge -->
+        <div id="gateCenterMatchBadge" class="mt-3 hidden p-2.5 rounded-xl text-xs font-bold flex items-center gap-2">
+          <!-- Filled by JS -->
+        </div>
+      </div>
+
+      <button type="button" id="gateSubmitBtn" onclick="submitGatekeeper()" class="w-full bg-slate-200 text-slate-600 hover:bg-slate-300 font-black py-3.5 px-4 rounded-xl text-sm transition-all flex items-center justify-center gap-2 shadow-sm cursor-pointer">
+        <span>دخول إلى منظومة النماذج</span>
+        <i class="fa-solid fa-arrow-left"></i>
+      </button>
+
+      <div class="mt-4 text-[11px] text-slate-400">
+        يتم تسجيل عمليات العرض والتنزيل باسم مركزك لمتابعة الإجراءات الرسمية من قبل مكتب انتخابات البصرة
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Header -->
+    <!-- Header -->
+  <header class="bg-white border-b-2 border-slate-200 shadow-sm sticky top-0 z-30 overflow-x-auto scroll-touch-x">
+    <div class="max-w-6xl mx-auto px-3 sm:px-4 py-2.5 sm:py-3 flex flex-wrap items-center justify-between gap-3 min-w-max sm:min-w-0">
+      
+      <!-- Title & Logo -->
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 rounded-2xl bg-amber-500 text-slate-950 flex items-center justify-center text-2xl shadow-md">
+          <i class="fa-solid fa-landmark"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2 flex-wrap">
+            <h1 class="text-lg sm:text-xl font-black text-slate-900 leading-tight">المفوضية العليا المستقلة للانتخابات</h1>
+            <span id="centerVersionBadge" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-black bg-amber-100 text-amber-900 border border-amber-300 shadow-xs" title="رقم إصدار برنامج المراكز">
+              <i class="fa-solid fa-code-commit text-[11px] text-amber-600"></i>
+              <span id="centerVersionVal">الإصدار 2.1.1</span>
+            </span>
+            <span id="centerDateBadge" class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-600 border border-slate-300" title="تاريخ آخر تحديث">
+              <i class="fa-regular fa-calendar-check text-[11px] text-emerald-600"></i>
+              <span id="centerDateVal">2026-10-24</span>
+            </span>
+          </div>
+          <p class="text-xs sm:text-sm font-bold text-amber-700">مكتب انتخابات محافظة البصرة — نماذج واستمارات مراكز التسجيل</p>
+        </div>
+      </div>
+
+      <!-- رقم مركزك (الضغط على الرقم مباشرة يتيح تغيير المركز) -->
+      <div class="flex items-center gap-2 bg-slate-50 border-2 border-slate-300 rounded-2xl p-1.5 transition-colors">
+        <span class="text-xs font-bold text-slate-600 px-2 flex items-center gap-1.5">
+          <i class="fa-solid fa-id-card text-amber-600 text-base"></i>
+          <span>رقم مركزك:</span>
+        </span>
+        <button type="button" onclick="openGatekeeperModal()" class="bg-white hover:bg-amber-50 hover:border-amber-400 border border-slate-300 rounded-xl px-3.5 py-1.5 font-bold text-sm text-slate-900 flex items-center gap-2 shadow-sm transition-all active:scale-95 cursor-pointer" title="انقر لتغيير رقم المركز">
+          <span id="centerCodeVal" class="font-mono font-black text-amber-700 text-base">--</span>
+          <i class="fa-solid fa-arrows-rotate text-[11px] text-amber-600" title="تغيير"></i>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Active Center Confirmation Bar (عرض اسم المركز الحالي بدون زر تغيير) -->
+    <div id="activeCenterStrip" class="hidden bg-emerald-600 text-white text-xs sm:text-sm font-bold py-2.5 px-4 shadow-inner">
+      <div class="max-w-6xl mx-auto flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-circle-check text-emerald-200 text-base"></i>
+          <span>أنت تعمل حالياً باسم: <strong id="stripCenterName" class="underline text-amber-200 text-base">--</strong></span>
+          <span class="bg-emerald-800 px-2 py-0.5 rounded text-xs" id="stripTamween">--</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="max-w-6xl mx-auto px-4 py-6 flex-1 w-full">
+    
+    <!-- Top Search & Categories Filter -->
+    <div class="bg-white border border-slate-200 rounded-2xl p-4 mb-6 shadow-sm">
+      
+      <!-- Search Input -->
+      <div class="relative mb-4">
+        <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-slate-400">
+          <i class="fa-solid fa-magnifying-glass text-lg"></i>
+        </div>
+        <input type="text" id="quickSearch" oninput="renderFilteredForms()" placeholder="ابحث باسم النموذج أو نوع الإجازة أو الاستمارة..." class="w-full bg-slate-50 border-2 border-slate-200 focus:border-amber-500 rounded-xl pr-12 pl-4 py-3 text-sm font-semibold text-slate-900 focus:outline-none transition-colors">
+      </div>
+
+      <!-- Categories Pills (ديناميكية حسب الأصناف المعتمدة) -->
+      <div class="flex items-center gap-2 overflow-x-auto pb-1" id="categoryTabs">
+        <!-- Rendered dynamically from /api/categories via JS -->
+      </div>
+
+    </div>
+
+    <!-- Forms List Grid (Large & Clear) -->
+    <div id="formsList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <!-- Forms rendered by JS -->
+    </div>
+
+    <!-- Empty search message -->
+    <div id="emptyMessage" class="hidden text-center py-16 bg-white border border-slate-200 rounded-2xl">
+      <i class="fa-solid fa-circle-question text-4xl text-slate-300 mb-2"></i>
+      <h3 class="text-base font-bold text-slate-700">لم يتم العثور على نموذج بهذا الاسم</h3>
+      <p class="text-xs text-slate-500 mt-1">تأكد من كتابة الكلمة بشكل صحيح</p>
+    </div>
+
+  </main>
+
+  <!-- Interactive Form Viewer (شاشة كاملة، شريط علوي ذكي للهواتف، شريط التمرير على اليمين) -->
+  <div id="sheetModal" class="fixed inset-0 z-50 bg-slate-900 hidden flex flex-col w-screen h-[100dvh] overflow-hidden m-0 p-0">
+    <div class="bg-white w-full h-full flex flex-col overflow-hidden m-0 p-0 rounded-none border-0">
+      
+      <!-- Top Action Toolbar (متجاوب للهواتف والشاشات الكبيرة) -->
+      <div class="bg-amber-500 text-slate-950 px-2 sm:px-4 py-1.5 sm:py-2 flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-2 border-b border-amber-600 shadow-sm shrink-0">
+        
+        <!-- Row 1 on Mobile: Title + Pinned Close Button (ALWAYS 100% visible, never pushed away) -->
+        <div class="flex items-center justify-between gap-2 w-full sm:w-auto min-w-0">
+          <div class="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-1 overflow-hidden">
+            <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-slate-950 text-amber-400 flex items-center justify-center text-xs sm:text-sm shadow shrink-0">
+              <i class="fa-solid fa-file-invoice"></i>
+            </div>
+            <div class="min-w-0">
+              <h3 id="modalSheetTitle" class="text-xs sm:text-sm font-black text-slate-950 truncate sm:line-clamp-2 leading-tight">عرض النموذج</h3>
+            </div>
+          </div>
+          <!-- Close Button on Mobile (Pinned) -->
+          <button type="button" onclick="closeSheetModal()" class="sm:hidden shrink-0 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white font-black text-xs px-3 py-1.5 rounded-xl flex items-center gap-1 shadow-md active:scale-95 border border-red-400/40 cursor-pointer" title="إغلاق النافذة">
+            <i class="fa-solid fa-xmark text-sm"></i>
+            <span>إغلاق</span>
+          </button>
+        </div>
+
+        <!-- Row 2 on Mobile / Left on Desktop: Horizontally Scrollable Ribbon of Tools -->
+        <div class="flex items-center justify-between sm:justify-end gap-1.5 w-full sm:w-auto min-w-0 shrink-0">
+          
+          <div class="flex items-center gap-1 sm:gap-1.5 overflow-x-auto overflow-y-hidden py-0.5 scroll-touch-x select-none flex-1 sm:flex-initial" style="-webkit-overflow-scrolling: touch; touch-action: pan-x;">
+            <!-- 🔄 تدوير وتكبير/تصغير -->
+            <div class="flex items-center bg-slate-900/30 rounded-xl p-0.5 gap-0.5 sm:gap-1 text-slate-950 text-xs font-bold border border-slate-900/20 shrink-0">
+              <button type="button" onclick="rotateCurrentSheet()" id="rotateSheetBtn" class="px-2 sm:px-2.5 py-1 rounded-lg bg-white/80 hover:bg-white text-slate-950 font-black flex items-center gap-1 transition-all shadow-sm active:scale-95 text-[11px] sm:text-xs shrink-0" title="تدوير الصفحة / الصورة 90 درجة">
+                <i class="fa-solid fa-rotate text-blue-700 text-xs"></i>
+                <span class="text-[11px]">تدوير</span>
+                <span id="rotationAngleBadge" class="text-[10px] bg-blue-100 text-blue-800 font-mono font-bold px-1 rounded hidden">90°</span>
+              </button>
+              <button type="button" onclick="adjustSheetZoom(-150)" class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-white/70 hover:bg-white flex items-center justify-center font-black text-xs sm:text-sm shrink-0" title="تصغير العرض">-</button>
+              <span id="zoomPercentBadge" class="text-[10px] sm:text-[11px] font-mono px-0.5 sm:px-1 font-bold text-slate-900 shrink-0">100%</span>
+              <button type="button" onclick="adjustSheetZoom(150)" class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-white/70 hover:bg-white flex items-center justify-center font-black text-xs sm:text-sm shrink-0" title="تكبير العرض">+</button>
+            </div>
+
+            <!-- ➕ إضافة مربع نص -->
+            <button id="addBoxModalBtn" onclick="addDraggableBoxToCurrentPage()" class="shrink-0 bg-slate-950 hover:bg-slate-800 text-amber-300 font-black text-[11px] sm:text-xs px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl flex items-center gap-1 shadow-md transition-all active:scale-95 whitespace-nowrap">
+              <i class="fa-solid fa-plus-circle text-xs"></i>
+              <span>إضافة نص</span>
+            </button>
+
+            <!-- 🖨️ طباعة A4 -->
+            <button onclick="printSheetWithBoxes()" class="shrink-0 bg-emerald-700 hover:bg-emerald-600 text-white font-black text-[11px] sm:text-xs px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl flex items-center gap-1 shadow-md transition-all active:scale-95 whitespace-nowrap">
+              <i class="fa-solid fa-print text-xs"></i>
+              <span>طباعة A4</span>
+            </button>
+
+            <!-- 📥 تنزيل -->
+            <button type="button" id="modalDownloadBtn" onclick="handleModalDownload()" class="shrink-0 bg-white hover:bg-slate-100 text-slate-800 font-bold text-[11px] sm:text-xs px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl flex items-center gap-1 shadow-sm border border-slate-300 whitespace-nowrap" title="تنزيل الملف">
+              <i class="fa-solid fa-download text-amber-600"></i>
+              <span>تنزيل</span>
+            </button>
+          </div>
+
+          <!-- Close Button on Desktop -->
+          <button type="button" onclick="closeSheetModal()" class="hidden sm:flex shrink-0 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white font-black text-xs sm:text-sm px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-xl items-center gap-1.5 shadow-md hover:shadow-lg transition-all active:scale-95 border border-red-400/40 cursor-pointer" title="إغلاق النافذة">
+            <i class="fa-solid fa-xmark text-sm sm:text-base"></i>
+            <span>إغلاق</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick Guidance Bar -->
+      <div class="bg-amber-50 border-b border-amber-200 px-3 sm:px-4 py-1.5 text-xs text-amber-900 flex items-center justify-between" id="modalGuidanceBar">
+        <div class="flex items-center gap-2 font-bold min-w-0" id="modalTipContainer">
+          <i class="fa-solid fa-lightbulb text-amber-600 shrink-0" id="modalTipIcon"></i>
+          <span id="modalTipText" class="truncate">اضغط زر "إضافة نص"، ثم اسحبه لأي مكان في النموذج.</span>
+          <span id="scrollNoticeBadge" class="hidden bg-blue-100 text-blue-800 border border-blue-300 px-2 py-0.5 rounded-lg font-bold text-[11px] shrink-0"><i class="fa-solid fa-arrows-left-right ml-1"></i> شريط التمرير العرضي مفعّل</span>
+        </div>
+        <div class="text-[11px] text-slate-600 flex items-center gap-3 shrink-0 mr-2">
+          <span>الصفحات: <strong id="pagesCountBadge" class="text-blue-700 font-bold">1</strong></span>
+          <span id="boxesCountWrap">المربعات: <strong id="boxesCountBadge" class="text-blue-700 font-bold">0</strong></span>
+        </div>
+      </div>
+
+      <!-- Interactive Canvas Area (شاشة كاملة، شريط التمرير على اليمين) -->
+      <div class="flex-1 bg-slate-200 overflow-auto p-2 sm:p-4 select-none" id="sheetScrollArea">
+        <!-- Rendered page sheets dynamically injected here -->
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-500">
+    <p class="font-semibold text-slate-700">المفوضية العليا المستقلة للانتخابات — مكتب انتخابات محافظة البصرة © 2026</p>
+    <p class="text-[11px] text-slate-400 mt-0.5">منظومة النماذج الرسمية المبسطة لمراكز التسجيل (76 مركزاً)</p>
+  </footer>
+
+  <!-- Elegant Expressive Universal Modal (بديل رسائل وتأكيدات المتصفح الافتراضية) -->
+  <div id="appUniversalModal" class="fixed inset-0 z-[9999] bg-slate-950/80 backdrop-blur-md hidden flex items-center justify-center p-4 transition-all duration-300">
+    <div id="appModalBox" class="bg-white rounded-3xl shadow-2xl max-w-md w-full border-2 border-slate-200 overflow-hidden transform transition-all duration-300 scale-95 opacity-0 flex flex-col text-center relative">
+      
+      <!-- Top Colored Accent Strip -->
+      <div id="appModalStrip" class="h-3 w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700"></div>
+      
+      <!-- Top Close Button (Enlarged, modern, clear) -->
+      <button type="button" onclick="closeAppModal(false)" class="absolute top-5 left-5 w-8 h-8 rounded-full bg-slate-100 hover:bg-rose-100 text-slate-400 hover:text-rose-600 flex items-center justify-center transition-all shadow-sm border border-slate-200 hover:border-rose-300 active:scale-95 cursor-pointer" title="إغلاق">
+        <i class="fa-solid fa-xmark text-sm font-black"></i>
+      </button>
+
+      <div class="p-6 sm:p-7">
+        <!-- Glowing Expressive Icon Badge -->
+        <div id="appModalIconWrapper" class="w-20 h-20 rounded-3xl mx-auto mb-4 flex items-center justify-center text-4xl shadow-xl transition-all">
+          <i id="appModalIcon" class="fa-solid fa-circle-question"></i>
+        </div>
+
+        <!-- Title -->
+        <h3 id="appModalTitle" class="text-lg sm:text-xl font-black text-slate-900 mb-2 leading-tight"></h3>
+        
+        <!-- Message Content Box -->
+        <div class="bg-slate-50 border border-slate-200/90 rounded-2xl p-4 my-3 text-slate-800 text-sm font-bold leading-relaxed whitespace-pre-line text-center shadow-inner" id="appModalMessage"></div>
+
+        <!-- Action Buttons -->
+        <div class="flex items-center justify-center gap-3 mt-5" id="appModalButtons">
+          <button type="button" id="appModalCancelBtn" onclick="closeAppModal(false)" class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-black text-xs sm:text-sm border border-slate-300 transition-all active:scale-95 shadow-sm cursor-pointer">
+            إلغاء التراجع
+          </button>
+          <button type="button" id="appModalConfirmBtn" onclick="closeAppModal(true)" class="px-6 py-2.5 text-white rounded-xl font-black text-xs sm:text-sm transition-all active:scale-95 shadow-md flex items-center gap-2 cursor-pointer">
+            <span>تأكيد</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let appModalResolve = null;
+
+        // ==========================================
+    // Gatekeeper System (Unbreakable & Immediate)
+    // ==========================================
+    var activeCenter = null;
+    var gateMatchedCenter = null;
+
+    function sanitizeCenterCode(raw) {
+      if (!raw) return '';
+      var str = String(raw).trim();
+      var clean = '';
+      for (var i = 0; i < str.length; i++) {
+        var cp = str.charCodeAt(i);
+        if (cp >= 48 && cp <= 57) clean += str[i];
+        else if (cp >= 1632 && cp <= 1641) clean += String.fromCharCode(cp - 1632 + 48);
+        else if (cp >= 1776 && cp <= 1785) clean += String.fromCharCode(cp - 1776 + 48);
+      }
+      return clean.slice(0, 4);
+    }
+
+    function onGateInput(code) {
+      var input = document.getElementById('gateCenterInput');
+      var val = sanitizeCenterCode(code);
+      if (input && input.value !== val) {
+        input.value = val;
+      }
+
+      var badge = document.getElementById('gateCenterMatchBadge');
+      var btn = document.getElementById('gateSubmitBtn');
+
+      if (val.length < 4) {
+        gateMatchedCenter = null;
+        if (btn) {
+          btn.className = 'w-full bg-slate-200 text-slate-500 hover:bg-slate-300 font-black py-3.5 px-4 rounded-xl text-sm transition-all flex items-center justify-center gap-2 shadow-sm cursor-pointer';
+        }
+        if (badge) {
+          if (val.length > 0) {
+            badge.innerHTML = '<i class="fa-solid fa-circle-info text-amber-600 text-base"></i> <span>يرجى إكمال 4 أرقام لرمز المركز (' + val.length + ' من 4)</span>';
+            badge.className = 'mt-3 p-2.5 rounded-xl text-xs font-bold bg-amber-50 text-amber-800 border border-amber-300 flex items-center gap-2 justify-center';
+          } else {
+            badge.className = 'mt-3 hidden p-2.5 rounded-xl text-xs font-bold';
+          }
+        }
+        return;
+      }
+
+      // Exactly 4 digits:
+      var list = (typeof allCenters !== 'undefined' && Array.isArray(allCenters)) ? allCenters : [];
+      var match = list.find(function(c) { return String(c.code).trim() === val; });
+      if (match) {
+        gateMatchedCenter = match;
+        var tamweenPart = match.tamweenName ? ' • تموين: ' + match.tamweenName : '';
+        if (badge) {
+          badge.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-600 text-base"></i> <span>تم التعرف: <strong>' + match.name + '</strong> (رمز: ' + match.code + ')' + tamweenPart + '</span>';
+          badge.className = 'mt-3 p-2.5 rounded-xl text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-300 flex items-center gap-2 justify-center';
+        }
+      } else {
+        gateMatchedCenter = { code: val, name: 'مركز ' + val, fullName: 'مركز ' + val + ' (' + val + ')' };
+        if (badge) {
+          badge.innerHTML = '<i class="fa-solid fa-circle-check text-blue-600 text-base"></i> <span>تم اعتماد رمز المركز: <strong>' + val + '</strong></span>';
+          badge.className = 'mt-3 p-2.5 rounded-xl text-xs font-bold bg-blue-50 text-blue-800 border border-blue-200 flex items-center gap-2 justify-center';
+        }
+      }
+
+      // Turn button gold and active when 4 digits are entered!
+      if (btn) {
+        btn.className = 'w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-3.5 px-4 rounded-xl text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-amber-500/25 active:scale-95 cursor-pointer';
+      }
+    }
+
+    function openGatekeeperModal() {
+      var modal = document.getElementById('gatekeeperModal');
+      if (modal) {
+        modal.style.setProperty('display', 'flex', 'important');
+        modal.classList.remove('hidden');
+      }
+      var closeWrap = document.getElementById('gateCloseBtnWrap');
+      if (closeWrap) {
+        if (activeCenter) closeWrap.classList.remove('hidden');
+        else closeWrap.classList.add('hidden');
+      }
+      var input = document.getElementById('gateCenterInput');
+      if (input) {
+        input.value = activeCenter ? activeCenter.code : '';
+        onGateInput(input.value);
+        setTimeout(function() { input.focus(); }, 100);
+      }
+    }
+
+    function closeGatekeeperModal() {
+      var modal = document.getElementById('gatekeeperModal');
+      if (modal) {
+        modal.style.setProperty('display', 'none', 'important');
+        modal.classList.add('hidden');
+      }
+    }
+
+    function submitGatekeeper() {
+      var input = document.getElementById('gateCenterInput');
+      var entered = input ? input.value : '';
+      var val = sanitizeCenterCode(entered);
+
+      if (!val || val.length < 4) {
+        alert('⚠️ تنبيه: يرجى إدخال رقم مركز التسجيل المكوّن من 4 أرقام للمتابعة (مثال: 2928)');
+        if (input) input.focus();
+        return;
+      }
+
+      var list = (typeof allCenters !== 'undefined' && Array.isArray(allCenters)) ? allCenters : [];
+      var match = list.find(function(c) { return String(c.code).trim() === val; });
+      activeCenter = match || { code: val, name: 'مركز ' + val, fullName: 'مركز ' + val + ' (' + val + ')' };
+      gateMatchedCenter = activeCenter;
+
+      try {
+        localStorage.setItem('basra_simple_center_code', activeCenter.code);
+        localStorage.setItem('basra_simple_center_name', activeCenter.name);
+      } catch (e) {}
+
+      var codeVal = document.getElementById('centerCodeVal');
+      if (codeVal) codeVal.innerText = activeCenter.code;
+
+      if (typeof onCodeEntered === 'function') {
+        onCodeEntered(activeCenter.code);
+      }
+
+      closeGatekeeperModal();
+
+      if (typeof renderFilteredForms === 'function') {
+        renderFilteredForms();
+      }
+    }
+
+    // Auto-detect restored or autofilled values continuously
+    setInterval(function() {
+      var input = document.getElementById('gateCenterInput');
+      if (input && input.value) {
+        var clean = sanitizeCenterCode(input.value);
+        if (clean.length === 4 && (!gateMatchedCenter || gateMatchedCenter.code !== clean)) {
+          onGateInput(clean);
+        }
+      }
+    }, 250);
+
+    window.onGateInput = onGateInput;
+    window.submitGatekeeper = submitGatekeeper;
+    window.openGatekeeperModal = openGatekeeperModal;
+    window.closeGatekeeperModal = closeGatekeeperModal;
+
+
+    function showAppModal({
+      title = 'تنبيه',
+      message = '',
+      type = 'info', // 'warning', 'success', 'danger', 'info'
+      icon = null,
+      confirmText = 'حسناً',
+      cancelText = 'إلغاء',
+      isConfirm = false
+    } = {}) {
+      return new Promise((resolve) => {
+        appModalResolve = resolve;
+
+        const modal = document.getElementById('appUniversalModal');
+        const box = document.getElementById('appModalBox');
+        const strip = document.getElementById('appModalStrip');
+        const iconWrap = document.getElementById('appModalIconWrapper');
+        const iconEl = document.getElementById('appModalIcon');
+        const titleEl = document.getElementById('appModalTitle');
+        const msgEl = document.getElementById('appModalMessage');
+        const confirmBtn = document.getElementById('appModalConfirmBtn');
+        const cancelBtn = document.getElementById('appModalCancelBtn');
+
+        titleEl.innerText = title;
+        msgEl.innerText = message;
+
+        if (type === 'warning') {
+          strip.className = 'h-3 w-full bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600';
+          iconWrap.className = 'w-20 h-20 rounded-3xl mx-auto mb-4 flex items-center justify-center text-4xl shadow-xl bg-amber-100 text-amber-600 border-2 border-amber-300 shadow-amber-500/25';
+          iconEl.className = icon || 'fa-solid fa-triangle-exclamation';
+          confirmBtn.className = 'px-6 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 font-black text-xs sm:text-sm rounded-xl shadow-lg shadow-amber-500/30 transition-all active:scale-95 flex items-center gap-2 cursor-pointer';
+        } else if (type === 'success') {
+          strip.className = 'h-3 w-full bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600';
+          iconWrap.className = 'w-20 h-20 rounded-3xl mx-auto mb-4 flex items-center justify-center text-4xl shadow-xl bg-emerald-100 text-emerald-600 border-2 border-emerald-300 shadow-emerald-500/25';
+          iconEl.className = icon || 'fa-solid fa-circle-check';
+          confirmBtn.className = 'px-6 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-black text-xs sm:text-sm rounded-xl shadow-lg shadow-emerald-600/30 transition-all active:scale-95 flex items-center gap-2 cursor-pointer';
+        } else if (type === 'danger') {
+          strip.className = 'h-3 w-full bg-gradient-to-r from-rose-600 via-red-600 to-rose-700';
+          iconWrap.className = 'w-20 h-20 rounded-3xl mx-auto mb-4 flex items-center justify-center text-4xl shadow-xl bg-rose-100 text-rose-600 border-2 border-rose-300 shadow-rose-500/25';
+          iconEl.className = icon || 'fa-solid fa-trash-can';
+          confirmBtn.className = 'px-6 py-2.5 bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700 text-white font-black text-xs sm:text-sm rounded-xl shadow-lg shadow-rose-600/30 transition-all active:scale-95 flex items-center gap-2 cursor-pointer';
+        } else {
+          strip.className = 'h-3 w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700';
+          iconWrap.className = 'w-20 h-20 rounded-3xl mx-auto mb-4 flex items-center justify-center text-4xl shadow-xl bg-blue-100 text-blue-600 border-2 border-blue-300 shadow-blue-500/25';
+          iconEl.className = icon || 'fa-solid fa-circle-info';
+          confirmBtn.className = 'px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-black text-xs sm:text-sm rounded-xl shadow-lg shadow-blue-600/30 transition-all active:scale-95 flex items-center gap-2 cursor-pointer';
+        }
+
+        confirmBtn.innerHTML = `<span>${confirmText}</span>`;
+        cancelBtn.innerText = cancelText;
+
+        if (isConfirm) {
+          cancelBtn.classList.remove('hidden');
+        } else {
+          cancelBtn.classList.add('hidden');
+        }
+
+        modal.classList.remove('hidden');
+        requestAnimationFrame(() => {
+          box.classList.remove('scale-95', 'opacity-0');
+          box.classList.add('scale-100', 'opacity-100');
+        });
+      });
+    }
+
+    function closeAppModal(result) {
+      const modal = document.getElementById('appUniversalModal');
+      const box = document.getElementById('appModalBox');
+      if (!modal || modal.classList.contains('hidden')) return;
+
+      box.classList.remove('scale-100', 'opacity-100');
+      box.classList.add('scale-95', 'opacity-0');
+      setTimeout(() => {
+        modal.classList.add('hidden');
+        if (appModalResolve) {
+          appModalResolve(Boolean(result));
+          appModalResolve = null;
+        }
+      }, 180);
+    }
+
+    // Override native alert to use our beautiful modal
+    window.alert = function(msg) {
+      showAppModal({
+        title: 'تنبيه النظام',
+        message: String(msg),
+        type: 'info',
+        confirmText: 'حسناً',
+        isConfirm: false
+      });
+    };
+
+    
+    function normalizePath(p) {
+      if (!p) return '';
+      if (p.startsWith('/sheets/')) return './sheets/' + p.substring(8);
+      if (p.startsWith('/uploads/')) return './uploads/' + p.substring(9);
+      if (p.startsWith('/')) return '.' + p;
+      return p;
+    }
+
+    // ================= UNIVERSAL OFFICE (DOC / DOCX / XLS / XLSX) & PDF IN-BROWSER SHEET RENDERER =================
+    async function renderOfficeBufferToDataUrls(arrayBuffer, ext, formTitle) {
+      const cleanExt = (ext || '').toLowerCase().replace(/^\./, '');
+      const titleText = formTitle || 'نموذج رسمي - مكتب انتخابات محافظة البصرة';
+
+      // Helper to wrap text lines on a 2D canvas
+      function wrapCanvasText(ctx, text, maxWidth) {
+        if ((text || '').includes('(') && (text || '').includes(')')) return [text];
+        const words = (text || '').split(/\s+/);
+        const lines = [];
+        let current = '';
+        for (let i = 0; i < words.length; i++) {
+          const w = words[i];
+          const test = current ? (current + ' ' + w) : w;
+          if (ctx.measureText(test).width > maxWidth && current) {
+            lines.push(current);
+            current = w;
+          } else {
+            current = test;
+          }
+        }
+        if (current) lines.push(current);
+        return lines.length > 0 ? lines : [''];
+      }
+
+      // Helper to render structured paragraphs/blocks onto A4 canvases (1240 x 1754 px)
+      function renderParagraphsToA4Canvases(paragraphs, isSpreadsheet, gridRows) {
+        const pageW = isSpreadsheet ? 1754 : 1240;
+        const pageH = isSpreadsheet ? 1240 : 1754;
+        const marginX = 95;
+        const contentW = pageW - (marginX * 2);
+
+        const createPageCanvas = () => {
+          const c = document.createElement('canvas');
+          c.width = pageW;
+          c.height = pageH;
+          const ctx = c.getContext('2d');
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, pageW, pageH);
+
+          // Official IHEC Header
+          ctx.direction = 'rtl';
+          ctx.textAlign = 'center';
+          ctx.fillStyle = '#0f172a';
+          ctx.font = 'bold 24px "Cairo", "Traditional Arabic", serif';
+          ctx.fillText('جمهورية العراق', pageW / 2, 65);
+          ctx.fillStyle = '#1e3a8a';
+          ctx.font = 'bold 28px "Cairo", "Traditional Arabic", serif';
+          ctx.fillText('المفوضية العليا المستقلة للانتخابات', pageW / 2, 102);
+          ctx.fillStyle = '#334155';
+          ctx.font = 'bold 18px "Cairo", "Traditional Arabic", sans-serif';
+          ctx.fillText('The Independent High Electoral Commission', pageW / 2, 132);
+
+          // Right Header
+          ctx.textAlign = 'right';
+          ctx.fillStyle = '#0f172a';
+          ctx.font = 'bold 24px "Cairo", "Traditional Arabic", serif';
+          ctx.fillText('مكتب انتخابات', pageW - marginX, 78);
+          ctx.fillText('محافظة البصرة', pageW - marginX, 114);
+
+          // Left Header
+          ctx.textAlign = 'right';
+          ctx.font = 'bold 20px "Cairo", "Traditional Arabic", serif';
+          ctx.fillText('العدد /', marginX + 180, 78);
+          ctx.fillText('التاريخ /', marginX + 180, 114);
+
+          // Header divider line
+          ctx.strokeStyle = '#0f172a';
+          ctx.lineWidth = 4;
+          ctx.beginPath();
+          ctx.moveTo(marginX, 155);
+          ctx.lineTo(pageW - marginX, 155);
+          ctx.stroke();
+
+          return { canvas: c, ctx, y: 210 };
+        };
+
+        if (isSpreadsheet && gridRows && gridRows.length > 0) {
+          const pages = [];
+          let cur = createPageCanvas();
+          pages.push(cur.canvas);
+
+          // Title
+          cur.ctx.direction = 'rtl';
+          cur.ctx.textAlign = 'center';
+          cur.ctx.fillStyle = '#0f172a';
+          cur.ctx.font = 'bold 28px "Cairo", "Traditional Arabic", serif';
+          cur.ctx.fillText(titleText, pageW / 2, cur.y);
+          cur.y += 45;
+
+          const nonEmptyRows = gridRows.filter(r => Array.isArray(r) && r.some(cell => String(cell || '').trim() !== ''));
+          const maxCols = Math.min(12, Math.max(1, ...nonEmptyRows.map(r => r.length)));
+          const colW = contentW / maxCols;
+          const rowH = 44;
+
+          for (let rIdx = 0; rIdx < nonEmptyRows.length; rIdx++) {
+            if (cur.y + rowH > pageH - 80) {
+              cur = createPageCanvas();
+              pages.push(cur.canvas);
+            }
+            const row = nonEmptyRows[rIdx];
+            const isHeader = rIdx === 0;
+            for (let cIdx = 0; cIdx < maxCols; cIdx++) {
+              const cellX = pageW - marginX - ((cIdx + 1) * colW);
+              cur.ctx.fillStyle = isHeader ? '#f1f5f9' : '#ffffff';
+              cur.ctx.fillRect(cellX, cur.y, colW, rowH);
+              cur.ctx.strokeStyle = '#64748b';
+              cur.ctx.lineWidth = 1.5;
+              cur.ctx.strokeRect(cellX, cur.y, colW, rowH);
+
+              const val = String(row[cIdx] !== undefined && row[cIdx] !== null ? row[cIdx] : '').trim();
+              if (val) {
+                cur.ctx.fillStyle = '#0f172a';
+                cur.ctx.font = (isHeader ? 'bold 18px ' : 'bold 16px ') + '"Cairo", "Traditional Arabic", sans-serif';
+                cur.ctx.textAlign = 'center';
+                cur.ctx.fillText(val.substring(0, 35), cellX + (colW / 2), cur.y + 28);
+              }
+            }
+            cur.y += rowH;
+          }
+          return pages.map(c => c.toDataURL('image/png'));
+        }
+
+        // Word Document (.doc / .docx) layout
+        const pages = [];
+        let cur = createPageCanvas();
+        pages.push(cur.canvas);
+
+        cur.ctx.direction = 'rtl';
+        for (let i = 0; i < paragraphs.length; i++) {
+          const p = paragraphs[i];
+          const text = (p.text || '').trim();
+          if (!text) {
+            cur.y += 18;
+            continue;
+          }
+
+          if (cur.y > pageH - 120) {
+            cur = createPageCanvas();
+            pages.push(cur.canvas);
+          }
+
+          if (p.type === 'subject') {
+            cur.y += 15;
+            cur.ctx.textAlign = 'center';
+            cur.ctx.fillStyle = '#0f172a';
+            cur.ctx.font = 'bold 32px "Cairo", "Traditional Arabic", serif';
+            cur.ctx.fillText(text, pageW / 2, cur.y);
+            cur.y += 55;
+          } else if (p.type === 'addressee') {
+            cur.ctx.textAlign = 'right';
+            cur.ctx.fillStyle = '#0f172a';
+            cur.ctx.font = 'bold 28px "Cairo", "Traditional Arabic", serif';
+            cur.ctx.fillText(text, pageW - marginX, cur.y);
+            cur.y += 48;
+          } else if (p.type === 'signatures_dual') {
+            // Two-column signature block (right & left)
+            cur.y = Math.max(cur.y + 60, pageH - 420);
+            cur.ctx.textAlign = 'right';
+            cur.ctx.fillStyle = '#0f172a';
+            cur.ctx.font = 'bold 25px "Cairo", "Traditional Arabic", serif';
+            const rightLines = p.rightLines || [];
+            const leftLines = p.leftLines || [];
+            const maxL = Math.max(rightLines.length, leftLines.length);
+            for (let k = 0; k < maxL; k++) {
+              if (rightLines[k]) {
+                cur.ctx.fillText(rightLines[k], pageW - marginX, cur.y);
+              }
+              if (leftLines[k]) {
+                cur.ctx.fillText(leftLines[k], marginX + 380, cur.y);
+              }
+              cur.y += 50;
+            }
+          } else if (p.type === 'note') {
+            cur.y += 20;
+            cur.ctx.textAlign = 'right';
+            cur.ctx.fillStyle = '#1e293b';
+            cur.ctx.font = 'bold 22px "Cairo", "Traditional Arabic", serif';
+            cur.ctx.fillText(text, pageW - marginX, cur.y);
+            cur.y += 42;
+          } else {
+            cur.ctx.textAlign = 'right';
+            cur.ctx.fillStyle = '#0f172a';
+            cur.ctx.font = 'bold 27px "Cairo", "Traditional Arabic", serif';
+            const wrapped = wrapCanvasText(cur.ctx, text, contentW);
+            for (let w = 0; w < wrapped.length; w++) {
+              if (cur.y > pageH - 100) {
+                cur = createPageCanvas();
+                pages.push(cur.canvas);
+              }
+              cur.ctx.fillText(wrapped[w], pageW - marginX, cur.y);
+              cur.y += 54;
+            }
+          }
+        }
+
+        return pages.map(c => c.toDataURL('image/png'));
+      }
+
+      // 1. Excel (.xlsx / .xls) via SheetJS
+      if ((cleanExt === 'xlsx' || cleanExt === 'xls') && window.XLSX) {
+        try {
+          const wb = XLSX.read(arrayBuffer, { type: 'array' });
+          const firstSheetName = wb.SheetNames[0];
+          const ws = wb.Sheets[firstSheetName];
+          const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+          if (rows && rows.length > 0) {
+            return renderParagraphsToA4Canvases([], true, rows);
+          }
+        } catch (e) {
+          console.warn('SheetJS Excel render warning:', e);
+        }
+      }
+
+      // 2. Word (.docx) via Mammoth
+      let rawTextLines = [];
+      if (cleanExt === 'docx' && window.mammoth) {
+        try {
+          const res = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
+          if (res && res.value) {
+            rawTextLines = res.value.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+          }
+        } catch (e) {
+          console.warn('Mammoth docx extract warning:', e);
+        }
+      }
+
+      // 3. Word 97-2003 (.doc) or fallback UTF-16LE / UTF-8 stream extraction
+      if (rawTextLines.length === 0) {
+        try {
+          const uint8 = new Uint8Array(arrayBuffer);
+          const utf16Text = new TextDecoder('utf-16le', { fatal: false }).decode(uint8);
+          const matches = utf16Text.match(/[\u0600-\u06FF][\u0600-\u06FF\s0-9/:().\-ـ،*+×÷=٪%"]+/g) || [];
+          const ignoreWords = [
+            'مكتب نور البراق', 'دائرة بناء القدرات', 'Normal', 'Times New Roman', 'Microsoft Word',
+            'عادي', 'العنوان 1', 'العنوان 2', 'العنوان 3', 'العنوان', 'خط الفقرة الافتراضي',
+            'جدول عادي', 'بلا قائمة', 'رأس الصفحة', 'تذييل الصفحة', 'نص في بالون',
+            'شبكة جدول', 'جدول ويب 1', 'جدول ويب 2', 'جدول ويب 3', 'جدول أنيق', 'توكيد'
+          ];
+          for (const chunk of matches) {
+            const cleaned = chunk.replace(/\r/g, '\n').trim();
+            if (cleaned.length < 4) continue;
+            if (ignoreWords.some(w => cleaned === w)) continue;
+            const subLines = cleaned.split('\n').map(s => s.trim()).filter(Boolean);
+            for (const sl of subLines) {
+              if (ignoreWords.some(w => sl.includes(w) && sl.length < 25)) continue;
+              if (sl === 'مكتب انتخابات' || sl === 'محافظة البصرة' || sl.startsWith('العدد') || sl === 'التاريخ/') continue;
+              rawTextLines.push(sl);
+            }
+          }
+        } catch (e) {
+          console.warn('Binary .doc UTF-16LE parse warning:', e);
+        }
+      }
+
+      // Organize extracted lines into structured official form paragraphs
+      const structured = [];
+      if (rawTextLines.length === 0) {
+        structured.push({ type: 'subject', text: titleText });
+      } else {
+        let i = 0;
+        while (i < rawTextLines.length) {
+          const line = rawTextLines[i];
+          if (line.startsWith('م /') || line.startsWith('م/') || line.startsWith('الموضوع')) {
+            structured.push({ type: 'subject', text: line });
+            i++;
+          } else if (line.startsWith('السيد ') || line.startsWith('إلى /') || line.startsWith('الى /') || line.startsWith('شعبة ')) {
+            structured.push({ type: 'addressee', text: line });
+            i++;
+          } else if (line.startsWith('التوقيع')) {
+            // Collect signature block(s)
+            const sigBlock1 = [];
+            const sigBlock2 = [];
+            while (i < rawTextLines.length && !rawTextLines[i].startsWith('ملاحظة')) {
+              const curL = rawTextLines[i];
+              if (curL.startsWith('التوقيع') && sigBlock1.length > 0) {
+                // Start second signature column
+                while (i < rawTextLines.length && !rawTextLines[i].startsWith('ملاحظة')) {
+                  sigBlock2.push(rawTextLines[i]);
+                  i++;
+                }
+                break;
+              } else {
+                sigBlock1.push(curL);
+                i++;
+              }
+            }
+            structured.push({
+              type: 'signatures_dual',
+              rightLines: sigBlock1,
+              leftLines: sigBlock2
+            });
+          } else if (line.startsWith('ملاحظة')) {
+            structured.push({ type: 'note', text: line });
+            i++;
+          } else {
+            structured.push({ type: 'body', text: line });
+            i++;
+          }
+        }
+      }
+
+      return renderParagraphsToA4Canvases(structured, false, null);
+    }
+
+    async function handleSheetImgError(img, fileName, origSrc) {
+      const active = (typeof activeAdminForm !== 'undefined' ? activeAdminForm : null) || (typeof activeForm !== 'undefined' ? activeForm : null);
+      if (!img._errStep) img._errStep = 1;
+      else img._errStep++;
+
+      // Step 1: Try alternate sheet paths (local relative vs Vercel cloud)
+      if (img._errStep === 1 && origSrc) {
+        const cleanPath = (origSrc || '').replace(/^\.?\//, '');
+        if (!img.src.includes('basra-forms.vercel.app')) {
+          img.src = 'https://basra-forms.vercel.app/' + cleanPath;
+          return;
+        }
+      }
+
+      // Step 2: If it is a direct image file, try uploads folder
+      const isImgFile = ['.png', '.jpg', '.jpeg', '.webp'].some(ext => (fileName || '').toLowerCase().endsWith(ext));
+      if (isImgFile && fileName) {
+        if (img._errStep === 2) {
+          img.src = './uploads/' + fileName;
+          return;
+        }
+        if (img._errStep === 3) {
+          img.src = 'https://basra-forms.vercel.app/uploads/' + fileName;
+          return;
+        }
+      }
+
+      // Step 3: If it is a PDF file, render dynamically into img.src so text boxes stay interactive!
+      const isPdf = (active && active.fileType === 'pdf') || (fileName && fileName.toLowerCase().endsWith('.pdf'));
+      if (isPdf && window.pdfjsLib && !img._pdfRenderAttempted) {
+        img._pdfRenderAttempted = true;
+        const urlsToTry = [
+          (active && active.fileName) ? `./uploads/${active.fileName}` : `./uploads/${fileName}`,
+          `https://basra-forms.vercel.app/uploads/${(active && active.fileName) ? active.fileName : fileName}`
+        ];
+        for (const pdfUrl of urlsToTry) {
+          try {
+            const loadingTask = pdfjsLib.getDocument(pdfUrl);
+            const pdf = await loadingTask.promise;
+            const pNum = parseInt((img.id || '').replace('sheetImage_', '')) || 1;
+            const targetPageNum = Math.min(Math.max(1, pNum), pdf.numPages);
+            const page = await pdf.getPage(targetPageNum);
+            const viewport = page.getViewport({ scale: 1.8 });
+
+            const canvas = document.createElement('canvas');
+            canvas.width = viewport.width;
+            canvas.height = viewport.height;
+            const ctx = canvas.getContext('2d');
+            await page.render({ canvasContext: ctx, viewport }).promise;
+            img.src = canvas.toDataURL('image/png');
+            return;
+          } catch (pdfErr) {
+            console.warn('PDF fallback attempt warning:', pdfErr);
+          }
+        }
+      }
+
+      // Step 4: If it is an Office file (.doc, .docx, .xls, .xlsx), fetch and render onto A4 sheet image so text boxes work 100%!
+      const isOfficeFile = (active && (active.isOffice || ['docx', 'doc', 'xlsx', 'xls'].includes(active.fileType)))
+        || ['.docx', '.doc', '.xlsx', '.xls'].some(ext => (fileName || '').toLowerCase().endsWith(ext));
+      if (isOfficeFile && !img._officeRenderAttempted) {
+        img._officeRenderAttempted = true;
+        const targetFile = (active && active.fileName) ? active.fileName : fileName;
+        const ext = (active && active.fileType) ? active.fileType : (targetFile || '').split('.').pop();
+        const title = active ? active.title : '';
+        const urlsToTry = [
+          `./uploads/${targetFile}`,
+          `https://basra-forms.vercel.app/uploads/${targetFile}`
+        ];
+        for (const u of urlsToTry) {
+          try {
+            const resp = await fetch(u);
+            if (resp.ok) {
+              const buf = await resp.arrayBuffer();
+              const dataUrls = await renderOfficeBufferToDataUrls(buf, ext, title);
+              if (dataUrls && dataUrls.length > 0) {
+                const pNum = parseInt((img.id || '').replace('sheetImage_', '')) || 1;
+                img.src = dataUrls[Math.min(pNum - 1, dataUrls.length - 1)];
+                return;
+              }
+            }
+          } catch (offErr) {
+            console.warn('Office dynamic sheet render warning:', offErr);
+          }
+        }
+      }
+
+      console.warn('Could not load sheet image:', origSrc);
+    }
+
+    let allCenters = [
+  {
+    "id": 1,
+    "code": "1921",
+    "name": "الشعلة",
+    "fullName": "الشعلة (1921)",
+    "tamweenName": "الشعلة",
+    "tamweenCode": "921"
+  },
+  {
+    "id": 2,
+    "code": "2921",
+    "name": "الشعلة 2",
+    "fullName": "الشعلة 2 (2921)",
+    "tamweenName": "الشعلة",
+    "tamweenCode": "921"
+  },
+  {
+    "id": 3,
+    "code": "1922",
+    "name": "الحـسين",
+    "fullName": "الحـسين (1922)",
+    "tamweenName": "الحـسين",
+    "tamweenCode": "922"
+  },
+  {
+    "id": 4,
+    "code": "2922",
+    "name": "الحسين 2",
+    "fullName": "الحسين 2 (2922)",
+    "tamweenName": "الحسين",
+    "tamweenCode": "922"
+  },
+  {
+    "id": 5,
+    "code": "3922",
+    "name": "الحسين 3",
+    "fullName": "الحسين 3 (3922)",
+    "tamweenName": "الحسين",
+    "tamweenCode": "922"
+  },
+  {
+    "id": 6,
+    "code": "1923",
+    "name": "الخليج",
+    "fullName": "الخليج (1923)",
+    "tamweenName": "الخليج",
+    "tamweenCode": "923"
+  },
+  {
+    "id": 7,
+    "code": "2923",
+    "name": "الخليج 2",
+    "fullName": "الخليج 2 (2923)",
+    "tamweenName": "الخليج",
+    "tamweenCode": "923"
+  },
+  {
+    "id": 8,
+    "code": "1924",
+    "name": "السياب",
+    "fullName": "السياب (1924)",
+    "tamweenName": "السياب",
+    "tamweenCode": "924"
+  },
+  {
+    "id": 9,
+    "code": "2924",
+    "name": "السياب 2",
+    "fullName": "السياب 2 (2924)",
+    "tamweenName": "السياب",
+    "tamweenCode": "924"
+  },
+  {
+    "id": 10,
+    "code": "1925",
+    "name": "الاصـمعى",
+    "fullName": "الاصـمعى (1925)",
+    "tamweenName": "الاصـمعى",
+    "tamweenCode": "925"
+  },
+  {
+    "id": 11,
+    "code": "2925",
+    "name": "الاصمعي 2",
+    "fullName": "الاصمعي 2 (2925)",
+    "tamweenName": "الاصمعي",
+    "tamweenCode": "925"
+  },
+  {
+    "id": 12,
+    "code": "1926",
+    "name": "الموفقية",
+    "fullName": "الموفقية (1926)",
+    "tamweenName": "الموفقية",
+    "tamweenCode": "926"
+  },
+  {
+    "id": 13,
+    "code": "2926",
+    "name": "الموفقية 2",
+    "fullName": "الموفقية 2 (2926)",
+    "tamweenName": "الموفقية",
+    "tamweenCode": "926"
+  },
+  {
+    "id": 14,
+    "code": "1927",
+    "name": "الفراهيدى",
+    "fullName": "الفراهيدى (1927)",
+    "tamweenName": "الفراهيدى",
+    "tamweenCode": "927"
+  },
+  {
+    "id": 15,
+    "code": "2927",
+    "name": "الفراهيدى 2",
+    "fullName": "الفراهيدى 2 (2927)",
+    "tamweenName": "الفراهيدى",
+    "tamweenCode": "927"
+  },
+  {
+    "id": 16,
+    "code": "1928",
+    "name": "شط العرب",
+    "fullName": "شط العرب (1928)",
+    "tamweenName": "شط العرب",
+    "tamweenCode": "928"
+  },
+  {
+    "id": 17,
+    "code": "2928",
+    "name": "شط العرب 2",
+    "fullName": "شط العرب 2 (2928)",
+    "tamweenName": "شط العرب",
+    "tamweenCode": "928"
+  },
+  {
+    "id": 18,
+    "code": "3928",
+    "name": "شط العرب 3",
+    "fullName": "شط العرب 3 (3928)",
+    "tamweenName": "شط العرب",
+    "tamweenCode": "928"
+  },
+  {
+    "id": 19,
+    "code": "1929",
+    "name": "البصرة القديمة",
+    "fullName": "البصرة القديمة (1929)",
+    "tamweenName": "البصرة القديمة",
+    "tamweenCode": "929"
+  },
+  {
+    "id": 20,
+    "code": "2929",
+    "name": "البصرة القديمة 2",
+    "fullName": "البصرة القديمة 2 (2929)",
+    "tamweenName": "البصرة القديمة",
+    "tamweenCode": "929"
+  },
+  {
+    "id": 21,
+    "code": "1930",
+    "name": "العشـار",
+    "fullName": "العشـار (1930)",
+    "tamweenName": "العشـار",
+    "tamweenCode": "930"
+  },
+  {
+    "id": 22,
+    "code": "2930",
+    "name": "العشـار 2",
+    "fullName": "العشـار 2 (2930)",
+    "tamweenName": "العشـار",
+    "tamweenCode": "930"
+  },
+  {
+    "id": 23,
+    "code": "1931",
+    "name": "الجمهـورية",
+    "fullName": "الجمهـورية (1931)",
+    "tamweenName": "الجمهـورية",
+    "tamweenCode": "931"
+  },
+  {
+    "id": 24,
+    "code": "2931",
+    "name": "الجمهـورية 2",
+    "fullName": "الجمهـورية 2 (2931)",
+    "tamweenName": "الجمهـورية",
+    "tamweenCode": "931"
+  },
+  {
+    "id": 25,
+    "code": "1932",
+    "name": "المهـلب",
+    "fullName": "المهـلب (1932)",
+    "tamweenName": "المهـلب",
+    "tamweenCode": "932"
+  },
+  {
+    "id": 26,
+    "code": "2932",
+    "name": "المهـلب 2",
+    "fullName": "المهـلب 2 (2932)",
+    "tamweenName": "المهـلب",
+    "tamweenCode": "932"
+  },
+  {
+    "id": 27,
+    "code": "1933",
+    "name": "مـوسى بن نصير",
+    "fullName": "مـوسى بن نصير (1933)",
+    "tamweenName": "مـوسى بن نصير",
+    "tamweenCode": "933"
+  },
+  {
+    "id": 28,
+    "code": "2933",
+    "name": "مـوسى بن نصير 2",
+    "fullName": "مـوسى بن نصير 2 (2933)",
+    "tamweenName": "مـوسى بن نصير",
+    "tamweenCode": "933"
+  },
+  {
+    "id": 29,
+    "code": "3933",
+    "name": "مـوسى بن نصير 3",
+    "fullName": "مـوسى بن نصير 3 (3933)",
+    "tamweenName": "مـوسى بن نصير",
+    "tamweenCode": "933"
+  },
+  {
+    "id": 30,
+    "code": "1934",
+    "name": "الهادي",
+    "fullName": "الهادي (1934)",
+    "tamweenName": "الهادي",
+    "tamweenCode": "934"
+  },
+  {
+    "id": 31,
+    "code": "2934",
+    "name": "الهادي 2",
+    "fullName": "الهادي 2 (2934)",
+    "tamweenName": "الهادي",
+    "tamweenCode": "934"
+  },
+  {
+    "id": 32,
+    "code": "3934",
+    "name": "الهادي 3",
+    "fullName": "الهادي 3 (3934)",
+    "tamweenName": "الهادي",
+    "tamweenCode": "934"
+  },
+  {
+    "id": 33,
+    "code": "1935",
+    "name": "المعقـل",
+    "fullName": "المعقـل (1935)",
+    "tamweenName": "المعقـل",
+    "tamweenCode": "935"
+  },
+  {
+    "id": 34,
+    "code": "2935",
+    "name": "المعقـل 2",
+    "fullName": "المعقـل 2 (2935)",
+    "tamweenName": "المعقـل",
+    "tamweenCode": "935"
+  },
+  {
+    "id": 35,
+    "code": "1936",
+    "name": "التاميم",
+    "fullName": "التاميم (1936)",
+    "tamweenName": "التاميم",
+    "tamweenCode": "936"
+  },
+  {
+    "id": 36,
+    "code": "2936",
+    "name": "التاميم 2",
+    "fullName": "التاميم 2 (2936)",
+    "tamweenName": "التاميم",
+    "tamweenCode": "936"
+  },
+  {
+    "id": 37,
+    "code": "1937",
+    "name": "أنـس",
+    "fullName": "أنـس (1937)",
+    "tamweenName": "أنـس",
+    "tamweenCode": "937"
+  },
+  {
+    "id": 38,
+    "code": "2937",
+    "name": "أنـس 2",
+    "fullName": "أنـس 2 (2937)",
+    "tamweenName": "أنـس",
+    "tamweenCode": "937"
+  },
+  {
+    "id": 39,
+    "code": "3937",
+    "name": "أنـس 3",
+    "fullName": "أنـس 3 (3937)",
+    "tamweenName": "أنـس",
+    "tamweenCode": "937"
+  },
+  {
+    "id": 40,
+    "code": "1938",
+    "name": "الزبـير",
+    "fullName": "الزبـير (1938)",
+    "tamweenName": "الزبـير",
+    "tamweenCode": "938"
+  },
+  {
+    "id": 41,
+    "code": "2938",
+    "name": "الزبـير 2",
+    "fullName": "الزبـير 2 (2938)",
+    "tamweenName": "الزبـير",
+    "tamweenCode": "938"
+  },
+  {
+    "id": 42,
+    "code": "3938",
+    "name": "الزبـير 3",
+    "fullName": "الزبـير 3 (3938)",
+    "tamweenName": "الزبـير",
+    "tamweenCode": "938"
+  },
+  {
+    "id": 43,
+    "code": "1939",
+    "name": "خـور الزبير",
+    "fullName": "خـور الزبير (1939)",
+    "tamweenName": "خـور الزبير",
+    "tamweenCode": "939"
+  },
+  {
+    "id": 44,
+    "code": "1940",
+    "name": "أم قصـر",
+    "fullName": "أم قصـر (1940)",
+    "tamweenName": "أم قصـر",
+    "tamweenCode": "940"
+  },
+  {
+    "id": 45,
+    "code": "2940",
+    "name": "أم قصـر 2",
+    "fullName": "أم قصـر 2 (2940)",
+    "tamweenName": "أم قصـر",
+    "tamweenCode": "940"
+  },
+  {
+    "id": 46,
+    "code": "1941",
+    "name": "سـفوان",
+    "fullName": "سـفوان (1941)",
+    "tamweenName": "سـفوان",
+    "tamweenCode": "941"
+  },
+  {
+    "id": 47,
+    "code": "1942",
+    "name": "القـرنة",
+    "fullName": "القـرنة (1942)",
+    "tamweenName": "القـرنة",
+    "tamweenCode": "942"
+  },
+  {
+    "id": 48,
+    "code": "2942",
+    "name": "القـرنة 2",
+    "fullName": "القـرنة 2 (2942)",
+    "tamweenName": "القـرنة",
+    "tamweenCode": "942"
+  },
+  {
+    "id": 49,
+    "code": "3942",
+    "name": "القـرنة 3",
+    "fullName": "القـرنة 3 (3942)",
+    "tamweenName": "القـرنة",
+    "tamweenCode": "942"
+  },
+  {
+    "id": 50,
+    "code": "1943",
+    "name": "المدينـة",
+    "fullName": "المدينـة (1943)",
+    "tamweenName": "المدينـة",
+    "tamweenCode": "943"
+  },
+  {
+    "id": 51,
+    "code": "2943",
+    "name": "المدينـة 2",
+    "fullName": "المدينـة 2 (2943)",
+    "tamweenName": "المدينـة",
+    "tamweenCode": "943"
+  },
+  {
+    "id": 52,
+    "code": "1944",
+    "name": "طلحـة",
+    "fullName": "طلحـة (1944)",
+    "tamweenName": "طلحـة",
+    "tamweenCode": "944"
+  },
+  {
+    "id": 53,
+    "code": "2944",
+    "name": "طلحـة2",
+    "fullName": "طلحـة2 (2944)",
+    "tamweenName": "طلحـة",
+    "tamweenCode": "944"
+  },
+  {
+    "id": 54,
+    "code": "1945",
+    "name": "الهويـر",
+    "fullName": "الهويـر (1945)",
+    "tamweenName": "الهويـر",
+    "tamweenCode": "945"
+  },
+  {
+    "id": 55,
+    "code": "2945",
+    "name": "الهويـر 2",
+    "fullName": "الهويـر 2 (2945)",
+    "tamweenName": "الهويـر",
+    "tamweenCode": "945"
+  },
+  {
+    "id": 56,
+    "code": "1946",
+    "name": "الشـرش",
+    "fullName": "الشـرش (1946)",
+    "tamweenName": "الشـرش",
+    "tamweenCode": "946"
+  },
+  {
+    "id": 57,
+    "code": "2946",
+    "name": "الشـرش 2",
+    "fullName": "الشـرش 2 (2946)",
+    "tamweenName": "الشـرش",
+    "tamweenCode": "946"
+  },
+  {
+    "id": 58,
+    "code": "1947",
+    "name": "الهارثـة",
+    "fullName": "الهارثـة (1947)",
+    "tamweenName": "الهارثـة",
+    "tamweenCode": "947"
+  },
+  {
+    "id": 59,
+    "code": "2947",
+    "name": "الهارثـة 2",
+    "fullName": "الهارثـة 2 (2947)",
+    "tamweenName": "الهارثـة",
+    "tamweenCode": "947"
+  },
+  {
+    "id": 60,
+    "code": "3947",
+    "name": "الهارثـة 3",
+    "fullName": "الهارثـة 3 (3947)",
+    "tamweenName": "الهارثـة",
+    "tamweenCode": "947"
+  },
+  {
+    "id": 61,
+    "code": "1948",
+    "name": "دجلـة",
+    "fullName": "دجلـة (1948)",
+    "tamweenName": "دجلـة",
+    "tamweenCode": "948"
+  },
+  {
+    "id": 62,
+    "code": "2948",
+    "name": "دجلـة 2",
+    "fullName": "دجلـة 2 (2948)",
+    "tamweenName": "دجلـة",
+    "tamweenCode": "948"
+  },
+  {
+    "id": 63,
+    "code": "3948",
+    "name": "دجلـة 3",
+    "fullName": "دجلـة 3 (3948)",
+    "tamweenName": "دجلـة",
+    "tamweenCode": "948"
+  },
+  {
+    "id": 64,
+    "code": "4948",
+    "name": "دجلـة 4",
+    "fullName": "دجلـة 4 (4948)",
+    "tamweenName": "دجلـة",
+    "tamweenCode": "948"
+  },
+  {
+    "id": 65,
+    "code": "1949",
+    "name": "النصر",
+    "fullName": "النصر (1949)",
+    "tamweenName": "النصر",
+    "tamweenCode": "949"
+  },
+  {
+    "id": 66,
+    "code": "2949",
+    "name": "النصر 2",
+    "fullName": "النصر 2 (2949)",
+    "tamweenName": "النصر",
+    "tamweenCode": "949"
+  },
+  {
+    "id": 67,
+    "code": "3949",
+    "name": "النصر 3",
+    "fullName": "النصر 3 (3949)",
+    "tamweenName": "النصر",
+    "tamweenCode": "949"
+  },
+  {
+    "id": 68,
+    "code": "1950",
+    "name": "ابي الخصـيب",
+    "fullName": "ابي الخصـيب (1950)",
+    "tamweenName": "ابي الخصـيب",
+    "tamweenCode": "950"
+  },
+  {
+    "id": 69,
+    "code": "2950",
+    "name": "ابي الخصـيب 2",
+    "fullName": "ابي الخصـيب 2 (2950)",
+    "tamweenName": "ابي الخصـيب",
+    "tamweenCode": "950"
+  },
+  {
+    "id": 70,
+    "code": "1951",
+    "name": "الحسن البصـري",
+    "fullName": "الحسن البصـري (1951)",
+    "tamweenName": "الحسن البصـري",
+    "tamweenCode": "951"
+  },
+  {
+    "id": 71,
+    "code": "2951",
+    "name": "الحسن البصـري 2",
+    "fullName": "الحسن البصـري 2 (2951)",
+    "tamweenName": "الحسن البصـري",
+    "tamweenCode": "951"
+  },
+  {
+    "id": 72,
+    "code": "1952",
+    "name": "الفـاو",
+    "fullName": "الفـاو (1952)",
+    "tamweenName": "الفـاو",
+    "tamweenCode": "952"
+  },
+  {
+    "id": 73,
+    "code": "1953",
+    "name": "البصرة",
+    "fullName": "البصرة (1953)",
+    "tamweenName": "البصرة",
+    "tamweenCode": "953"
+  },
+  {
+    "id": 74,
+    "code": "2953",
+    "name": "البصرة 2",
+    "fullName": "البصرة 2 (2953)",
+    "tamweenName": "البصرة",
+    "tamweenCode": "953"
+  },
+  {
+    "id": 75,
+    "code": "1954",
+    "name": "القبلـة",
+    "fullName": "القبلـة (1954)",
+    "tamweenName": "القبلـة",
+    "tamweenCode": "954"
+  },
+  {
+    "id": 76,
+    "code": "2954",
+    "name": "القبلـة 2",
+    "fullName": "القبلـة 2 (2954)",
+    "tamweenName": "القبلـة",
+    "tamweenCode": "954"
+  }
+];
+    const DEFAULT_FORMS = [{"id": "form_1792961892317", "title": "نموذج الزمنية", "category": "leaves", "categoryName": "إجازات ومباشرات", "fileType": "doc", "fileName": "1792961892317____________2023.doc", "originalName": "زمنية لسنة 2023.doc", "fileSize": "357.0 KB", "uploadDate": "2026-10-25", "updatedDate": "2026-10-25", "version": "v1.0", "description": "نموذج الزمنية", "fillableTemplateId": null, "hidden": false, "downloads": 0, "pages": ["/sheets/form_1792961892317_page_1.png"], "pageCount": 1, "sheetImage": "/sheets/form_1792961892317_sheet.png", "isOffice": true}, {"id": "form_1792961847784", "title": "نموذج الخروج للواجب", "category": "leaves", "categoryName": "إجازات ومباشرات", "fileType": "doc", "fileName": "1792961847784___________________2023.doc", "originalName": "الخروج بواجب لسنة 2023.doc", "fileSize": "343.0 KB", "uploadDate": "2026-10-25", "updatedDate": "2026-10-25", "version": "v1.0", "description": "نموذج الخروج للواجب", "fillableTemplateId": null, "hidden": false, "downloads": 0, "pages": ["/sheets/form_1792961847784_page_1.png"], "pageCount": 1, "sheetImage": "/sheets/form_1792961847784_sheet.png", "isOffice": true}, {"id": "form_1792961704382", "title": "نموذج اجازة اعتيادية", "category": "leaves", "categoryName": "إجازات ومباشرات", "fileType": "doc", "fileName": "1792961704382_________________________2023.doc", "originalName": "طلب اجازة اعتيادية لسنة 2023.doc", "fileSize": "357.5 KB", "uploadDate": "2026-10-25", "updatedDate": "2026-10-25", "version": "v1.0", "description": "ترسل لوحدة شؤون المراكز - خاصة بطلب إجازة اعتيادية قصيرة من يوم إلى 3 أيام.", "fillableTemplateId": null, "hidden": false, "downloads": 0, "pages": ["/sheets/form_1792961704382_page_1.png"], "pageCount": 1, "sheetImage": "/sheets/form_1792961704382_sheet.png", "isOffice": true}, {"id": "form_1792960378733", "title": "نموذج طلب اجازة اعتيادية من 4 الى 5 ايام ترسل لمكتب انتخابات البصرة بالبريد", "category": "leaves", "categoryName": "إجازات ومباشرات", "fileType": "doc", "fileName": "1792960378733_________________________4_____5_________________________________________.doc", "originalName": "نموذج اجازة اعتيادية من 4 الى 5 ايام ترسل لمكتب انتخابات البصرة بالبريد .doc", "fileSize": "309.5 KB", "uploadDate": "2026-10-25", "updatedDate": "2026-10-25", "version": "v1.0", "description": "ترسل لمكتب انتخابات البصرة بالبريد الرسمي للمدد من 4 إلى 5 أيام.", "fillableTemplateId": null, "hidden": false, "downloads": 0, "pages": ["/sheets/form_1792960378733_page_1.png"], "pageCount": 1, "sheetImage": "/sheets/form_1792960378733_sheet.png", "isOffice": true}, {"id": "form_1792957024209", "title": "نموذج طلب اجازة من 6 ايام و اكثر  ترسل للمكتب الوطني وتؤخذ باليد لمكتب انتخابات البصرة", "category": "leaves", "categoryName": "إجازات ومباشرات", "fileType": "doc", "fileName": "1792957024209________________6_____________________________________________________________________________________________________.doc", "originalName": "نموذج اجازة من 6 ايام و اكثر  ترسل للمكتب الوطني وتؤخذ باليد لمكتب انتخابات البصرة  مع استمارة تؤخذ من مكتب المحافظه .doc", "fileSize": "303.5 KB", "uploadDate": "2026-10-25", "updatedDate": "2026-10-25", "version": "v1.0", "description": "ترفع للمكتب الوطني وتؤخذ باليد لمكتب انتخابات البصرة.", "fillableTemplateId": null, "hidden": false, "downloads": 0, "pages": ["/sheets/form_1792957024209_page_1.png"], "pageCount": 1, "sheetImage": "/sheets/form_1792957024209_sheet.png", "isOffice": true}, {"id": "form_1792790662356", "title": "نموذج المباشرة", "category": "leaves", "fileType": "docx", "fileName": "1792790662353_175922.doc", "originalName": "نموذج المباشرة.doc", "fileSize": "308.5 KB", "uploadDate": "2026-10-23", "updatedDate": "2026-10-24", "version": "v1.0", "description": "إشعار مباشرة الموظف بالدوام الرسمي بعد انتهاء مدة الإجازة.", "fillableTemplateId": null, "hidden": false, "downloads": 0, "pages": ["/sheets/form_1792790662356_page_1.png"], "pageCount": 1, "sheetImage": "/sheets/form_1792790662356_sheet.png", "isOffice": true}, {"id": "form_1792790583961", "title": "نموذج فحص ومعالجة", "category": "leaves", "fileType": "docx", "fileName": "1792790583958_932345.doc", "originalName": "نموذج فحص ومعالجة.doc", "fileSize": "309.0 KB", "uploadDate": "2026-10-23", "updatedDate": "2026-10-23", "version": "v1.0", "description": "خاص بفحص ومعالجة الموظف الذي ينوي طلب إجازة مرضية.", "fillableTemplateId": null, "hidden": false, "downloads": 0, "pages": ["/sheets/form_1792790583961_page_1.png"], "pageCount": 1, "sheetImage": "/sheets/form_1792790583961_sheet.png", "isOffice": true}, {"id": "form_1792783929926", "title": "نموذج انفكاك", "category": "leaves", "fileType": "docx", "fileName": "1792783929923_84284.docx", "originalName": "نموذج انفكاك.docx", "fileSize": "16.4 KB", "uploadDate": "2026-10-23", "updatedDate": "2026-10-23", "version": "v1.0", "description": "كتاب انفكاك موظف مركز التسجيل للتمتع بالإجازة الممنوحة.", "fillableTemplateId": null, "hidden": false, "downloads": 0, "pages": ["/sheets/form_1792783929926_page_1.png"], "pageCount": 1, "sheetImage": "/sheets/form_1792783929926_sheet.png", "isOffice": true}, {"id": "form_1792780898589", "title": "نموذج طلب اجازة خاصه", "category": "leaves", "fileType": "docx", "fileName": "1792780898579_282916.docx", "originalName": "نموذج طلب اجازة خاصه.docx", "fileSize": "13.0 KB", "uploadDate": "2026-10-23", "updatedDate": "2026-10-23", "version": "v1.0", "description": "ترسل لوحدة شؤون المراكز - خاصة بطلب إجازة اعتيادية قصيرة من يوم إلى 3 أيام.", "fillableTemplateId": null, "hidden": false, "downloads": 0, "isOffice": true, "pages": ["/sheets/form_1792780898589_page_1.png"], "pageCount": 1, "sheetImage": "/sheets/form_1792780898589_sheet.png"}, {"id": "form_09", "title": "فورمة براءة ذمة", "category": "leaves", "categoryName": "الإجازات والمباشرات وبراءة الذمة", "fileType": "pdf", "fileName": "form_09_فورمة براءة ذمة.pdf", "originalName": "فورمة براءة ذمة.pdf", "previewFile": "form_09_فورمة براءة ذمة.pdf", "fileSize": "681.8 KB", "uploadDate": "2026-10-21", "updatedDate": "2026-10-21", "version": "2026", "description": "براءة ذمة الموظف عند النقل أو الانفكاك أو إخلاء العهدة.", "fillableTemplateId": null, "downloads": 0, "sheetImage": "/sheets/form_09_sheet.png", "isOffice": false, "pages": ["/sheets/form_09_page_1.png"], "pageCount": 1, "hidden": false}, {"id": "form_11", "title": "نموذج الاخبار", "category": "cards", "categoryName": "البطاقات المفقودة وبلاغات المحكمة", "fileType": "pdf", "fileName": "form_11_نموذج الاخبار.pdf", "originalName": "نموذج الاخبار.pdf", "previewFile": "form_11_نموذج الاخبار.pdf", "fileSize": "145.2 KB", "uploadDate": "2026-10-21", "updatedDate": "2026-10-21", "version": "2026", "description": "نموذج الإخبار الرسمي عن فقدان بطاقة الناخب البايومترية.", "fillableTemplateId": null, "downloads": 0, "sheetImage": "/sheets/form_11_sheet.png", "isOffice": false, "pages": ["/sheets/form_11_page_1.png"], "pageCount": 1, "hidden": false}, {"id": "form_12", "title": "نموذج التعهد", "category": "cards", "categoryName": "البطاقات المفقودة وبلاغات المحكمة", "fileType": "pdf", "fileName": "form_12_نموذج التعهد.pdf", "originalName": "نموذج التعهد.pdf", "previewFile": "form_12_نموذج التعهد.pdf", "fileSize": "402.1 KB", "uploadDate": "2026-10-21", "updatedDate": "2026-10-21", "version": "2026", "description": "نموذج التعهد الخطي الخاص بفقدان بطاقة الناخب.", "fillableTemplateId": null, "downloads": 0, "sheetImage": "/sheets/form_12_sheet.png", "isOffice": false, "pages": ["/sheets/form_12_page_1.png"], "pageCount": 1, "hidden": false}, {"id": "form_17", "title": "استمارة الاستقطاع المباشر", "category": "reports", "categoryName": "التقارير وسجلات الحضور", "fileType": "pdf", "fileName": "form_17_استمارة الاستقطاع المباشر.pdf", "originalName": "استمارة الاستقطاع المباشر.pdf", "previewFile": "form_17_استمارة الاستقطاع المباشر.pdf", "fileSize": "219.1 KB", "uploadDate": "2026-10-21", "updatedDate": "2026-10-21", "version": "2026", "description": "استمارة الاستقطاع المباشر لموظفي مراكز التسجيل.", "fillableTemplateId": null, "downloads": 0, "sheetImage": "/sheets/form_17_sheet.png", "isOffice": false, "pages": ["/sheets/form_17_page_1.png"], "pageCount": 1, "hidden": false}, {"id": "form_18", "title": "نموذج سجل حضور وانصراف 2026", "category": "reports", "categoryName": "التقارير وسجلات الحضور", "fileType": "xlsx", "fileName": "form_18_نموذج سجل حضور وانصراف 2928 2026.xlsx", "originalName": "نموذج سجل حضور وانصراف 2026.xlsx", "previewFile": "preview_18.pdf", "fileSize": "12.0 KB", "uploadDate": "2026-10-21", "updatedDate": "2026-10-23", "version": "2026", "description": "سجل توثيق أوقات الحضور والانصراف والتواقيع اليومية بالمركز.", "fillableTemplateId": null, "downloads": 1, "sheetImage": "/sheets/form_18_sheet.png", "isOffice": true, "pages": ["/sheets/form_18_page_1.png", "/sheets/form_18_page_2.png", "/sheets/form_18_page_3.png"], "pageCount": 3, "hidden": false}, {"id": "form_19", "title": "تسلسل الموظفين يكتب على النماذج", "category": "reports", "categoryName": "التقارير وسجلات الحضور", "fileType": "xlsx", "fileName": "form_19_تسلسل الموظفين يكتب على النماذج.xlsx", "originalName": "تسلسل الموظفين يكتب على النماذج.xlsx", "previewFile": "preview_19.pdf", "fileSize": "28.1 KB", "uploadDate": "2026-10-21", "updatedDate": "2026-10-21", "version": "2026", "description": "قائمة تسلسل كودات وأسماء وعناوين موظفي مراكز التسجيل.", "fillableTemplateId": null, "downloads": 0, "sheetImage": "/sheets/form_19_sheet.png", "isOffice": true, "pages": ["/sheets/form_19_page_1.png", "/sheets/form_19_page_2.png", "/sheets/form_19_page_3.png", "/sheets/form_19_page_4.png", "/sheets/form_19_page_5.png", "/sheets/form_19_page_6.png", "/sheets/form_19_page_7.png", "/sheets/form_19_page_8.png", "/sheets/form_19_page_9.png", "/sheets/form_19_page_10.png", "/sheets/form_19_page_11.png", "/sheets/form_19_page_12.png", "/sheets/form_19_page_13.png"], "pageCount": 13, "hidden": false}];
+    let allForms = [...DEFAULT_FORMS];
+    // activeCenter declared at top
+    let currentCategory = 'all';
+    let activeForm = null;
+    let boxIdCounter = 0;
+    let currentVisiblePage = 1;
+
+    async function init() {
+      await Promise.all([loadCenters(), loadCategories(), loadForms()]);
+      
+      const savedCode = localStorage.getItem('basra_simple_center_code');
+      if (savedCode) {
+        onCodeEntered(savedCode);
+        closeGatekeeperModal();
+      } else {
+        openGatekeeperModal();
+      }
+      const initialGateVal = document.getElementById('gateCenterInput');
+      if (initialGateVal && initialGateVal.value) {
+        onGateInput(initialGateVal.value);
+      }
+
+      const scrollArea = document.getElementById('sheetScrollArea');
+      if (scrollArea) {
+        scrollArea.addEventListener('pointerdown', (e) => {
+          if (!e.target.closest('.drag-box') && !e.target.closest('button')) {
+            document.querySelectorAll('.drag-box').forEach(b => b.classList.remove('is-focused'));
+          }
+        });
+      }
+    }
+
+    // Gatekeeper functions (تغيير رقم المركز بالضغط المباشر على الرقم)
+    // openGatekeeperModal at top
+    function openGatekeeperModal() {
+      const modal = document.getElementById('gatekeeperModal');
+      modal.classList.remove('hidden');
+      const closeWrap = document.getElementById('gateCloseBtnWrap');
+      if (closeWrap) {
+        if (activeCenter) closeWrap.classList.remove('hidden');
+        else closeWrap.classList.add('hidden');
+      }
+      const input = document.getElementById('gateCenterInput');
+      input.value = activeCenter ? activeCenter.code : '';
+      onGateInput(input.value);
+      setTimeout(() => input.focus(), 100);
+    }
+
+    // closeGatekeeperModal at top
+    function closeGatekeeperModal() {
+      document.getElementById('gatekeeperModal').classList.add('hidden');
+    }
+
+    // Gatekeeper moved to top
+
+    let allCategories = [
+  {
+    "id": "leaves",
+    "name": "الإجازات والمباشرات وبراءة الذمة",
+    "icon": "fa-solid fa-calendar-check"
+  },
+  {
+    "id": "cards",
+    "name": "البطاقات المفقودة وبلاغات المحكمة",
+    "icon": "fa-solid fa-id-card"
+  },
+  {
+    "id": "reports",
+    "name": "التقارير وسجلات الحضور",
+    "icon": "fa-file-signature"
+  }
+];
+
+    async function loadCenters() {
+      try {
+        let res = await fetch('./data/centers.json?t=' + Date.now());
+        if (!res.ok) res = await fetch('/api/centers');
+        const data = await res.json();
+        allCenters = Array.isArray(data) ? data : (data.centers || []);
+        // Re-evaluate gate input in case user entered digits before load finished
+        const input = document.getElementById('gateCenterInput');
+        if (input && input.value) onGateInput(input.value);
+      } catch (e) {
+        try {
+          const res = await fetch('/api/centers');
+          const data = await res.json();
+          allCenters = Array.isArray(data) ? data : (data.centers || []);
+          const input = document.getElementById('gateCenterInput');
+          if (input && input.value) onGateInput(input.value);
+        } catch (err) {
+          console.error('loadCenters error:', err);
+        }
+      }
+    }
+
+    function isFormInCategory(f, catId) {
+      if (!f || !catId || catId === 'all') return true;
+      if (f.category === catId) return true;
+      if ((catId === 'cards' || catId === 'legal') && (f.category === 'cards' || f.category === 'legal')) return true;
+      if ((catId === 'reports' || catId === 'voters') && (f.category === 'reports' || f.category === 'voters')) return true;
+      return false;
+    }
+
+    function renderCategoryTabs() {
+      const container = document.getElementById('categoryTabs');
+      if (!container) return;
+
+      let html = `
+        <button type="button" onclick="filterCategory('all')" data-cat="all" class="cat-pill ${currentCategory === 'all' ? 'active bg-amber-500 text-slate-950 font-black' : 'bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold'} px-4 py-2 rounded-xl text-xs sm:text-sm transition-all shadow-sm cursor-pointer">
+          الكل (${allForms.length})
+        </button>
+      `;
+
+      allCategories.forEach(cat => {
+        const count = allForms.filter(f => isFormInCategory(f, cat.id)).length;
+        const isActive = currentCategory === cat.id;
+        const iconCls = (cat.icon || 'fa-folder').includes('fa-solid') || (cat.icon || '').includes('fa-regular') ? cat.icon : ('fa-solid ' + (cat.icon || 'fa-folder'));
+        html += `
+          <button type="button" onclick="filterCategory('${cat.id}')" data-cat="${cat.id}" class="cat-pill ${isActive ? 'active bg-amber-500 text-slate-950 font-black' : 'bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold'} px-4 py-2 rounded-xl text-xs sm:text-sm transition-all whitespace-nowrap flex items-center gap-1.5 shadow-sm cursor-pointer">
+            <i class="${iconCls} ${isActive ? 'text-slate-950' : 'text-amber-600'}"></i>
+            <span>${cat.name}</span>
+            <span class="text-[11px] opacity-75">(${count})</span>
+          </button>
+        `;
+      });
+
+      container.innerHTML = html;
+    }
+
+    async function loadCategories() {
+      try {
+        let res = null;
+        try {
+          res = await fetch('/api/sync?type=categories&t=' + Date.now(), { cache: 'no-store' });
+        } catch (e) {}
+
+        if (!res || !res.ok) {
+          try {
+            res = await fetch('./data/categories.json?t=' + Date.now(), { cache: 'no-store' });
+          } catch (e) {}
+        }
+
+        if (!res || !res.ok) {
+          try {
+            res = await fetch('https://basra-forms.vercel.app/data/categories.json?t=' + Date.now(), { cache: 'no-store' });
+          } catch (e) {}
+        }
+
+        if (res && res.ok) {
+          const data = await res.json();
+          const list = Array.isArray(data) ? data : (data.categories || []);
+          if (list && list.length > 0) {
+            allCategories = list;
+          }
+        }
+      } catch (e) {
+        console.warn('Fallback loading categories:', e);
+      }
+      renderCategoryTabs();
+    }
+
+    async function loadForms() {
+      try {
+        let res = null;
+        try {
+          res = await fetch('./data/forms.json?t=' + Date.now());
+        } catch (e) {}
+
+        if (!res || !res.ok) {
+          try {
+            res = await fetch('/api/forms');
+          } catch (e) {}
+        }
+
+        if (!res || !res.ok) {
+          try {
+            res = await fetch('https://basra-forms.vercel.app/api/sync?type=forms&t=' + Date.now());
+          } catch (e) {}
+        }
+
+        if (res && res.ok) {
+          const data = await res.json();
+          let list = Array.isArray(data) ? data : (data.forms || []);
+          list = list.filter(f => !f.hidden);
+          if (list && list.length > 0) {
+            allForms = list;
+          }
+        }
+      } catch (e) {
+        console.warn('loadForms network fallback:', e);
+      }
+      renderCategoryTabs();
+      renderFilteredForms();
+    }
+
+    function onCodeEntered(code) {
+      const val = (code || '').trim();
+      const strip = document.getElementById('activeCenterStrip');
+      const codeVal = document.getElementById('centerCodeVal');
+
+      if (!val || allCenters.length === 0) {
+        strip.classList.add('hidden');
+        if (codeVal) codeVal.innerText = '--';
+        activeCenter = null;
+        localStorage.removeItem('basra_simple_center_code');
+        localStorage.removeItem('basra_simple_center_name');
+        return;
+      }
+
+      const match = allCenters.find(c => c.code === val);
+      if (match) {
+        activeCenter = match;
+        localStorage.setItem('basra_simple_center_code', match.code);
+        localStorage.setItem('basra_simple_center_name', match.name);
+        if (codeVal) codeVal.innerText = match.code;
+        document.getElementById('stripCenterName').innerText = `مركز تسجيل ${match.name} (رمز: ${match.code})`;
+        document.getElementById('stripTamween').innerText = match.tamweenName ? `تموين: ${match.tamweenName}` : '';
+        strip.classList.remove('hidden');
+        renderFilteredForms();
+      } else {
+        strip.classList.add('hidden');
+        if (codeVal) codeVal.innerText = '--';
+        activeCenter = null;
+      }
+    }
+
+    function filterCategory(cat) {
+      currentCategory = cat;
+      renderCategoryTabs();
+      renderFilteredForms();
+    }
+
+    // Native Windows "Save As" file picker with exact original filename as default
+    async function downloadFileWithPicker(downloadUrl, originalFileName) {
+      if (window.showSaveFilePicker) {
+        try {
+          const dotIdx = originalFileName.lastIndexOf('.');
+          const ext = dotIdx !== -1 ? originalFileName.substring(dotIdx).toLowerCase() : '';
+
+          let mime = 'application/octet-stream';
+          if (ext === '.docx') mime = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+          else if (ext === '.doc') mime = 'application/msword';
+          else if (ext === '.xlsx') mime = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+          else if (ext === '.xls') mime = 'application/vnd.ms-excel';
+          else if (ext === '.pdf') mime = 'application/pdf';
+          else if (ext === '.jpg' || ext === '.jpeg') mime = 'image/jpeg';
+          else if (ext === '.png') mime = 'image/png';
+
+          const fileHandle = await window.showSaveFilePicker({
+            suggestedName: originalFileName,
+            types: [{
+              description: 'ملف النموذج الأصلي',
+              accept: { [mime]: [ext] }
+            }]
+          });
+
+          const res = await fetch(normalizePath(downloadUrl));
+          const blob = await res.blob();
+          const writable = await fileHandle.createWritable();
+          await writable.write(blob);
+          await writable.close();
+          return;
+        } catch (err) {
+          if (err.name === 'AbortError') return; // User cancelled
+          console.warn('showSaveFilePicker fallback:', err);
+        }
+      }
+
+      // Fallback if browser doesn't support showSaveFilePicker
+      const a = document.createElement('a');
+      a.href = normalizePath(downloadUrl);
+      a.download = originalFileName;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    }
+
+    function getFormDownloadName(form) {
+      if (!form) return 'ط§ظ„ظ†ظ…ظˆط°ط¬.docx';
+      let ext = 'docx';
+      if (form.fileName && form.fileName.includes('.')) {
+        ext = form.fileName.split('.').pop().toLowerCase();
+      } else if (form.fileType) {
+        ext = form.fileType.replace(/^\./, '').toLowerCase();
+      }
+      let cleanTitle = (form.title || 'ط§ظ„ظ†ظ…ظˆط°ط¬').trim();
+      cleanTitle = cleanTitle.replace(/\.(docx?|xlsx?|pdf|png|jpe?g)$/i, '');
+      return `${cleanTitle}.${ext}`;
+    }
+
+    function downloadFormFile(formId) {
+      const f = allForms.find(item => item.id === formId);
+      if (!f) return;
+      trackActivity(f.id, f.title, 'download');
+      const downloadName = getFormDownloadName(f);
+      const downloadUrl = f.fileName ? `./uploads/${encodeURIComponent(f.fileName)}` : `/api/forms/${f.id}/download`;
+      downloadFileWithPicker(downloadUrl, downloadName);
+    }
+
+    function handleModalDownload() {
+      if (!activeForm) return;
+      trackActivity(activeForm.id, activeForm.title, 'download');
+      const downloadName = getFormDownloadName(activeForm);
+      const downloadUrl = activeForm.fileName ? `./uploads/${encodeURIComponent(activeForm.fileName)}` : `/api/forms/${activeForm.id}/download`;
+      downloadFileWithPicker(downloadUrl, downloadName);
+    }
+
+    // Track activity in backend, cloud, and localStorage for accurate admin oversight
+    async function trackActivity(formId, formTitle, action) {
+      try {
+        let centerCode = activeCenter ? activeCenter.code : (localStorage.getItem('basra_simple_center_code') || 'غير محدد');
+        let centerName = activeCenter ? activeCenter.name : (localStorage.getItem('basra_simple_center_name') || 'غير محدد');
+
+        if (centerCode && centerCode !== 'غير محدد' && typeof allCenters !== 'undefined' && Array.isArray(allCenters)) {
+          const found = allCenters.find(c => String(c.code).trim() === String(centerCode).trim());
+          if (found && found.name) centerName = found.name;
+        }
+
+        const now = new Date();
+        let formattedTime = '';
+        try {
+          formattedTime = new Intl.DateTimeFormat('ar-IQ', {
+            timeZone: 'Asia/Baghdad',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: true
+          }).format(now);
+        } catch (e) {
+          formattedTime = now.toLocaleString('ar-IQ');
+        }
+
+        const entry = {
+          id: 'act_' + Date.now() + '_' + Math.round(Math.random() * 1000),
+          timestamp: now.toISOString(),
+          formattedTime: formattedTime,
+          centerCode: centerCode,
+          centerName: centerName,
+          formId: formId || '',
+          formTitle: formTitle || '',
+          action: action || 'view'
+        };
+
+        // 1. Update local form download counter if action is download
+        if (action === 'download' && formId && Array.isArray(allForms)) {
+          const fObj = allForms.find(item => item.id === formId);
+          if (fObj) fObj.downloads = (fObj.downloads || 0) + 1;
+        }
+
+        // 2. Store in localStorage so local admin.html on the same machine sees it immediately
+        try {
+          const localLogsRaw = localStorage.getItem('basra_shared_activity_logs');
+          const localLogs = localLogsRaw ? JSON.parse(localLogsRaw) : [];
+          localLogs.unshift(entry);
+          if (localLogs.length > 2000) localLogs.length = 2000;
+          localStorage.setItem('basra_shared_activity_logs', JSON.stringify(localLogs));
+        } catch (lsErr) {}
+
+        // 3. Send to local server if running (localhost:3000)
+        fetch('http://localhost:3000/api/activity', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(entry),
+          keepalive: true
+        }).catch(() => {});
+
+        // 4. Send to Cloud Sync API so online admin sees all 76 centers' activities & downloads
+        const cloudUrl = window.location.hostname.includes('vercel.app')
+          ? '/api/sync'
+          : 'https://basra-forms.vercel.app/api/sync';
+        fetch(cloudUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ activityEntry: entry }),
+          keepalive: true
+        }).catch(() => {});
+      } catch (e) {
+        // Silently ignore
+      }
+    }
+
+    // Open Word / Excel directly in Office App
+    function openOfficeApp(formId) {
+      const f = allForms.find(item => item.id === formId);
+      if (!f) return;
+
+      trackActivity(f.id, f.title, 'office');
+
+      const centerCode = activeCenter ? activeCenter.code : '';
+      const centerName = activeCenter ? encodeURIComponent(activeCenter.name) : '';
+      const directDownloadUrl = `/api/forms/${f.id}/download?centerCode=${centerCode}&centerName=${centerName}`;
+      const fileUrl = new URL('./uploads/' + encodeURIComponent(f.fileName), window.location.href).href;
+
+      let officeProtocol = '';
+      if (f.fileType === 'xlsx') {
+        officeProtocol = `ms-excel:ofe|u|${fileUrl}`;
+      } else {
+        officeProtocol = `ms-word:ofe|u|${fileUrl}`;
+      }
+
+      // Try launching MS Office protocol link
+      const link = document.createElement('a');
+      link.href = officeProtocol;
+      link.click();
+
+      // Also trigger file download as reliable fallback
+      setTimeout(() => {
+        const dl = document.createElement('a');
+        dl.href = directDownloadUrl;
+        dl.download = f.originalName || '';
+        dl.click();
+      }, 500);
+    }
+
+    function renderFilteredForms() {
+      const q = (document.getElementById('quickSearch').value || '').trim().toLowerCase();
+      const list = document.getElementById('formsList');
+      const emptyMsg = document.getElementById('emptyMessage');
+
+      const filtered = allForms.filter(f => {
+        const matchCat = isFormInCategory(f, currentCategory);
+        const matchQ = !q || (f.title && f.title.toLowerCase().includes(q)) || (f.description && f.description.toLowerCase().includes(q));
+        return matchCat && matchQ;
+      });
+
+      if (filtered.length === 0) {
+        list.innerHTML = '';
+        emptyMsg.classList.remove('hidden');
+        return;
+      }
+      emptyMsg.classList.add('hidden');
+
+      const centerCode = activeCenter ? activeCenter.code : '';
+      const centerName = activeCenter ? encodeURIComponent(activeCenter.name) : '';
+
+      list.innerHTML = filtered.map(f => {
+        let typeBadge = '';
+        let fileIcon = '';
+        const isOffice = f.isOffice || ['docx', 'doc', 'xlsx', 'xls'].includes(f.fileType);
+
+        if (f.fileType === 'docx' || f.fileType === 'doc') {
+          typeBadge = '<span class="bg-blue-100 text-blue-800 text-xs font-bold px-2.5 py-1 rounded-lg">ملف Word</span>';
+          fileIcon = 'fa-file-word text-blue-600';
+        } else if (f.fileType === 'xlsx') {
+          typeBadge = '<span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-2.5 py-1 rounded-lg">ملف Excel</span>';
+          fileIcon = 'fa-file-excel text-emerald-600';
+        } else if (f.fileType === 'image') {
+          typeBadge = '<span class="bg-purple-100 text-purple-800 text-xs font-bold px-2.5 py-1 rounded-lg">صورة JPG</span>';
+          fileIcon = 'fa-file-image text-purple-600';
+        } else {
+          typeBadge = '<span class="bg-rose-100 text-rose-800 text-xs font-bold px-2.5 py-1 rounded-lg">ملف PDF</span>';
+          fileIcon = 'fa-file-pdf text-rose-600';
+        }
+
+        const downloadUrl = f.fileName ? ('./uploads/' + f.fileName) : (`/api/forms/${f.id}/download?centerCode=${centerCode}&centerName=${centerName}`);
+
+        let actionButtonsHtml = '';
+        if (isOffice) {
+          // Word & Excel: Equal Buttons: In-App View (50%) & Download with Picker (50%)
+          actionButtonsHtml = `
+            <button onclick="openSheetModal('${f.id}')" class="flex-1 w-1/2 bg-blue-600 hover:bg-blue-500 text-white font-black text-xs sm:text-sm py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-sm">
+              <i class="fa-regular fa-eye text-base"></i>
+              <span>عرض النموذج</span>
+            </button>
+
+            <button onclick="downloadFormFile('${f.id}')" class="flex-1 w-1/2 bg-slate-100 hover:bg-slate-200 text-slate-800 font-black text-xs sm:text-sm py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 transition-colors border border-slate-300 shadow-sm" title="تنزيل الملف واختيار موقع الحفظ باسم: ${f.originalName || f.title}">
+              <i class="fa-solid fa-download text-amber-600"></i>
+              <span>تنزيل الملف</span>
+            </button>
+          `;
+        } else {
+          // PDF & Image: Equal Buttons: View & Write & Print (50%) & Download with Picker (50%)
+          actionButtonsHtml = `
+            <button onclick="openSheetModal('${f.id}')" class="flex-1 w-1/2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs sm:text-sm py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-sm">
+              <i class="fa-regular fa-eye text-base"></i>
+              <span>عرض وكتابة وطباعة</span>
+            </button>
+
+            <button onclick="downloadFormFile('${f.id}')" class="flex-1 w-1/2 bg-slate-100 hover:bg-slate-200 text-slate-800 font-black text-xs sm:text-sm py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 transition-colors border border-slate-300 shadow-sm" title="تنزيل الملف واختيار موقع الحفظ باسم: ${f.originalName || f.title}">
+              <i class="fa-solid fa-download text-amber-600"></i>
+              <span>تنزيل الملف</span>
+            </button>
+          `;
+        }
+
+        return `
+          <div class="bg-white border-2 border-slate-200 hover:border-amber-400 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                ${typeBadge}
+                <span class="text-xs text-slate-400 font-mono">${f.fileSize}</span>
+              </div>
+
+              <div class="flex items-start gap-3 mb-2">
+                <i class="fa-solid ${fileIcon} text-2xl mt-0.5"></i>
+                <div>
+                  <h3 class="text-base font-bold text-slate-900 leading-snug">${f.title}</h3>
+                  <p class="text-xs text-slate-500 mt-1 leading-relaxed">${f.description || ''}</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Action Buttons: Exactly Equal Size (50% / 50%) -->
+            <div class="pt-4 mt-3 border-t border-slate-100 flex items-center gap-2">
+              ${actionButtonsHtml}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Open Interactive Sheet Modal for PDF & Image & Office files (يدعم التمرير لجميع الصفحات والعرض داخل البرنامج)
+    function openSheetModal(formId) {
+      activeForm = allForms.find(item => item.id === formId);
+      if (!activeForm) return;
+
+      trackActivity(activeForm.id, activeForm.title, 'view');
+
+      const isOffice = activeForm.isOffice || ['docx', 'doc', 'xlsx', 'xls'].includes(activeForm.fileType);
+
+      document.getElementById('modalSheetTitle').innerText = `عرض النموذج: ${activeForm.title}`;
+      const centerCode = activeCenter ? activeCenter.code : '';
+      const centerName = activeCenter ? encodeURIComponent(activeCenter.name) : '';
+      const dlBtn = document.getElementById('modalDownloadBtn');
+      if (dlBtn) {
+        dlBtn.setAttribute('title', `تنزيل: ${activeForm.originalName || activeForm.title}`);
+      }
+
+      const addBoxBtn = document.getElementById('addBoxModalBtn');
+      const boxesCountWrap = document.getElementById('boxesCountWrap');
+      const modalSubtitle = document.getElementById('modalSheetSubtitle');
+      const tipText = document.getElementById('modalTipText');
+      const tipIcon = document.getElementById('modalTipIcon');
+
+      // Enable interactive text boxes for ALL forms (PDF, Image, Word, Excel)
+      if (addBoxBtn) addBoxBtn.classList.remove('hidden');
+      if (boxesCountWrap) boxesCountWrap.classList.remove('hidden');
+      if (modalSubtitle) modalSubtitle.innerText = 'يمكنك سحب وتكبير أي مربع نص والكتابة عليه مباشرة أو التمرير بين الصفحات';
+      if (tipIcon) tipIcon.className = 'fa-solid fa-lightbulb text-amber-600';
+      if (tipText) tipText.innerText = 'اضغط زر "إضافة نص"، ثم اسحبه لأي مكان في النموذج وكبّره وصغّره حسب الفراغ.';
+
+      // Determine pages list for all form types
+      let pages = [];
+      if (activeForm.previewPages && activeForm.previewPages.length > 0) {
+        pages = [...activeForm.previewPages];
+      } else if (activeForm.pages && activeForm.pages.length > 0) {
+        pages = [...activeForm.pages];
+      } else if (activeForm.sheetImage) {
+        pages = [activeForm.sheetImage];
+      } else if (activeForm.fileType === 'image' || ['.png', '.jpg', '.jpeg', '.webp'].some(ext => (activeForm.fileName || '').toLowerCase().endsWith(ext))) {
+        pages = ['./uploads/' + activeForm.fileName];
+      } else {
+        pages = [`./sheets/${activeForm.id}_sheet.png`];
+      }
+
+      // Safeguard: If form has pageCount > 1 but pages array only has 1 or 0 pages, auto-expand to all pages!
+      if ((!pages || pages.length <= 1) && activeForm.pageCount && activeForm.pageCount > 1) {
+        pages = [];
+        for (let i = 1; i <= activeForm.pageCount; i++) {
+          pages.push(`./sheets/${activeForm.id}_page_${i}.png`);
+        }
+      }
+
+      const scrollArea = document.getElementById('sheetScrollArea');
+      scrollArea.innerHTML = '';
+      boxIdCounter = 0;
+      currentVisiblePage = 1;
+
+      document.getElementById('pagesCountBadge').innerText = pages.length;
+
+      // Render each page with its own wrapper and rotatable box layer
+      currentSheetRotation = 0;
+      pages.forEach((pageSrc, pageIdx) => {
+        const pNum = pageIdx + 1;
+        const pageWrapper = document.createElement('div');
+        pageWrapper.className = 'sheet-wrapper';
+        pageWrapper.id = `sheetWrapper_${pNum}`;
+        pageWrapper.setAttribute('data-page', pNum);
+
+        let pageHeaderHtml = '';
+        if (pages.length > 1) {
+          pageHeaderHtml = `
+            <div class="bg-slate-800 text-white text-xs font-bold px-3 py-1.5 rounded-t flex items-center justify-between">
+              <span>صفحة ${pNum} من ${pages.length}</span>
+              <button type="button" onclick="addDraggableBox('', 35, 30, 140, 30, ${pNum})" class="bg-amber-500 hover:bg-amber-400 text-slate-950 px-2.5 py-0.5 rounded text-xs font-black">
+                + إضافة نص في هذه الصفحة
+              </button>
+            </div>
+          `;
+        }
+
+        pageWrapper.innerHTML = `
+          ${pageHeaderHtml}
+          <div class="page-rotatable-inner" id="pageRotatable_${pNum}" style="position: relative; width: 100%; transition: transform 0.2s ease;">
+            <img src="${normalizePath(pageSrc)}" class="sheet-bg" id="sheetImage_${pNum}" alt="الصفحة ${pNum}" onerror="handleSheetImgError(this, '${activeForm.fileName || ''}', '${pageSrc}')">
+            <div id="boxesContainer_${pNum}" class="absolute inset-0">
+              <!-- Text Boxes for page ${pNum} -->
+            </div>
+          </div>
+        `;
+        scrollArea.appendChild(pageWrapper);
+      });
+
+      // Open Modal
+      document.getElementById('sheetModal').classList.remove('hidden');
+      updateBoxesCount();
+
+      // Smart auto-detection for wide landscape documents vs standard portrait:
+      setSheetWidth(850);
+
+      const firstImg = document.getElementById('sheetImage_1');
+      if (firstImg) {
+        const checkAspect = () => {
+          if (firstImg.naturalWidth > firstImg.naturalHeight * 1.15) {
+            setSheetWidth(1450);
+            if (tipIcon) tipIcon.className = 'fa-solid fa-arrows-left-right text-blue-600';
+            if (tipText) tipText.innerText = 'ملف عريض: تم تفعيل شريط التمرير العرضي بالأسفل لإظهار كامل الأعمدة والأبعاد.';
+          } else {
+            setSheetWidth(850);
+          }
+        };
+        if (firstImg.complete && firstImg.naturalWidth > 0) {
+          checkAspect();
+        } else {
+          firstImg.onload = checkAspect;
+        }
+      }
+
+      // Note: We DO NOT auto-write center name in any text box per user request
+    }
+
+    // Rotation & Zoom controller (يدعم تدوير الصورة مع بقاء النصوص في مكانها ودورانها معها)
+    let currentSheetWidth = 850;
+    let currentSheetRotation = 0; // 0, 90, 180, 270
+
+    function rotateCurrentSheet(delta = 90) {
+      currentSheetRotation = (currentSheetRotation + delta) % 360;
+      applySheetRotation();
+    }
+
+    function setSheetWidth(width) {
+      currentSheetWidth = Math.max(212, Math.min(2600, width));
+      const zoomBadge = document.getElementById('zoomPercentBadge');
+      if (zoomBadge) {
+        const pct = Math.round((currentSheetWidth / 850) * 100);
+        zoomBadge.innerText = `${pct}%`;
+      }
+
+      // Proportional font-size scaling on zoom - ensures text stays locked to the form lines without drifting!
+      const zoomRatio = currentSheetWidth / 850;
+      document.querySelectorAll('#sheetScrollArea .drag-textarea').forEach(ta => {
+        const baseFont = parseFloat(ta.getAttribute('data-base-font')) || 16;
+        ta.style.fontSize = `${Math.round(baseFont * zoomRatio)}px`;
+      });
+
+      applySheetRotation();
+    }
+
+    function adjustSheetZoom(delta) {
+      setSheetWidth(currentSheetWidth + delta);
+    }
+
+    function applySheetRotation() {
+      const wrappers = document.querySelectorAll('#sheetScrollArea .sheet-wrapper');
+      const badge = document.getElementById('rotationAngleBadge');
+      if (badge) {
+        if (currentSheetRotation > 0) {
+          badge.innerText = `${currentSheetRotation}°`;
+          badge.classList.remove('hidden');
+        } else {
+          badge.classList.add('hidden');
+        }
+      }
+
+      wrappers.forEach(wrapper => {
+        const pNum = wrapper.getAttribute('data-page') || '1';
+        const inner = document.getElementById(`pageRotatable_${pNum}`);
+        const img = document.getElementById(`sheetImage_${pNum}`);
+        if (!inner || !img) return;
+
+        const natW = img.naturalWidth || 1200;
+        const natH = img.naturalHeight || 1700;
+        const aspect = natH / natW;
+
+        const W = currentSheetWidth;
+        const H = Math.round(W * aspect);
+
+        inner.style.width = `${W}px`;
+        inner.style.height = `${H}px`;
+
+        const headerEl = wrapper.querySelector('.bg-slate-800');
+        const headerH = headerEl ? headerEl.offsetHeight : 0;
+
+        wrapper.style.maxWidth = 'none';
+
+        if (currentSheetRotation === 0) {
+          wrapper.style.width = `${W}px`;
+          wrapper.style.height = 'auto';
+          inner.style.position = 'relative';
+          inner.style.top = '0px';
+          inner.style.left = '0px';
+          inner.style.transformOrigin = 'top left';
+          inner.style.transform = 'none';
+        } else if (currentSheetRotation === 90) {
+          wrapper.style.width = `${H}px`;
+          wrapper.style.height = `${W + headerH}px`;
+          inner.style.position = 'absolute';
+          inner.style.top = `${headerH}px`;
+          inner.style.left = '0px';
+          inner.style.transformOrigin = 'top left';
+          inner.style.transform = `translate(${H}px, 0px) rotate(90deg)`;
+        } else if (currentSheetRotation === 180) {
+          wrapper.style.width = `${W}px`;
+          wrapper.style.height = `${H + headerH}px`;
+          inner.style.position = 'absolute';
+          inner.style.top = `${headerH}px`;
+          inner.style.left = '0px';
+          inner.style.transformOrigin = 'top left';
+          inner.style.transform = `translate(${W}px, ${H}px) rotate(180deg)`;
+        } else if (currentSheetRotation === 270) {
+          wrapper.style.width = `${H}px`;
+          wrapper.style.height = `${W + headerH}px`;
+          inner.style.position = 'absolute';
+          inner.style.top = `${headerH}px`;
+          inner.style.left = '0px';
+          inner.style.transformOrigin = 'top left';
+          inner.style.transform = `translate(0px, ${W}px) rotate(270deg)`;
+        }
+      });
+    }
+
+    function closeSheetModal() {
+      document.getElementById('sheetModal').classList.add('hidden');
+      document.getElementById('sheetScrollArea').innerHTML = '';
+    }
+
+    function addDraggableBoxToCurrentPage() {
+      // Find visible page in scroll area
+      const wrappers = document.querySelectorAll('#sheetScrollArea .sheet-wrapper');
+      let targetPage = 1;
+      const scrollArea = document.getElementById('sheetScrollArea');
+      const scrollTop = scrollArea.scrollTop;
+
+      wrappers.forEach(w => {
+        const pageNum = parseInt(w.getAttribute('data-page')) || 1;
+        if (w.offsetTop - 100 <= scrollTop) {
+          targetPage = pageNum;
+        }
+      });
+
+      addDraggableBox('', 35, 30, 140, 30, targetPage);
+    }
+
+    // Add New Draggable & Resizable Text Box to specified page
+    function addDraggableBox(defaultText = '', posXPercent = 35, posYPercent = 30, widthVal = 16.5, heightVal = 2.7, pageNum = 1, baseFont = 16) {
+      const container = document.getElementById(`boxesContainer_${pageNum}`) || document.getElementById('boxesContainer_1');
+      if (!container) return;
+
+      boxIdCounter++;
+      const boxId = 'box_' + boxIdCounter;
+
+      let wPct = parseFloat(widthVal) || 16.5;
+      if (wPct > 50) wPct = ((wPct / 850) * 100); // convert legacy pixel inputs to percentage
+      let hPct = parseFloat(heightVal) || 2.7;
+      if (hPct > 15) hPct = ((hPct / 1200) * 100);
+
+      const box = document.createElement('div');
+      box.className = 'drag-box is-focused';
+      box.id = boxId;
+      box.setAttribute('data-page', pageNum);
+      box.style.top = `${posYPercent}%`;
+      box.style.left = `${posXPercent}%`;
+      box.style.width = `${wPct.toFixed(2)}%`;
+      box.style.height = `${hPct.toFixed(2)}%`;
+
+      box.innerHTML = `
+        <div class="drag-bar" onpointerdown="startDrag(event, '${boxId}', ${pageNum})">
+          <span class="flex items-center gap-1">
+            <i class="fa-solid fa-arrows-up-down-left-right text-[10px]"></i>
+            <span>اسحب</span>
+          </span>
+          <div class="flex items-center gap-1.5 no-drag">
+            <button type="button" onclick="duplicateBox('${boxId}')" class="hover:text-emerald-300 font-bold px-1 flex items-center gap-0.5 text-[10px] bg-white/10 rounded" title="تكرار / نسخ هذا المربع">
+              <i class="fa-regular fa-clone"></i>
+              <span>نسخ</span>
+            </button>
+            <button type="button" onclick="adjustBoxFont('${boxId}', 1)" class="hover:text-amber-300 font-bold px-1" title="تكبير الخط">A+</button>
+            <button type="button" onclick="adjustBoxFont('${boxId}', -1)" class="hover:text-amber-300 font-bold px-1" title="تصغير الخط">A-</button>
+            <button type="button" onclick="deleteBox('${boxId}')" class="hover:text-rose-300 font-bold px-1 text-xs" title="حذف المربع">✕</button>
+          </div>
+        </div>
+        <textarea class="drag-textarea" placeholder="اكتب هنا..." data-base-font="${baseFont}">${defaultText}</textarea>
+        <div class="resize-handle" onpointerdown="startResize(event, '${boxId}')" title="اسحب لتكبير وتصغير المربع">⇲</div>
+      `;
+
+      container.appendChild(box);
+      updateBoxesCount();
+
+      const ta = box.querySelector('.drag-textarea');
+      const zoomRatio = currentSheetWidth / 850;
+      if (ta) {
+        ta.style.fontSize = `${Math.round(baseFont * zoomRatio)}px`;
+      }
+
+      // Track whether box has text content to seamlessly blend when unfocused
+      function updateBoxTextState() {
+        if (ta && ta.value && ta.value.trim().length > 0) {
+          box.classList.add('has-text');
+        } else {
+          box.classList.remove('has-text');
+        }
+      }
+      ta.addEventListener('input', updateBoxTextState);
+      ta.addEventListener('change', updateBoxTextState);
+      updateBoxTextState();
+
+      // Focus handling:
+      ta.addEventListener('focus', () => {
+        document.querySelectorAll('.drag-box').forEach(b => b.classList.remove('is-focused'));
+        box.classList.add('is-focused');
+      });
+      ta.addEventListener('blur', () => {
+        box.classList.remove('is-focused');
+      });
+      box.addEventListener('pointerdown', () => {
+        document.querySelectorAll('.drag-box').forEach(b => b.classList.remove('is-focused'));
+        box.classList.add('is-focused');
+      });
+
+      // Auto expand height if needed
+      ta.addEventListener('input', () => {
+        const containerH = container.offsetHeight || 1200;
+        if (ta.scrollHeight > box.clientHeight) {
+          const newHPct = ((ta.scrollHeight + 4) / containerH) * 100;
+          box.style.height = `${newHPct.toFixed(2)}%`;
+        }
+      });
+
+      // Focus the textarea
+      setTimeout(() => {
+        if (ta) ta.focus();
+      }, 50);
+    }
+
+    function deleteBox(id) {
+      const el = document.getElementById(id);
+      if (el) el.remove();
+      updateBoxesCount();
+    }
+
+    // Duplicate text box
+    function duplicateBox(boxId) {
+      const srcBox = document.getElementById(boxId);
+      if (!srcBox) return;
+
+      const pageNum = parseInt(srcBox.getAttribute('data-page')) || 1;
+      const srcTa = srcBox.querySelector('.drag-textarea');
+      const text = srcTa ? srcTa.value : '';
+      const baseFont = srcTa ? (parseFloat(srcTa.getAttribute('data-base-font')) || 16) : 16;
+
+      const srcLeftPct = parseFloat(srcBox.style.left) || 35;
+      const srcTopPct = parseFloat(srcBox.style.top) || 30;
+      const srcWidthPct = parseFloat(srcBox.style.width) || 16.5;
+      const srcHeightPct = parseFloat(srcBox.style.height) || 2.7;
+
+      let newLeftPct = Math.max(1, Math.min(85, srcLeftPct - 1.5));
+      let newTopPct = Math.max(1, Math.min(94, srcTopPct + 2.5));
+
+      addDraggableBox(text, newLeftPct.toFixed(2), newTopPct.toFixed(2), srcWidthPct.toFixed(2), srcHeightPct.toFixed(2), pageNum, baseFont);
+    }
+
+    function adjustBoxFont(id, delta) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const ta = el.querySelector('.drag-textarea');
+      if (!ta) return;
+      let baseFont = parseFloat(ta.getAttribute('data-base-font')) || 16;
+      baseFont = Math.max(8, Math.min(48, baseFont + (delta * 2)));
+      ta.setAttribute('data-base-font', baseFont);
+      const zoomRatio = currentSheetWidth / 850;
+      ta.style.fontSize = `${Math.round(baseFont * zoomRatio)}px`;
+    }
+
+    function updateBoxesCount() {
+      const count = document.querySelectorAll('#sheetScrollArea .drag-box').length;
+      const badge = document.getElementById('boxesCountBadge');
+      if (badge) badge.innerText = count;
+    }
+
+    // Drag Implementation with Rotation Support
+    let activeDrag = null;
+
+    function startDrag(e, boxId, pageNum = 1) {
+      if (e.target.closest('.no-drag')) return;
+      e.preventDefault();
+
+      const box = document.getElementById(boxId);
+      const container = box.parentElement; // boxesContainer
+      const containerW = container.offsetWidth || currentSheetWidth;
+      const containerH = container.offsetHeight || Math.round(currentSheetWidth * 1.414);
+
+      const currentLeftPct = parseFloat(box.style.left) || 35;
+      const currentTopPct = parseFloat(box.style.top) || 30;
+
+      activeDrag = {
+        box,
+        pageNum,
+        startX: e.clientX,
+        startY: e.clientY,
+        initialLeftPx: (currentLeftPct / 100) * containerW,
+        initialTopPx: (currentTopPct / 100) * containerH,
+        containerW,
+        containerH,
+        rotation: currentSheetRotation
+      };
+
+      box.classList.add('active');
+
+      window.addEventListener('pointermove', onDragging);
+      window.addEventListener('pointerup', stopDrag);
+    }
+
+    function onDragging(e) {
+      if (!activeDrag) return;
+      e.preventDefault();
+
+      const dxScreen = e.clientX - activeDrag.startX;
+      const dyScreen = e.clientY - activeDrag.startY;
+
+      let dxLocal = dxScreen;
+      let dyLocal = dyScreen;
+
+      if (activeDrag.rotation === 90) {
+        dxLocal = dyScreen;
+        dyLocal = -dxScreen;
+      } else if (activeDrag.rotation === 180) {
+        dxLocal = -dxScreen;
+        dyLocal = -dyScreen;
+      } else if (activeDrag.rotation === 270) {
+        dxLocal = -dyScreen;
+        dyLocal = dxScreen;
+      }
+
+      let newLeft = activeDrag.initialLeftPx + dxLocal;
+      let newTop = activeDrag.initialTopPx + dyLocal;
+
+      newLeft = Math.max(0, Math.min(activeDrag.containerW - 30, newLeft));
+      newTop = Math.max(0, Math.min(activeDrag.containerH - 20, newTop));
+
+      const leftPct = (newLeft / activeDrag.containerW) * 100;
+      const topPct = (newTop / activeDrag.containerH) * 100;
+
+      activeDrag.box.style.left = `${leftPct.toFixed(2)}%`;
+      activeDrag.box.style.top = `${topPct.toFixed(2)}%`;
+    }
+
+    function stopDrag() {
+      if (activeDrag && activeDrag.box) {
+        activeDrag.box.classList.remove('active');
+      }
+      activeDrag = null;
+      window.removeEventListener('pointermove', onDragging);
+      window.removeEventListener('pointerup', stopDrag);
+    }
+
+    // Resize Implementation with Rotation Support
+    let activeResize = null;
+
+    function startResize(e, boxId) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const box = document.getElementById(boxId);
+      const container = box.parentElement;
+      const containerW = container.offsetWidth || currentSheetWidth;
+      const containerH = container.offsetHeight || Math.round(currentSheetWidth * 1.414);
+
+      activeResize = {
+        box,
+        startX: e.clientX,
+        startY: e.clientY,
+        initialWidthPx: box.offsetWidth,
+        initialHeightPx: box.offsetHeight,
+        containerW,
+        containerH,
+        rotation: currentSheetRotation
+      };
+
+      box.classList.add('active');
+
+      window.addEventListener('pointermove', onResizing);
+      window.addEventListener('pointerup', stopResize);
+    }
+
+    function onResizing(e) {
+      if (!activeResize) return;
+      e.preventDefault();
+
+      const dxScreen = activeResize.startX - e.clientX;
+      const dyScreen = e.clientY - activeResize.startY;
+
+      let dxLocal = dxScreen;
+      let dyLocal = dyScreen;
+
+      if (activeResize.rotation === 90) {
+        dxLocal = dyScreen;
+        dyLocal = dxScreen;
+      } else if (activeResize.rotation === 180) {
+        dxLocal = -dxScreen;
+        dyLocal = -dyScreen;
+      } else if (activeResize.rotation === 270) {
+        dxLocal = -dyScreen;
+        dyLocal = -dxScreen;
+      }
+
+      const newWidthPx = Math.max(30, activeResize.initialWidthPx + dxLocal);
+      const newHeightPx = Math.max(20, activeResize.initialHeightPx + dyLocal);
+
+      const widthPct = (newWidthPx / activeResize.containerW) * 100;
+      const heightPct = (newHeightPx / activeResize.containerH) * 100;
+
+      activeResize.box.style.width = `${widthPct.toFixed(2)}%`;
+      activeResize.box.style.height = `${heightPct.toFixed(2)}%`;
+    }
+
+    function stopResize() {
+      if (activeResize && activeResize.box) {
+        activeResize.box.classList.remove('active');
+      }
+      activeResize = null;
+      window.removeEventListener('pointermove', onResizing);
+      window.removeEventListener('pointerup', stopResize);
+    }
+
+    // Generate high-resolution canvas with official sheet and user texts baked in (supports multi-page)
+    async function generateBakedCanvases() {
+      if (!activeForm) return [];
+
+      if (document.fonts && document.fonts.ready) {
+        await document.fonts.ready;
+      }
+
+      let pages = [];
+      if (activeForm.pages && activeForm.pages.length > 0) {
+        pages = activeForm.pages;
+      } else if (activeForm.sheetImage) {
+        pages = [activeForm.sheetImage];
+      } else if (activeForm.fileType === 'image' || ['.png', '.jpg', '.jpeg', '.webp'].some(ext => (activeForm.fileName || '').toLowerCase().endsWith(ext))) {
+        pages = ['./uploads/' + activeForm.fileName];
+      } else {
+        pages = [`./sheets/${activeForm.id}_sheet.png`];
+      }
+
+            if ((!pages || pages.length <= 1) && activeForm.pageCount && activeForm.pageCount > 1) {
+        pages = [];
+        for (let i = 1; i <= activeForm.pageCount; i++) {
+          pages.push(`./sheets/${activeForm.id}_page_${i}.png`);
+        }
+      }
+
+      const canvases = [];
+
+      for (let pIdx = 0; pIdx < pages.length; pIdx++) {
+        const pNum = pIdx + 1;
+        const pageImgEl = document.getElementById(`sheetImage_${pNum}`);
+        const rotatableInner = document.getElementById(`pageRotatable_${pNum}`);
+        const boxes = document.querySelectorAll(`#boxesContainer_${pNum} .drag-box`);
+        if (!pageImgEl) continue;
+
+        const origW = pageImgEl.naturalWidth || 1700;
+        const origH = pageImgEl.naturalHeight || 2200;
+
+        const canvas = document.createElement('canvas');
+        if (currentSheetRotation === 90 || currentSheetRotation === 270) {
+          canvas.width = origH;
+          canvas.height = origW;
+        } else {
+          canvas.width = origW;
+          canvas.height = origH;
+        }
+        const ctx = canvas.getContext('2d');
+
+        ctx.save();
+        if (currentSheetRotation === 90) {
+          ctx.translate(origH, 0);
+          ctx.rotate(90 * Math.PI / 180);
+        } else if (currentSheetRotation === 180) {
+          ctx.translate(origW, origH);
+          ctx.rotate(180 * Math.PI / 180);
+        } else if (currentSheetRotation === 270) {
+          ctx.translate(0, origW);
+          ctx.rotate(270 * Math.PI / 180);
+        }
+
+        // Draw original page sheet
+        ctx.drawImage(pageImgEl, 0, 0, origW, origH);
+
+        const innerW = rotatableInner ? rotatableInner.offsetWidth : currentSheetWidth;
+        const innerH = rotatableInner ? rotatableInner.offsetHeight : Math.round(currentSheetWidth * (origH / origW));
+
+        const scaleX = origW / innerW;
+        const scaleY = origH / innerH;
+
+        boxes.forEach(box => {
+          const ta = box.querySelector('.drag-textarea');
+          const text = ta ? ta.value : '';
+          if (text && text.trim()) {
+            const leftPct = parseFloat(box.style.left) || 0;
+            const topPct = parseFloat(box.style.top) || 0;
+            const widthPct = parseFloat(box.style.width) || 16.5;
+
+            const baseFontPx = parseFloat(ta.getAttribute('data-base-font')) || 16;
+            const printScale = origW / 850;
+            const canvasFontSize = Math.round(baseFontPx * printScale);
+
+            ctx.save();
+            ctx.font = `bold ${canvasFontSize}px "Cairo", "Traditional Arabic", sans-serif`;
+            ctx.fillStyle = '#000000';
+            ctx.direction = 'rtl';
+            ctx.textAlign = 'right';
+            ctx.textBaseline = 'top';
+
+            // Coordinates on canvas (rotates with image context)
+            const boxX = (leftPct / 100) * origW;
+            const boxY = (topPct / 100) * origH;
+            const boxW = (widthPct / 100) * origW;
+            const textRight = boxX + boxW;
+            const baselineNudge = canvasFontSize * 0.18; // precise downward baseline alignment
+
+            const lines = text.split('\n');
+            const lineHeight = canvasFontSize * 1.30;
+
+            lines.forEach((line, idx) => {
+              ctx.fillText(line, textRight - (2 * printScale), boxY + baselineNudge + (idx * lineHeight));
+            });
+
+            ctx.restore();
+          }
+        });
+
+        ctx.restore();
+        canvases.push(canvas);
+      }
+
+      return canvases;
+    }
+
+    // Print the Sheet with 100% pixel accuracy (supports all pages)
+    async function printSheetWithBoxes() {
+      if (!activeForm) return;
+      trackActivity(activeForm.id, activeForm.title, 'print');
+
+      const wrappers = document.querySelectorAll('#sheetScrollArea .sheet-wrapper');
+      if (!wrappers || wrappers.length === 0) {
+        window.print();
+        return;
+      }
+
+      // Determine orientation from first image
+      const firstImg = document.querySelector('#sheetScrollArea .sheet-bg');
+      const isLandscape = firstImg && (firstImg.naturalWidth > firstImg.naturalHeight * 1.15);
+      const printOrientation = isLandscape ? 'A4 landscape' : 'A4 portrait';
+      const printPageWidth = isLandscape ? '297mm' : '210mm';
+
+      // 1. Generate High-Resolution Baked Canvases (identical to v2.0.0, zero drift)
+      let canvases = [];
+      try {
+        canvases = await generateBakedCanvases();
+      } catch (err) {
+        console.warn('Canvas baking warning:', err);
+        canvases = [];
+      }
+
+      // 2. Try exporting canvases to DataURL (works on HTTP/HTTPS / Vercel with 100% pixel precision)
+      let canUseDataUrl = false;
+      let bakedUrls = [];
+      if (canvases && canvases.length === wrappers.length) {
+        try {
+          for (let i = 0; i < canvases.length; i++) {
+            bakedUrls.push(canvases[i].toDataURL('image/png', 1.0));
+          }
+          canUseDataUrl = true;
+        } catch (e) {
+          canUseDataUrl = false;
+          bakedUrls = [];
+        }
+      }
+
+      let printFrame = document.getElementById('basraPrintFrame');
+      if (printFrame) printFrame.remove();
+
+      printFrame = document.createElement('iframe');
+      printFrame.id = 'basraPrintFrame';
+      printFrame.style.position = 'fixed';
+      printFrame.style.right = '0';
+      printFrame.style.bottom = '0';
+      printFrame.style.width = '1px';
+      printFrame.style.height = '1px';
+      printFrame.style.opacity = '0.01';
+      printFrame.style.border = '0';
+      printFrame.style.pointerEvents = 'none';
+      document.body.appendChild(printFrame);
+
+      const fwin = printFrame.contentWindow;
+      const fdoc = fwin.document;
+      fdoc.open();
+      fdoc.write(`
+        <!DOCTYPE html>
+        <html lang="ar" dir="rtl">
+        <head>
+          <meta charset="UTF-8">
+          <title>${activeForm.title}</title>
+          <style>
+            @page {
+              size: ${printOrientation};
+              margin: 0;
+            }
+            * {
+              box-sizing: border-box;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            html, body {
+              margin: 0;
+              padding: 0;
+              width: 100%;
+              background: #fff;
+            }
+            .a4-print-page {
+              width: ${printPageWidth};
+              max-width: 100%;
+              margin: 0 auto;
+              position: relative;
+              page-break-inside: avoid;
+            }
+            .baked-sheet-img {
+              width: 100%;
+              height: auto;
+              display: block;
+            }
+            @media print {
+              html, body {
+                width: 100%;
+                margin: 0;
+                padding: 0;
+              }
+              .a4-print-page {
+                width: 100% !important;
+                margin: 0 !important;
+              }
+            }
+          </style>
+</head>
+        <body id="printBody">
+        </body>
+        </html>
+      `);
+      fdoc.close();
+
+      const printBody = fdoc.getElementById('printBody');
+
+      if (canUseDataUrl) {
+        // v2.0.0 High-Resolution Baked PNG Images (100% zero drift)
+        bakedUrls.forEach((url, idx) => {
+          const pageDiv = fdoc.createElement('div');
+          pageDiv.className = 'a4-print-page';
+          if (idx > 0) pageDiv.style.pageBreakBefore = 'always';
+          const img = fdoc.createElement('img');
+          img.src = url;
+          img.className = 'baked-sheet-img';
+          img.alt = `صفحة ${idx + 1}`;
+          pageDiv.appendChild(img);
+          printBody.appendChild(pageDiv);
+        });
+      } else if (canvases && canvases.length === wrappers.length) {
+        // Direct Canvas Element Insertion (works on file:/// even when tainted, 100% baked, zero drift!)
+        canvases.forEach((c, idx) => {
+          const pageDiv = fdoc.createElement('div');
+          pageDiv.className = 'a4-print-page';
+          if (idx > 0) pageDiv.style.pageBreakBefore = 'always';
+          c.className = 'baked-sheet-img';
+          c.style.width = '100%';
+          c.style.height = 'auto';
+          c.style.display = 'block';
+          try {
+            const adopted = fdoc.adoptNode(c);
+            pageDiv.appendChild(adopted);
+          } catch(err) {
+            pageDiv.appendChild(c);
+          }
+          printBody.appendChild(pageDiv);
+        });
+      } else {
+        // Pixel-accurate DOM clone fallback (exact 1:1 clone of editor textarea styles, zero drift!)
+        wrappers.forEach((wrapper, idx) => {
+          const imgEl = wrapper.querySelector('.sheet-bg');
+          if (!imgEl) return;
+          const pageDiv = fdoc.createElement('div');
+          pageDiv.className = 'a4-print-page';
+          pageDiv.style.position = 'relative';
+          if (idx > 0) pageDiv.style.pageBreakBefore = 'always';
+
+          const img = fdoc.createElement('img');
+          img.src = imgEl.src;
+          img.className = 'baked-sheet-img';
+          pageDiv.appendChild(img);
+
+          const overlay = fdoc.createElement('div');
+          overlay.style.position = 'absolute';
+          overlay.style.top = '0';
+          overlay.style.left = '0';
+          overlay.style.right = '0';
+          overlay.style.bottom = '0';
+          overlay.style.pointerEvents = 'none';
+
+          const boxes = wrapper.querySelectorAll('.drag-box');
+          boxes.forEach(box => {
+            const ta = box.querySelector('.drag-textarea');
+            const text = ta ? ta.value : '';
+            if (text && text.trim()) {
+              const left = box.style.left;
+              const top = box.style.top;
+              const width = box.style.width;
+              const height = box.style.height;
+              const baseFontPx = parseFloat(ta.getAttribute('data-base-font')) || 16;
+              const textAlign = ta.style.textAlign || 'right';
+
+              const boxDiv = fdoc.createElement('div');
+              boxDiv.style.position = 'absolute';
+              boxDiv.style.left = left;
+              boxDiv.style.top = top;
+              boxDiv.style.width = width;
+              boxDiv.style.height = height;
+              boxDiv.style.boxSizing = 'border-box';
+              boxDiv.style.overflow = 'hidden';
+
+              const textInner = fdoc.createElement('div');
+              textInner.style.width = '100%';
+              textInner.style.height = '100%';
+              textInner.style.padding = '1px 3px';
+              textInner.style.fontFamily = "'Cairo', 'Traditional Arabic', serif";
+              textInner.style.fontSize = `${baseFontPx}px`;
+              textInner.style.fontWeight = '800';
+              textInner.style.lineHeight = '1.25';
+              textInner.style.direction = 'rtl';
+              textInner.style.textAlign = textAlign;
+              textInner.style.color = '#000';
+              textInner.style.whiteSpace = 'pre-wrap';
+              textInner.style.wordBreak = 'break-word';
+              textInner.textContent = text;
+
+              boxDiv.appendChild(textInner);
+              overlay.appendChild(boxDiv);
+            }
+          });
+
+          pageDiv.appendChild(overlay);
+          printBody.appendChild(pageDiv);
+        });
+      }
+
+      const iframeImgs = fdoc.querySelectorAll('img');
+      let loaded = 0;
+      const total = iframeImgs.length;
+      let printTriggered = false;
+
+      function triggerPrintNow() {
+        if (printTriggered) return;
+        printTriggered = true;
+        setTimeout(() => {
+          try {
+            fwin.focus();
+            fwin.print();
+          } catch (e) {
+            window.print();
+          }
+        }, 200);
+      }
+
+      if (total === 0) {
+        triggerPrintNow();
+      } else {
+        iframeImgs.forEach(img => {
+          if (img.complete) {
+            loaded++;
+            if (loaded >= total) triggerPrintNow();
+          } else {
+            img.onload = img.onerror = () => {
+              loaded++;
+              if (loaded >= total) triggerPrintNow();
+            };
+          }
+        });
+        setTimeout(triggerPrintNow, 1200);
+      }
+    }
+
+    async function downloadBakedSheet() {
+      if (!activeForm) return;
+      try {
+        const canvases = await generateBakedCanvases();
+        if (!canvases || canvases.length === 0) return;
+
+        canvases.forEach((canvas, idx) => {
+          const link = document.createElement('a');
+          link.download = canvases.length > 1
+            ? `${activeForm.title}_صفحة_${idx + 1}_معبأ.png`
+            : `${activeForm.title}_معبأ.png`;
+          link.href = canvas.toDataURL('image/png', 1.0);
+          link.click();
+        });
+      } catch (err) {
+        console.error('Download baked sheet error:', err);
+        alert('ملاحظة: تنزيل النموذج كصورة PNG جاهزة يتطلب تشغيل النظام عبر السيرفر أو الرابط المرفوع (Vercel). للطباعة المباشرة يمكنك استخدام زر "طباعة A4".');
+      }
+    }
+
+
+    async function loadVersionInfo() {
+      try {
+        const res = await fetch("./version-centers.json?t=" + Date.now());
+        if (res.ok) {
+          const vData = await res.json();
+          const verStr = "الإصدار " + (vData.version || "2.0.0");
+          let dateStr = "2026-10-24";
+          if (vData.updatedAt) {
+            try {
+              const d = new Date(vData.updatedAt);
+              if (!isNaN(d.getTime())) {
+                dateStr = d.toLocaleDateString("ar-IQ", { year: "numeric", month: "long", day: "numeric" });
+              }
+            } catch(e) {}
+          }
+          const vEl = document.getElementById("centerVersionVal");
+          const dEl = document.getElementById("centerDateVal");
+          if (vEl) vEl.textContent = verStr;
+          if (dEl) dEl.textContent = dateStr;
+        }
+      } catch(e) {}
+    }
+    document.addEventListener("DOMContentLoaded", () => { init(); loadVersionInfo(); });
+
+    // ================= EXE EDITION: 1-MINUTE SERVER AUTO-UPDATE & LOCAL STORAGE ENGINE =================
+    let _lastFormsSignature = '';
+    let _lastCatsSignature = '';
+    let _centerSyncCountdown = 60;
+
+    function computeFormsSignature(formsArr) {
+      if (!Array.isArray(formsArr)) return '';
+      return formsArr.map(f => `${f.id}:${f.title}:${f.category}:${Boolean(f.hidden)}:${f.updatedDate || ''}:${f.fileName || ''}:${f.syncVersion || ''}`).join('|');
+    }
+
+    function computeCatsSignature(catsArr) {
+      if (!Array.isArray(catsArr)) return '';
+      return catsArr.map(c => `${c.id}:${c.name}:${c.icon || ''}`).join('|');
+    }
+
+    function createCenterAutoSyncBar() {
+      if (document.getElementById('exeCenterSyncBar')) return;
+      const bar = document.createElement('div');
+      bar.id = 'exeCenterSyncBar';
+      bar.className = 'fixed bottom-3 left-3 z-50 bg-slate-900/95 text-white border border-slate-700 rounded-2xl px-3.5 py-2 shadow-xl flex items-center gap-2.5 text-xs font-bold backdrop-blur-md print:hidden';
+      bar.innerHTML = `
+        <span id="exeSyncDot" class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span id="exeSyncStatusText">النماذج محفوظة محلياً • فحص السيرفر تلقائياً خلال <span id="exeSyncTimerVal" class="text-amber-400 font-mono">60</span>ث</span>
+        <button onclick="checkServerForCenterUpdates(true)" class="bg-blue-600 hover:bg-blue-500 text-white px-2 py-0.5 rounded-lg text-[11px] transition-colors flex items-center gap-1" title="فحص السيرفر الآن">
+          <i id="exeSyncBtnIcon" class="fa-solid fa-rotate"></i>
+          <span>فحص الآن</span>
+        </button>
+      `;
+      document.body.appendChild(bar);
+
+      const toast = document.createElement('div');
+      toast.id = 'exeCenterUpdateToast';
+      toast.className = 'fixed top-5 left-1/2 -translate-x-1/2 z-[100] bg-emerald-700 text-white border-2 border-emerald-400 rounded-2xl px-5 py-3 shadow-2xl flex items-center gap-3 text-xs sm:text-sm font-black transition-all duration-300 opacity-0 pointer-events-none -translate-y-4 print:hidden';
+      toast.innerHTML = `<i class="fa-solid fa-bell fa-shake text-amber-300 text-lg"></i><span id="exeCenterUpdateToastMsg">تم تحديث النماذج من السيرفر تلقائياً!</span>`;
+      document.body.appendChild(toast);
+    }
+
+    function showCenterUpdateBanner(msg) {
+      const toast = document.getElementById('exeCenterUpdateToast');
+      const msgEl = document.getElementById('exeCenterUpdateToastMsg');
+      if (!toast || !msgEl) return;
+      msgEl.innerText = msg;
+      toast.classList.remove('opacity-0', 'pointer-events-none', '-translate-y-4');
+      toast.classList.add('opacity-100', 'translate-y-0');
+      setTimeout(() => {
+        toast.classList.remove('opacity-100', 'translate-y-0');
+        toast.classList.add('opacity-0', 'pointer-events-none', '-translate-y-4');
+      }, 5000);
+    }
+
+    async function checkServerForCenterUpdates(isManual = false) {
+      const icon = document.getElementById('exeSyncBtnIcon');
+      const statusText = document.getElementById('exeSyncStatusText');
+      if (isManual) {
+        if (icon) icon.className = 'fa-solid fa-rotate fa-spin';
+        if (statusText) statusText.innerHTML = 'جاري فحص السيرفر عن تحديثات النماذج والواجهات...';
+      }
+
+      try {
+        if (!_lastFormsSignature && Array.isArray(allForms) && allForms.length > 0) {
+          _lastFormsSignature = computeFormsSignature(allForms);
+        }
+        if (!_lastCatsSignature && Array.isArray(allCategories) && allCategories.length > 0) {
+          _lastCatsSignature = computeCatsSignature(allCategories);
+        }
+
+        let updatedForms = null;
+        let updatedCats = null;
+        let diffSummary = '';
+        let serverReportedChanges = false;
+
+        // 1. If running inside our local C# EXE server, ask C# engine to perform differential file download & sync
+        if (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost') {
+          try {
+            const localRes = await fetch('/local-api/check-updates?t=' + Date.now(), { cache: 'no-store' });
+            if (localRes && localRes.ok) {
+              const localData = await localRes.json();
+              if (localData.uiUpdated) {
+                showCenterUpdateBanner('🔔 تم اكتشاف وتنزيل تحديث جديد لواجهة البرنامج، جاري تحديث الواجهة...');
+                setTimeout(() => window.location.reload(), 900);
+                return;
+              }
+              if (Array.isArray(localData.forms)) updatedForms = localData.forms;
+              if (Array.isArray(localData.categories)) updatedCats = localData.categories;
+              if (localData.hasChanges) {
+                serverReportedChanges = true;
+                const parts = [];
+                if (localData.addedCount > 0) parts.push(`إضافة ${localData.addedCount}`);
+                if (localData.updatedCount > 0) parts.push(`تعديل ${localData.updatedCount}`);
+                if (localData.deletedCount > 0) parts.push(`حذف ${localData.deletedCount}`);
+                diffSummary = parts.length > 0 ? `(${parts.join('، ')})` : '';
+              }
+            }
+          } catch (e) {}
+        }
+
+        // 2. Also check Cloud API directly if not fetched via local-api
+        if (!updatedForms || !serverReportedChanges) {
+          const [fRes, cRes] = await Promise.all([
+            fetch('https://basra-forms.vercel.app/api/sync?type=forms&t=' + Date.now(), { cache: 'no-store' }).catch(() => null),
+            fetch('https://basra-forms.vercel.app/api/sync?type=categories&t=' + Date.now(), { cache: 'no-store' }).catch(() => null)
+          ]);
+          if (fRes && fRes.ok) {
+            const fJson = await fRes.json();
+            if (Array.isArray(fJson)) updatedForms = fJson;
+          }
+          if (cRes && cRes.ok) {
+            const cJson = await cRes.json();
+            if (Array.isArray(cJson)) updatedCats = cJson;
+          }
+        }
+
+        let hasAnyChange = serverReportedChanges;
+        if (Array.isArray(updatedCats) && updatedCats.length > 0) {
+          const newCatSig = computeCatsSignature(updatedCats);
+          if (_lastCatsSignature && newCatSig !== _lastCatsSignature) {
+            hasAnyChange = true;
+          }
+          _lastCatsSignature = newCatSig;
+          allCategories = updatedCats;
+        }
+
+        if (Array.isArray(updatedForms)) {
+          const visibleForms = updatedForms.filter(f => !f.hidden);
+          const newFormSig = computeFormsSignature(visibleForms);
+          if ((_lastFormsSignature && newFormSig !== _lastFormsSignature) || visibleForms.length !== allForms.length) {
+            hasAnyChange = true;
+          }
+          _lastFormsSignature = newFormSig;
+          allForms = visibleForms;
+        }
+
+        if (hasAnyChange) {
+          // Immediately refresh categories & forms grid in the UI so all changes appear instantly!
+          if (typeof renderCategoryTabs === 'function') renderCategoryTabs();
+          if (typeof renderFilteredForms === 'function') renderFilteredForms();
+          showCenterUpdateBanner('🔔 تم تحديث النماذج من السيرفر بنجاح ✓');
+        } else if (isManual) {
+          showCenterUpdateBanner('✓ جميع النماذج والواجهات محدثة لأحدث إصدار على السيرفر');
+        }
+      } catch (err) {
+        console.warn('Auto-update check warning:', err);
+      } finally {
+        _centerSyncCountdown = 60;
+        if (icon) icon.className = 'fa-solid fa-rotate';
+        if (statusText) {
+          statusText.innerHTML = 'النماذج محفوظة محلياً • فحص السيرفر تلقائياً خلال <span id="exeSyncTimerVal" class="text-amber-400 font-mono">60</span>ث';
+        }
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      createCenterAutoSyncBar();
+      setTimeout(() => {
+        if (Array.isArray(allForms)) _lastFormsSignature = computeFormsSignature(allForms);
+        if (Array.isArray(allCategories)) _lastCatsSignature = computeCatsSignature(allCategories);
+        checkServerForCenterUpdates(false);
+      }, 2500);
+
+      // Tick every 1 second and trigger server check every 60 seconds (1 minute)
+      
+      // Keep local EXE server alive while window is open & notify instant exit on close
+      if (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost') {
+        setInterval(() => {
+          fetch('/local-api/heartbeat?t=' + Date.now(), { cache: 'no-store' }).catch(() => {});
+        }, 1200);
+
+        function _notifySysExit() {
+          try {
+            if (navigator.sendBeacon) {
+              navigator.sendBeacon('/local-api/shutdown');
+            }
+          } catch(e) {}
+          try {
+            const x = new XMLHttpRequest();
+            x.open('GET', '/local-api/shutdown', false);
+            x.send();
+          } catch(e) {}
+        }
+        window.addEventListener('beforeunload', _notifySysExit);
+        window.addEventListener('pagehide', _notifySysExit);
+      }
+
+      setInterval(() => {
+        _centerSyncCountdown--;
+        const tEl = document.getElementById('exeSyncTimerVal');
+        if (tEl && _centerSyncCountdown >= 0) tEl.innerText = _centerSyncCountdown;
+        if (_centerSyncCountdown <= 0) {
+          _centerSyncCountdown = 60;
+          checkServerForCenterUpdates(false);
+        }
+      }, 1000);
+    });
+
+  </script>
+</body>
+</html>

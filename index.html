@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title>بوابة مراكز التسجيل | نماذج مكتب انتخابات البصرة 2026</title>
   <script>
     if (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost') {
@@ -3347,13 +3350,40 @@
       }
     }
 
+    async function verifyWebInterfaceFreshness() {
+      if (window._isAppReloading) return;
+      try {
+        const res = await fetch('/version-centers.json?t=' + Date.now(), { cache: 'no-store' });
+        if (res.ok) {
+          const data = await res.json();
+          const currVerEl = document.getElementById('centerVersionVal');
+          const currVer = currVerEl ? (currVerEl.textContent || '').replace(/[^0-9.]/g, '') : '';
+          if (data && data.version && currVer && data.version !== currVer) {
+            window._isAppReloading = true;
+            window.location.reload(true);
+          }
+        }
+      } catch (e) {}
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
       createCenterAutoSyncBar();
+      verifyWebInterfaceFreshness();
       setTimeout(() => {
         if (Array.isArray(allForms)) _lastFormsSignature = computeFormsSignature(allForms);
         if (Array.isArray(allCategories)) _lastCatsSignature = computeCatsSignature(allCategories);
         checkServerForCenterUpdates(false);
       }, 2500);
+
+      // Verify freshness when reopening or returning to tab
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+          verifyWebInterfaceFreshness();
+        }
+      });
+      window.addEventListener('pageshow', (e) => {
+        if (e.persisted) verifyWebInterfaceFreshness();
+      });
 
       // Tick every 1 second and trigger server check every 60 seconds (1 minute)
 

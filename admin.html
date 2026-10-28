@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title>لوحة تحكم المسؤول | مكتب انتخابات محافظة البصرة</title>
   <script>
     if (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost') {
@@ -278,7 +281,18 @@
           </div>
         </div>
 
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2 flex-wrap">
+          <!-- خيار مزامنة التحديثات مصغر في أعلى الواجهة -->
+          <div id="exeAdminSensorBar" class="flex items-center gap-2 bg-slate-900 text-white border border-slate-700 rounded-xl px-2.5 py-1.5 text-xs font-bold shadow-xs" title="مزامنة وتحديث البيانات وسجل النشاط">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span class="text-slate-200">مزامنة التحديثات:</span>
+            <span id="exeAdminSyncText" class="text-slate-300 text-[11px]">خلال <span id="exeAdminTimerVal" class="text-amber-400 font-mono font-bold">60</span>ث</span>
+            <button type="button" onclick="pollActivityLogsEveryMinute(true)" class="bg-blue-600 hover:bg-blue-500 text-white px-2 py-0.5 rounded-lg text-[10px] transition-colors flex items-center gap-1 active:scale-95 cursor-pointer" title="فحص وتحديث الآن">
+              <i id="exeAdminPollIcon" class="fa-solid fa-rotate"></i>
+              <span>فحص الآن</span>
+            </button>
+          </div>
+
           <!-- Live Cloud Sync Status Pill -->
           <div id="cloudSyncStatusPill" class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 shadow-sm">
             <i class="fa-solid fa-cloud-check text-emerald-600"></i>
@@ -4312,24 +4326,32 @@
 
     function createAdminActivitySensorBar() {
       if (document.getElementById('exeAdminSensorBar')) return;
-      const bar = document.createElement('div');
-      bar.id = 'exeAdminSensorBar';
-      bar.className = 'fixed bottom-3 left-3 z-50 bg-slate-900/95 text-white border border-slate-700 rounded-2xl px-3.5 py-2 shadow-xl flex items-center gap-2.5 text-xs font-bold backdrop-blur-md print:hidden';
-      bar.innerHTML = `
-        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-        <span id="exeAdminSyncText">المزامنة التلقائية: فحص السيرفر كل <span id="exeAdminTimerVal" class="text-amber-400 font-mono">60</span>ث</span>
-        <button onclick="pollActivityLogsEveryMinute(true)" class="bg-blue-600 hover:bg-blue-500 text-white px-2 py-0.5 rounded-lg text-[11px] transition-colors flex items-center gap-1" title="مزامنة فورية الآن">
-          <i id="exeAdminPollIcon" class="fa-solid fa-rotate"></i>
-          <span>مزامنة الآن</span>
-        </button>
-      `;
-      document.body.appendChild(bar);
+    }
+
+    async function verifyWebAdminFreshness() {
+      if (window._isAppReloading) return;
+      try {
+        const res = await fetch('/version-admin.json?t=' + Date.now(), { cache: 'no-store' });
+        if (res.ok) {
+          const data = await res.json();
+          const currVerEl = document.getElementById('adminVersionVal');
+          const currVer = currVerEl ? (currVerEl.textContent || '').replace(/[^0-9.]/g, '') : '';
+          if (data && data.version && currVer && data.version !== currVer) {
+            window._isAppReloading = true;
+            window.location.reload(true);
+          }
+        }
+      } catch (e) {}
     }
 
     async function pollActivityLogsEveryMinute(isManual = false) {
       if (_isSyncingWrite) return;
       const icon = document.getElementById('exeAdminPollIcon');
-      if (isManual && icon) icon.className = 'fa-solid fa-rotate fa-spin';
+      if (isManual) {
+        if (icon) icon.className = 'fa-solid fa-rotate fa-spin';
+        const st = document.getElementById('exeAdminSyncText');
+        if (st) st.innerHTML = 'جاري الفحص...';
+      }
 
       try {
         const oldFormsSig = computeAdminFormsSig(adminFormsList);
@@ -4424,16 +4446,27 @@
         _adminActivityCountdown = 60;
         if (icon) icon.className = 'fa-solid fa-rotate';
         const st = document.getElementById('exeAdminSyncText');
-        if (st) st.innerHTML = 'المزامنة التلقائية: فحص السيرفر كل <span id="exeAdminTimerVal" class="text-amber-400 font-mono">60</span>ث';
+        if (st) st.innerHTML = 'خلال <span id="exeAdminTimerVal" class="text-amber-400 font-mono font-bold">60</span>ث';
       }
     }
 
     document.addEventListener('DOMContentLoaded', () => {
       createAdminActivitySensorBar();
+      verifyWebAdminFreshness();
       setTimeout(() => {
         recordAdminBaseline();
         pollActivityLogsEveryMinute(false);
       }, 1200);
+
+      // Verify freshness when reopening or returning to tab
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+          verifyWebAdminFreshness();
+        }
+      });
+      window.addEventListener('pageshow', (e) => {
+        if (e.persisted) verifyWebAdminFreshness();
+      });
 
       // Sync automatically when Admin window regains focus (e.g. switching between PCs or windows)
       window.addEventListener('focus', () => {
