@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
@@ -575,7 +575,7 @@
 
   </div>
 
-  <!-- Interactive Form Viewer (شاشة كاملة، شريط علوي ذكي للهواتف، شريط التمرير على اليمين) -->
+  <!-- Interactive Form Viewer (شاشة كاملة، شريط علوي متجاوب للهواتف، شريط التمرير على اليمين) -->
   <div id="viewModal" class="fixed inset-0 z-50 bg-slate-950 hidden flex flex-col w-screen h-[100dvh] overflow-hidden m-0 p-0">
     <div class="bg-white w-full h-full flex flex-col overflow-hidden m-0 p-0 rounded-none border-0">
       
@@ -4328,12 +4328,14 @@
         // 1. If running inside AdminApp.exe local server, check & download any new files added by other Admin PCs
         if (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost') {
           try {
-            const localCheck = await fetch('/local-api/check-admin-updates?t=' + Date.now(), { cache: 'no-store' });
+            const currAdminVerEl = document.getElementById('adminVersionVal');
+            const currAdminVer = currAdminVerEl ? (currAdminVerEl.textContent || '').replace(/[^0-9.]/g, '') : '';
+            const localCheck = await fetch('/local-api/check-admin-updates?currentVer=' + encodeURIComponent(currAdminVer) + '&t=' + Date.now(), { cache: 'no-store' });
             if (localCheck && localCheck.ok) {
               const lcData = await localCheck.json();
               if (lcData.uiUpdated) {
                 if (typeof showSyncToast === 'function') {
-                  showSyncToast('🔔 تم اكتشاف تحديث جديد لواجهة المسؤول...', 'success', 2000);
+                  showSyncToast('تم تحديث البرنامج بنجاح ✓', 'success', 2000);
                 }
                 setTimeout(() => window.location.reload(), 1000);
                 return;

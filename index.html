@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
@@ -344,7 +344,7 @@
 
   </main>
 
-  <!-- Interactive Form Viewer (شاشة كاملة، شريط علوي ذكي للهواتف، شريط التمرير على اليمين) -->
+  <!-- Interactive Form Viewer (شاشة كاملة، شريط علوي متجاوب للهواتف، شريط التمرير على اليمين) -->
   <div id="sheetModal" class="fixed inset-0 z-50 bg-slate-900 hidden flex flex-col w-screen h-[100dvh] overflow-hidden m-0 p-0">
     <div class="bg-white w-full h-full flex flex-col overflow-hidden m-0 p-0 rounded-none border-0">
       
@@ -3251,11 +3251,13 @@
         // 1. If running inside our local C# EXE server, ask C# engine to perform differential file download & sync
         if (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost') {
           try {
-            const localRes = await fetch('/local-api/check-updates?t=' + Date.now(), { cache: 'no-store' });
+            const currVerEl = document.getElementById('centerVersionVal');
+            const currVer = currVerEl ? (currVerEl.textContent || '').replace(/[^0-9.]/g, '') : '';
+            const localRes = await fetch('/local-api/check-updates?currentVer=' + encodeURIComponent(currVer) + '&t=' + Date.now(), { cache: 'no-store' });
             if (localRes && localRes.ok) {
               const localData = await localRes.json();
               if (localData.uiUpdated) {
-                showCenterUpdateBanner('🔔 تم اكتشاف وتنزيل تحديث جديد لواجهة البرنامج، جاري تحديث الواجهة...');
+                showCenterUpdateBanner('تم تحديث البرنامج بنجاح ✓');
                 setTimeout(() => window.location.reload(), 900);
                 return;
               }
@@ -3313,9 +3315,9 @@
           // Immediately refresh categories & forms grid in the UI so all changes appear instantly!
           if (typeof renderCategoryTabs === 'function') renderCategoryTabs();
           if (typeof renderFilteredForms === 'function') renderFilteredForms();
-          showCenterUpdateBanner('🔔 تم تحديث النماذج من السيرفر بنجاح ✓');
+          showCenterUpdateBanner('تم تحديث النماذج بنجاح ✓');
         } else if (isManual) {
-          showCenterUpdateBanner('✓ جميع النماذج والواجهات محدثة لأحدث إصدار على السيرفر');
+          showCenterUpdateBanner('جميع النماذج والواجهات محدثة ومخزونة في الحاسبة ✓');
         }
       } catch (err) {
         console.warn('Auto-update check warning:', err);
