@@ -3271,6 +3271,7 @@
             if (localRes && localRes.ok) {
               const localData = await localRes.json();
               if (localData.uiUpdated) {
+                window._isAppReloading = true;
                 showCenterUpdateBanner('تم تحديث البرنامج بنجاح ✓');
                 setTimeout(() => window.location.reload(), 900);
                 return;

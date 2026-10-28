@@ -4348,6 +4348,7 @@
             if (localCheck && localCheck.ok) {
               const lcData = await localCheck.json();
               if (lcData.uiUpdated) {
+                window._isAppReloading = true;
                 if (typeof showSyncToast === 'function') {
                   showSyncToast('تم تحديث البرنامج بنجاح ✓', 'success', 2000);
                 }
