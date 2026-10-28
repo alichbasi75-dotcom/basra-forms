@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
@@ -57,12 +58,14 @@ namespace BasraUpdater
 
         // Independent Version Tracking for Each Program
         private string cloudCentersVersion = "2.0.0";
-        private string cloudAdminVersion = "2.0.2";
+        private string cloudAdminVersion = "2.0.8";
 
-        private string CLOUD_CENTERS_URL = "https://basra-forms.vercel.app/version-centers.json";
-        private string CLOUD_ADMIN_URL = "https://basra-forms.vercel.app/version-admin.json";
+        private string CLOUD_CENTERS_URL = "https://raw.githubusercontent.com/alichbasi75-dotcom/basra-forms/main/version-centers.json";
+        private string CLOUD_ADMIN_URL = "https://raw.githubusercontent.com/alichbasi75-dotcom/basra-forms/main/version-admin.json";
         private string CLOUD_CENTERS_BACKUP = "https://alichbasi75-dotcom.github.io/basra-forms/version-centers.json";
         private string CLOUD_ADMIN_BACKUP = "https://alichbasi75-dotcom.github.io/basra-forms/version-admin.json";
+        private string CLOUD_CENTERS_VERCEL = "https://basra-forms.vercel.app/version-centers.json";
+        private string CLOUD_ADMIN_VERCEL = "https://basra-forms.vercel.app/version-admin.json";
 
         private string workspaceDir = @"C:\Users\ali\.gemini\antigravity\scratch\basra_forms_system";
         private string desktopDir = @"C:\Users\ali\Desktop\منظومة_استمارات_مكتب_انتخابات_البصرة";
@@ -77,6 +80,7 @@ namespace BasraUpdater
         private void InitializeComponent()
         {
             this.Text = "أداة تحديث ورفع منظومة استمارات البصرة (المراكز والمسؤول بشكل منفصل)";
+            try { this.Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath); } catch { }
             this.Size = new Size(670, 845);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -386,21 +390,91 @@ namespace BasraUpdater
 
         private void RunGitCommand(string args, int timeoutMs)
         {
-            try
+            for (int attempt = 1; attempt <= 2; attempt++)
             {
-                string lockFile = Path.Combine(workspaceDir, ".git", "index.lock");
-                if (File.Exists(lockFile)) { try { File.Delete(lockFile); } catch { } }
-                ProcessStartInfo psi = new ProcessStartInfo("git", args);
-                psi.WorkingDirectory = workspaceDir;
-                psi.EnvironmentVariables["HOME"] = workspaceDir;
-                psi.EnvironmentVariables["GIT_TERMINAL_PROMPT"] = "0";
-                psi.EnvironmentVariables["GIT_EDITOR"] = "true";
-                psi.CreateNoWindow = true;
-                psi.UseShellExecute = false;
-                Process p = Process.Start(psi);
-                if (!p.WaitForExit(timeoutMs)) { try { p.Kill(); } catch { } }
+                try
+                {
+                    string lockFile = Path.Combine(workspaceDir, ".git", "index.lock");
+                    if (File.Exists(lockFile)) { try { File.Delete(lockFile); } catch { } }
+                    ProcessStartInfo psi = new ProcessStartInfo("git", args);
+                    psi.WorkingDirectory = workspaceDir;
+                    psi.EnvironmentVariables["HOME"] = workspaceDir;
+                    psi.EnvironmentVariables["GIT_TERMINAL_PROMPT"] = "0";
+                    psi.EnvironmentVariables["GIT_EDITOR"] = "true";
+                    psi.CreateNoWindow = true;
+                    psi.UseShellExecute = false;
+                    psi.RedirectStandardError = true;
+                    Process p = Process.Start(psi);
+                    string err = p.StandardError.ReadToEnd();
+                    if (!p.WaitForExit(timeoutMs)) { try { p.Kill(); } catch { } }
+                    if (p.ExitCode == 0) break;
+                    if (err.IndexOf("Could not resolve host", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                        err.IndexOf("Failed to connect", StringComparison.OrdinalIgnoreCase) >= 0)
+                    {
+                        System.Threading.Thread.Sleep(1500);
+                        continue;
+                    }
+                    break;
+                }
+                catch { break; }
             }
-            catch { }
+        }
+
+        private bool ExecuteGitPushWithRetry(Action<string> updateStatus, out string finalErr)
+        {
+            finalErr = "";
+            int maxAttempts = 3;
+            for (int attempt = 1; attempt <= maxAttempts; attempt++)
+            {
+                if (attempt > 1 && updateStatus != null)
+                {
+                    updateStatus(string.Format("جاري إعادة محاولة الاتصال بالسحاب ({0} من {1})...", attempt, maxAttempts));
+                }
+
+                try
+                {
+                    string lockFile = Path.Combine(workspaceDir, ".git", "index.lock");
+                    if (File.Exists(lockFile)) { try { File.Delete(lockFile); } catch { } }
+
+                    ProcessStartInfo psiPush = new ProcessStartInfo("git", "push origin main");
+                    psiPush.WorkingDirectory = workspaceDir;
+                    psiPush.EnvironmentVariables["HOME"] = workspaceDir;
+                    psiPush.EnvironmentVariables["GIT_TERMINAL_PROMPT"] = "0";
+                    psiPush.CreateNoWindow = true;
+                    psiPush.UseShellExecute = false;
+                    psiPush.RedirectStandardError = true;
+
+                    using (Process pPush = Process.Start(psiPush))
+                    {
+                        finalErr = pPush.StandardError.ReadToEnd();
+                        if (!pPush.WaitForExit(35000)) { try { pPush.Kill(); } catch { } }
+                        if (pPush.ExitCode == 0)
+                        {
+                            return true;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    finalErr = ex.Message;
+                }
+
+                // If transient network / DNS error, pause briefly and flush DNS before next attempt
+                if (attempt < maxAttempts)
+                {
+                    try
+                    {
+                        ProcessStartInfo psiFlush = new ProcessStartInfo("ipconfig", "/flushdns");
+                        psiFlush.CreateNoWindow = true;
+                        psiFlush.UseShellExecute = false;
+                        Process pF = Process.Start(psiFlush);
+                        if (pF != null) pF.WaitForExit(3000);
+                    }
+                    catch { }
+                    System.Threading.Thread.Sleep(2500);
+                }
+            }
+            return false;
         }
 
         private string GetBackupPrefix(bool isAdmin)
@@ -642,20 +716,14 @@ namespace BasraUpdater
                     Process pCommit = Process.Start(psiCommit);
                     if (!pCommit.WaitForExit(15000)) { try { pCommit.Kill(); } catch { } }
 
-                    ProcessStartInfo psiPush = new ProcessStartInfo("git", "push origin main");
-                    psiPush.WorkingDirectory = workspaceDir;
-                    psiPush.EnvironmentVariables["HOME"] = workspaceDir;
-                    psiPush.EnvironmentVariables["GIT_TERMINAL_PROMPT"] = "0";
-                    psiPush.CreateNoWindow = true;
-                    psiPush.UseShellExecute = false;
-                    psiPush.RedirectStandardError = true;
-                    Process pPush = Process.Start(psiPush);
-                    string pushErr = pPush.StandardError.ReadToEnd();
-                    if (!pPush.WaitForExit(30000)) { try { pPush.Kill(); } catch { } }
+                    string pushErr = "";
+                    bool pushSuccess = ExecuteGitPushWithRetry(delegate(string statusText) {
+                        this.Invoke((MethodInvoker)delegate { lblStatus.Text = statusText; });
+                    }, out pushErr);
 
                     this.Invoke((MethodInvoker)delegate {
                         progressBar.Visible = false;
-                        if (pPush.ExitCode == 0)
+                        if (pushSuccess)
                         {
                             lblStatus.Text = string.Format("تم الرجوع بنجاح إلى {0} (الإصدار {1}) ورفعها للمنصة السحابية! ✅", slotTitle, restoredVer);
                             lblStatus.ForeColor = Color.FromArgb(16, 185, 129);
@@ -861,38 +929,54 @@ namespace BasraUpdater
                 {
                     wc.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
 
-                    // 1. Fetch Centers Version
-                    try
+                    // 1. Fetch Centers Version (Vercel first for zero-cache live updates)
+                    string[] centersUrls = new string[]
                     {
-                        string jsonC = wc.DownloadString(CLOUD_CENTERS_URL + "?t=" + DateTime.Now.Ticks);
-                        Match mC = Regex.Match(jsonC, "\"version\"\\s*:\\s*\"([^\"]+)\"");
-                        if (mC.Success) cloudCentersVersion = mC.Groups[1].Value;
-                    }
-                    catch
+                        CLOUD_CENTERS_VERCEL,
+                        CLOUD_CENTERS_URL,
+                        CLOUD_CENTERS_BACKUP
+                    };
+                    foreach (string url in centersUrls)
                     {
                         try
                         {
-                            string jsonC = wc.DownloadString(CLOUD_CENTERS_BACKUP + "?t=" + DateTime.Now.Ticks);
+                            string jsonC = wc.DownloadString(url + "?t=" + DateTime.UtcNow.Ticks);
                             Match mC = Regex.Match(jsonC, "\"version\"\\s*:\\s*\"([^\"]+)\"");
-                            if (mC.Success) cloudCentersVersion = mC.Groups[1].Value;
+                            if (mC.Success && !string.IsNullOrEmpty(mC.Groups[1].Value))
+                            {
+                                string fetchedVer = mC.Groups[1].Value.Trim();
+                                if (CompareVersions(fetchedVer, cloudCentersVersion) >= 0)
+                                {
+                                    cloudCentersVersion = fetchedVer;
+                                }
+                                break;
+                            }
                         }
                         catch {}
                     }
 
-                    // 2. Fetch Admin Version
-                    try
+                    // 2. Fetch Admin Version (Vercel first for zero-cache live updates)
+                    string[] adminUrls = new string[]
                     {
-                        string jsonA = wc.DownloadString(CLOUD_ADMIN_URL + "?t=" + DateTime.Now.Ticks);
-                        Match mA = Regex.Match(jsonA, "\"version\"\\s*:\\s*\"([^\"]+)\"");
-                        if (mA.Success) cloudAdminVersion = mA.Groups[1].Value;
-                    }
-                    catch
+                        CLOUD_ADMIN_VERCEL,
+                        CLOUD_ADMIN_URL,
+                        CLOUD_ADMIN_BACKUP
+                    };
+                    foreach (string url in adminUrls)
                     {
                         try
                         {
-                            string jsonA = wc.DownloadString(CLOUD_ADMIN_BACKUP + "?t=" + DateTime.Now.Ticks);
+                            string jsonA = wc.DownloadString(url + "?t=" + DateTime.UtcNow.Ticks);
                             Match mA = Regex.Match(jsonA, "\"version\"\\s*:\\s*\"([^\"]+)\"");
-                            if (mA.Success) cloudAdminVersion = mA.Groups[1].Value;
+                            if (mA.Success && !string.IsNullOrEmpty(mA.Groups[1].Value))
+                            {
+                                string fetchedVer = mA.Groups[1].Value.Trim();
+                                if (CompareVersions(fetchedVer, cloudAdminVersion) >= 0)
+                                {
+                                    cloudAdminVersion = fetchedVer;
+                                }
+                                break;
+                            }
                         }
                         catch {}
                     }
@@ -1117,37 +1201,67 @@ namespace BasraUpdater
 
                     if (isAdminTarget)
                     {
-                        SafeCopy(selectedFilePath, Path.Combine(workspaceDir, "admin.html"));
-                        SafeCopy(selectedFilePath, Path.Combine(workspaceDir, "public", "admin.html"));
-                        if (Directory.Exists(desktopDir))
-                        {
-                            SafeCopy(selectedFilePath, Path.Combine(desktopDir, "admin.html"));
-                            SafeCopy(selectedFilePath, Path.Combine(desktopDir, "public", "admin.html"));
-                        }
+                        string adminHtml = File.ReadAllText(selectedFilePath, Encoding.UTF8);
+                        adminHtml = Regex.Replace(adminHtml, @"id=""adminVersionVal""[^>]*>[^<]+<", string.Format("id=\"adminVersionVal\">الإصدار {0}<", newVer));
+                        adminHtml = Regex.Replace(adminHtml, @"const\s+ver\s*=\s*vData\.version\s*\|\|\s*""[^""]+""", string.Format("const ver = vData.version || \"{0}\"", newVer));
+
+                        File.WriteAllText(Path.Combine(workspaceDir, "admin.html"), adminHtml, Encoding.UTF8);
+                        File.WriteAllText(Path.Combine(workspaceDir, "public", "admin.html"), adminHtml, Encoding.UTF8);
+
                         cloudAdminVersion = newVer;
 
                         string adminJson = string.Format("{{\n  \"version\": \"{0}\",\n  \"updatedAt\": \"{1}\",\n  \"system\": \"admin\"\n}}", newVer, nowIso);
-                        File.WriteAllText(Path.Combine(workspaceDir, "version-admin.json"), adminJson);
-                        File.WriteAllText(Path.Combine(workspaceDir, "public", "version-admin.json"), adminJson);
+                        File.WriteAllText(Path.Combine(workspaceDir, "version-admin.json"), adminJson, Encoding.UTF8);
+                        File.WriteAllText(Path.Combine(workspaceDir, "public", "version-admin.json"), adminJson, Encoding.UTF8);
+
+                        string[] localAdminTargets = new string[] {
+                            @"C:\Users\ali\.gemini\antigravity\scratch\basra_forms_exe_system",
+                            @"D:\منظومة_استمارات_البصرة\برنامج_المسؤول",
+                            @"D:\منظومة_استمارات_البصرة\برنامج_المسؤول\AppStorage\AdminData",
+                            @"C:\Users\ali\Desktop\منظومة_استمارات_البصرة_النسخة_التنفيذية_EXE"
+                        };
+                        foreach (string lt in localAdminTargets)
+                        {
+                            try {
+                                if (Directory.Exists(lt)) {
+                                    File.WriteAllText(Path.Combine(lt, "admin.html"), adminHtml, Encoding.UTF8);
+                                    File.WriteAllText(Path.Combine(lt, "version-admin.json"), adminJson, Encoding.UTF8);
+                                }
+                            } catch { }
+                        }
 
                         gitAddArgs = "admin.html public/admin.html version-admin.json public/version-admin.json sheets/ public/sheets/ data/forms.json public/data/forms.json";
                     }
                     else
                     {
-                        SafeCopy(selectedFilePath, Path.Combine(workspaceDir, "index.html"));
-                        SafeCopy(selectedFilePath, Path.Combine(workspaceDir, "public", "index.html"));
-                        SafeCopy(selectedFilePath, Path.Combine(workspaceDir, "public", "center.html"));
-                        if (Directory.Exists(desktopDir))
-                        {
-                            SafeCopy(selectedFilePath, Path.Combine(desktopDir, "index.html"));
-                            SafeCopy(selectedFilePath, Path.Combine(desktopDir, "public", "index.html"));
-                            SafeCopy(selectedFilePath, Path.Combine(desktopDir, "public", "center.html"));
-                        }
+                        string centerHtml = File.ReadAllText(selectedFilePath, Encoding.UTF8);
+                        centerHtml = Regex.Replace(centerHtml, @"id=""centerVersionVal""[^>]*>[^<]+<", string.Format("id=\"centerVersionVal\">الإصدار {0}<", newVer));
+
+                        File.WriteAllText(Path.Combine(workspaceDir, "index.html"), centerHtml, Encoding.UTF8);
+                        File.WriteAllText(Path.Combine(workspaceDir, "public", "index.html"), centerHtml, Encoding.UTF8);
+                        File.WriteAllText(Path.Combine(workspaceDir, "public", "center.html"), centerHtml, Encoding.UTF8);
+
                         cloudCentersVersion = newVer;
 
                         string centersJson = string.Format("{{\n  \"version\": \"{0}\",\n  \"updatedAt\": \"{1}\",\n  \"system\": \"centers\"\n}}", newVer, nowIso);
-                        File.WriteAllText(Path.Combine(workspaceDir, "version-centers.json"), centersJson);
-                        File.WriteAllText(Path.Combine(workspaceDir, "public", "version-centers.json"), centersJson);
+                        File.WriteAllText(Path.Combine(workspaceDir, "version-centers.json"), centersJson, Encoding.UTF8);
+                        File.WriteAllText(Path.Combine(workspaceDir, "public", "version-centers.json"), centersJson, Encoding.UTF8);
+
+                        string[] localCenterTargets = new string[] {
+                            @"C:\Users\ali\.gemini\antigravity\scratch\basra_forms_exe_system",
+                            @"D:\منظومة_استمارات_البصرة\برنامج_المراكز",
+                            @"D:\منظومة_استمارات_البصرة\برنامج_المراكز\AppStorage\CenterData",
+                            @"C:\Users\ali\Desktop\منظومة_استمارات_البصرة_النسخة_التنفيذية_EXE"
+                        };
+                        foreach (string lt in localCenterTargets)
+                        {
+                            try {
+                                if (Directory.Exists(lt)) {
+                                    File.WriteAllText(Path.Combine(lt, "index.html"), centerHtml, Encoding.UTF8);
+                                    File.WriteAllText(Path.Combine(lt, "version-centers.json"), centersJson, Encoding.UTF8);
+                                }
+                            } catch { }
+                        }
 
                         gitAddArgs = "index.html public/index.html public/center.html version-centers.json public/version-centers.json sheets/ public/sheets/ data/forms.json public/data/forms.json";
                     }
@@ -1191,21 +1305,25 @@ namespace BasraUpdater
                     this.Invoke((MethodInvoker)delegate {
                         lblStatus.Text = "جاري رفع التحديث السحابي إلى GitHub و Vercel...";
                     });
-                    ProcessStartInfo psiPush = new ProcessStartInfo("git", "push origin main");
-                    psiPush.WorkingDirectory = workspaceDir;
-                    psiPush.EnvironmentVariables["HOME"] = workspaceDir;
-                    psiPush.EnvironmentVariables["GIT_TERMINAL_PROMPT"] = "0";
-                    psiPush.CreateNoWindow = true;
-                    psiPush.UseShellExecute = false;
-                    psiPush.RedirectStandardError = true;
-                    Process pPush = Process.Start(psiPush);
-                    string pushErr = pPush.StandardError.ReadToEnd();
-                    if (!pPush.WaitForExit(30000)) { try { pPush.Kill(); } catch { } }
+                    string pushErr = "";
+                    bool pushSuccess = ExecuteGitPushWithRetry(delegate(string statusText) {
+                        this.Invoke((MethodInvoker)delegate { lblStatus.Text = statusText; });
+                    }, out pushErr);
 
                     this.Invoke((MethodInvoker)delegate {
                         progressBar.Visible = false;
-                        if (pPush.ExitCode == 0)
+                        if (pushSuccess)
                         {
+                            if (isAdminTarget)
+                            {
+                                cloudAdminVersion = newVer;
+                            }
+                            else
+                            {
+                                cloudCentersVersion = newVer;
+                            }
+                            OnTargetChanged();
+
                             lblStatus.Text = string.Format("اكتمل الرفع بنجاح! تم تحديث {0} إلى الإصدار ({1}) أونلاين 🚀", targetName, newVer);
                             lblStatus.ForeColor = Color.FromArgb(16, 185, 129);
                             UpdateRollbackButtonsUI();

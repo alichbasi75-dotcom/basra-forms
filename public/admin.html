@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
@@ -4325,17 +4325,23 @@
         let remoteCats = null;
         let dbUpdatedFromOtherAdmin = false;
 
+        const currAdminVerEl = document.getElementById('adminVersionVal');
+        const currAdminVer = currAdminVerEl ? (currAdminVerEl.textContent || '').replace(/[^0-9.]/g, '') : '';
+        let uiUpdateTriggered = false;
+
         // 1. If running inside AdminApp.exe local server, check & download any new files added by other Admin PCs
         if (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost') {
           try {
-            const localCheck = await fetch('/local-api/check-admin-updates?t=' + Date.now(), { cache: 'no-store' });
+            const localCheck = await fetch('/local-api/check-admin-updates?currentVer=' + encodeURIComponent(currAdminVer) + '&t=' + Date.now(), { cache: 'no-store' });
             if (localCheck && localCheck.ok) {
               const lcData = await localCheck.json();
-              if (lcData.uiUpdated) {
+              if (lcData.uiUpdated || (lcData.currentVersion && currAdminVer && lcData.currentVersion.trim() !== currAdminVer.trim())) {
+                uiUpdateTriggered = true;
+                window._isAppReloading = true;
                 if (typeof showSyncToast === 'function') {
-                  showSyncToast('🔔 تم اكتشاف تحديث جديد لواجهة المسؤول...', 'success', 2000);
+                  showSyncToast('تم تحديث البرنامج بنجاح ✓', 'success', 2000);
                 }
-                setTimeout(() => window.location.reload(), 1000);
+                setTimeout(() => window.location.reload(), 900);
                 return;
               }
               if (lcData.hasChanges) dbUpdatedFromOtherAdmin = true;
@@ -4345,7 +4351,28 @@
           } catch (e) {}
         }
 
-        // 2. Also fetch live forms & categories directly from Cloud Server as backup
+        // 2. Direct Cloud Version Verification (Fail-Safe for Web Links and Zero-Delay Sync)
+        if (!uiUpdateTriggered && currAdminVer) {
+          try {
+            let vRes = await fetch('https://raw.githubusercontent.com/alichbasi75-dotcom/basra-forms/main/version-admin.json?t=' + Date.now(), { cache: 'no-store' }).catch(() => null);
+            if (!vRes || !vRes.ok) {
+              vRes = await fetch('/version-admin.json?t=' + Date.now(), { cache: 'no-store' }).catch(() => null);
+            }
+            if (vRes && vRes.ok) {
+              const vData = await vRes.json();
+              if (vData && vData.version && vData.version.trim() !== currAdminVer.trim()) {
+                window._isAppReloading = true;
+                if (typeof showSyncToast === 'function') {
+                  showSyncToast('تم تحديث البرنامج بنجاح ✓', 'success', 2000);
+                }
+                setTimeout(() => window.location.reload(true), 900);
+                return;
+              }
+            }
+          } catch (e) {}
+        }
+
+        // 3. Also fetch live forms & categories directly from Cloud Server as backup
         if (!remoteForms || !dbUpdatedFromOtherAdmin) {
           const baseApi = window.location.hostname.includes('vercel.app')
             ? '/api/sync'
