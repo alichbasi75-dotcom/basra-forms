@@ -297,16 +297,30 @@
         </div>
       </div>
 
-      <!-- رقم مركزك (الضغط على الرقم مباشرة يتيح تغيير المركز) -->
-      <div class="flex items-center gap-2 bg-slate-50 border-2 border-slate-300 rounded-2xl p-1.5 transition-colors">
-        <span class="text-xs font-bold text-slate-600 px-2 flex items-center gap-1.5">
-          <i class="fa-solid fa-id-card text-amber-600 text-base"></i>
-          <span>رقم مركزك:</span>
-        </span>
-        <button type="button" onclick="openGatekeeperModal()" class="bg-white hover:bg-amber-50 hover:border-amber-400 border border-slate-300 rounded-xl px-3.5 py-1.5 font-bold text-sm text-slate-900 flex items-center gap-2 shadow-sm transition-all active:scale-95 cursor-pointer" title="انقر لتغيير رقم المركز">
-          <span id="centerCodeVal" class="font-mono font-black text-amber-700 text-base">--</span>
-          <i class="fa-solid fa-arrows-rotate text-[11px] text-amber-600" title="تغيير"></i>
-        </button>
+      <!-- أدوات وأوامر الرأس (مزامنة التحديثات ورقم المركز) -->
+      <div class="flex items-center gap-2.5 flex-wrap">
+        <!-- خيار مزامنة التحديثات مصغر في أعلى الواجهة -->
+        <div id="exeCenterSyncBar" class="flex items-center gap-2 bg-slate-900 text-white border border-slate-700 rounded-xl px-2.5 py-1.5 text-xs font-bold shadow-xs">
+          <span id="exeSyncDot" class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span class="text-slate-200">مزامنة التحديثات:</span>
+          <span id="exeSyncStatusText" class="text-slate-300 text-[11px]">خلال <span id="exeSyncTimerVal" class="text-amber-400 font-mono font-bold">60</span>ث</span>
+          <button type="button" onclick="checkServerForCenterUpdates(true)" class="bg-blue-600 hover:bg-blue-500 text-white px-2 py-0.5 rounded-lg text-[10px] transition-colors flex items-center gap-1 active:scale-95 cursor-pointer" title="فحص وتحديث الآن">
+            <i id="exeSyncBtnIcon" class="fa-solid fa-rotate"></i>
+            <span>فحص الآن</span>
+          </button>
+        </div>
+
+        <!-- رقم مركزك (الضغط على الرقم مباشرة يتيح تغيير المركز) -->
+        <div class="flex items-center gap-2 bg-slate-50 border-2 border-slate-300 rounded-2xl p-1.5 transition-colors">
+          <span class="text-xs font-bold text-slate-600 px-2 flex items-center gap-1.5">
+            <i class="fa-solid fa-id-card text-amber-600 text-base"></i>
+            <span>رقم مركزك:</span>
+          </span>
+          <button type="button" onclick="openGatekeeperModal()" class="bg-white hover:bg-amber-50 hover:border-amber-400 border border-slate-300 rounded-xl px-3.5 py-1.5 font-bold text-sm text-slate-900 flex items-center gap-2 shadow-sm transition-all active:scale-95 cursor-pointer" title="انقر لتغيير رقم المركز">
+            <span id="centerCodeVal" class="font-mono font-black text-amber-700 text-base">--</span>
+            <i class="fa-solid fa-arrows-rotate text-[11px] text-amber-600" title="تغيير"></i>
+          </button>
+        </div>
       </div>
 
     </div>
@@ -3207,25 +3221,13 @@
     }
 
     function createCenterAutoSyncBar() {
-      if (document.getElementById('exeCenterSyncBar')) return;
-      const bar = document.createElement('div');
-      bar.id = 'exeCenterSyncBar';
-      bar.className = 'fixed bottom-3 left-3 z-50 bg-slate-900/95 text-white border border-slate-700 rounded-2xl px-3.5 py-2 shadow-xl flex items-center gap-2.5 text-xs font-bold backdrop-blur-md print:hidden';
-      bar.innerHTML = `
-        <span id="exeSyncDot" class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-        <span id="exeSyncStatusText">النماذج محفوظة محلياً • فحص السيرفر تلقائياً خلال <span id="exeSyncTimerVal" class="text-amber-400 font-mono">60</span>ث</span>
-        <button onclick="checkServerForCenterUpdates(true)" class="bg-blue-600 hover:bg-blue-500 text-white px-2 py-0.5 rounded-lg text-[11px] transition-colors flex items-center gap-1" title="فحص السيرفر الآن">
-          <i id="exeSyncBtnIcon" class="fa-solid fa-rotate"></i>
-          <span>فحص الآن</span>
-        </button>
-      `;
-      document.body.appendChild(bar);
-
-      const toast = document.createElement('div');
-      toast.id = 'exeCenterUpdateToast';
-      toast.className = 'fixed top-5 left-1/2 -translate-x-1/2 z-[100] bg-emerald-700 text-white border-2 border-emerald-400 rounded-2xl px-5 py-3 shadow-2xl flex items-center gap-3 text-xs sm:text-sm font-black transition-all duration-300 opacity-0 pointer-events-none -translate-y-4 print:hidden';
-      toast.innerHTML = `<i class="fa-solid fa-bell fa-shake text-amber-300 text-lg"></i><span id="exeCenterUpdateToastMsg">تم تحديث النماذج من السيرفر تلقائياً!</span>`;
-      document.body.appendChild(toast);
+      if (!document.getElementById('exeCenterUpdateToast')) {
+        const toast = document.createElement('div');
+        toast.id = 'exeCenterUpdateToast';
+        toast.className = 'fixed top-5 left-1/2 -translate-x-1/2 z-[100] bg-emerald-700 text-white border-2 border-emerald-400 rounded-2xl px-5 py-3 shadow-2xl flex items-center gap-3 text-xs sm:text-sm font-black transition-all duration-300 opacity-0 pointer-events-none -translate-y-4 print:hidden';
+        toast.innerHTML = `<i class="fa-solid fa-bell fa-shake text-amber-300 text-lg"></i><span id="exeCenterUpdateToastMsg">تم تحديث النماذج بنجاح ✓</span>`;
+        document.body.appendChild(toast);
+      }
     }
 
     function showCenterUpdateBanner(msg) {
@@ -3246,7 +3248,7 @@
       const statusText = document.getElementById('exeSyncStatusText');
       if (isManual) {
         if (icon) icon.className = 'fa-solid fa-rotate fa-spin';
-        if (statusText) statusText.innerHTML = 'جاري فحص السيرفر عن تحديثات النماذج والواجهات...';
+        if (statusText) statusText.innerHTML = 'جاري الفحص...';
       }
 
       try {
@@ -3340,7 +3342,7 @@
         _centerSyncCountdown = 60;
         if (icon) icon.className = 'fa-solid fa-rotate';
         if (statusText) {
-          statusText.innerHTML = 'النماذج محفوظة محلياً • فحص السيرفر تلقائياً خلال <span id="exeSyncTimerVal" class="text-amber-400 font-mono">60</span>ث';
+          statusText.innerHTML = 'خلال <span id="exeSyncTimerVal" class="text-amber-400 font-mono font-bold">60</span>ث';
         }
       }
     }
