@@ -157,7 +157,7 @@
     "description": "خاص بفحص ومعالجة الموظف الذي ينوي طلب إجازة مرضية.",
     "fillableTemplateId": null,
     "hidden": false,
-    "downloads": 0,
+    "downloads": 1,
     "pages": [
       "/sheets/form_1792790583961_page_1.png"
     ],
