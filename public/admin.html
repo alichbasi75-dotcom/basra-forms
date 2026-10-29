@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
@@ -4301,6 +4301,46 @@
       // Element is embedded in the top header (#exeAdminSensorBar)
     }
 
+    function triggerExeSafeReload(message) {
+      window._isAppReloading = true;
+      if (typeof showSyncToast === 'function') {
+        showSyncToast(message || 'تم تحديث البرنامج بنجاح ✓ (جاري التحميل)', 'success', 3000);
+      }
+
+      // Safe update overlay to prevent any raw browser error screens
+      let overlay = document.getElementById('_exeUpdateOverlay');
+      if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = '_exeUpdateOverlay';
+        overlay.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,0.92);backdrop-filter:blur(6px);z-index:9999999;display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;font-family:inherit;direction:rtl;';
+        overlay.innerHTML = '<div style="background:#1e293b;padding:28px 36px;border-radius:20px;border:1px solid #334155;text-align:center;box-shadow:0 25px 50px -12px rgba(0,0,0,0.7);max-width:440px;"><i class="fa-solid fa-rotate fa-spin" style="font-size:38px;color:#38bdf8;margin-bottom:14px;"></i><h3 style="margin:0 0 8px;font-size:17px;font-weight:bold;">جاري تطبيق التحديث الجديد...</h3><p style="margin:0;font-size:13px;color:#94a3b8;line-height:1.6;">يتم فحص جاهزية السيرفر المحلي وإعادة الاتصال التلقائي</p></div>';
+        document.body.appendChild(overlay);
+      }
+
+      // Retry/Polling loop: verify local server is responsive before navigating
+      let retries = 0;
+      const maxRetries = 60;
+      const pollAndNavigate = () => {
+        retries++;
+        fetch('/local-api/heartbeat?t=' + Date.now(), { cache: 'no-store' })
+          .then(res => {
+            if (res.ok) {
+              setTimeout(() => {
+                window.location.href = window.location.pathname + '?v=' + Date.now();
+              }, 300);
+            } else {
+              if (retries < maxRetries) setTimeout(pollAndNavigate, 500);
+              else window.location.href = window.location.pathname + '?v=' + Date.now();
+            }
+          })
+          .catch(() => {
+            if (retries < maxRetries) setTimeout(pollAndNavigate, 500);
+            else window.location.href = window.location.pathname + '?v=' + Date.now();
+          });
+      };
+      setTimeout(pollAndNavigate, 600);
+    }
+
     async function pollActivityLogsEveryMinute(isManual = false) {
       if (_isSyncingWrite) return;
       const icon = document.getElementById('exeAdminPollIcon');
@@ -4330,11 +4370,7 @@
               const lcData = await localCheck.json();
               if (lcData.uiUpdated || (lcData.currentVersion && currAdminVer && lcData.currentVersion.trim() !== currAdminVer.trim())) {
                 uiUpdateTriggered = true;
-                window._isAppReloading = true;
-                if (typeof showSyncToast === 'function') {
-                  showSyncToast('تم تحديث البرنامج بنجاح ✓', 'success', 2000);
-                }
-                setTimeout(() => { window.location.href = window.location.pathname + '?v=' + Date.now(); }, 900);
+                triggerExeSafeReload('تم تحديث البرنامج بنجاح ✓');
                 return;
               }
               if (lcData.hasChanges) dbUpdatedFromOtherAdmin = true;
@@ -4355,10 +4391,14 @@
               const vData = await vRes.json();
               if (vData && vData.version && vData.version.trim() !== currAdminVer.trim()) {
                 window._isAppReloading = true;
-                if (typeof showSyncToast === 'function') {
-                  showSyncToast('تم تحديث البرنامج بنجاح ✓', 'success', 2000);
+                if (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost') {
+                  triggerExeSafeReload('تم تحديث البرنامج بنجاح ✓');
+                } else {
+                  if (typeof showSyncToast === 'function') {
+                    showSyncToast('تم تحديث البرنامج بنجاح ✓', 'success', 2000);
+                  }
+                  setTimeout(() => { window.location.href = window.location.pathname + '?v=' + Date.now(); }, 900);
                 }
-                setTimeout(() => { window.location.href = window.location.pathname + '?v=' + Date.now(); }, 900);
                 return;
               }
             }
@@ -4454,6 +4494,7 @@
         }, 1200);
 
         function _notifySysExit() {
+          if (window._isAppReloading) return;
           try {
             if (navigator.sendBeacon) {
               navigator.sendBeacon('/local-api/shutdown');
@@ -4467,6 +4508,9 @@
         }
         window.addEventListener('beforeunload', _notifySysExit);
         window.addEventListener('pagehide', _notifySysExit);
+        window.addEventListener('online', () => {
+          fetch('/local-api/heartbeat?t=' + Date.now(), { cache: 'no-store' }).catch(() => {});
+        });
       }
 
       setInterval(() => {

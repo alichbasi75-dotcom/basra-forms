@@ -253,7 +253,7 @@
               <h1 class="text-base sm:text-lg font-black text-slate-900">لوحة تحكم المسؤول — مكتب انتخابات محافظة البصرة</h1>
               <span id="adminVersionBadge" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-black bg-blue-100 text-blue-900 border border-blue-300 shadow-xs" title="رقم إصدار برنامج المسؤول">
                 <i class="fa-solid fa-code-commit text-[11px] text-blue-600"></i>
-                <span id="adminVersionVal">الإصدار 2.1.6</span>
+                <span id="adminVersionVal">الإصدار 2.1.7</span>
               </span>
               <span id="adminDateBadge" class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-600 border border-slate-300" title="تاريخ آخر تحديث">
                 <i class="fa-regular fa-calendar-check text-[11px] text-emerald-600"></i>
@@ -282,17 +282,7 @@
             <span>متصل بالسحاب ومزامن</span>
           </div>
 
-          <!-- Cloud Sync Button -->
-          <button type="button" id="headerCloudSyncBtn" onclick="syncWithCloud([], { manual: true, actionName: 'كافة البيانات' })" class="text-xs bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black px-3.5 py-2 rounded-xl border border-emerald-500 shadow-md flex items-center gap-2 transition-all active:scale-95 cursor-pointer" title="مزامنة وحفظ كافة التعديلات في السحاب لكافة المراكز الـ 76 فوراً">
-            <i class="fa-solid fa-cloud-arrow-up text-sm"></i>
-            <span>مزامنة السحاب ☁️</span>
-          </button>
 
-          <!-- Logout Button -->
-          <button onclick="handleLogout()" class="text-xs bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold px-3 py-2 rounded-xl border border-rose-200 flex items-center gap-1.5 transition-colors" title="تسجيل الخروج من لوحة الإدارة">
-            <i class="fa-solid fa-power-off"></i>
-            <span>خروج</span>
-          </button>
         </div>
       </div>
     </header>
@@ -4033,7 +4023,7 @@
         }
         if (res && res.ok) {
           const vData = await res.json();
-          const ver = vData.version || "2.1.6";
+          const ver = vData.version || "2.1.7";
           const verStr = "الإصدار " + ver;
           let dateStr = "2026-10-24";
           const dateVal = vData.adminUpdatedAt || vData.updatedAt;
