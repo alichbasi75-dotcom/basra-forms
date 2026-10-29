@@ -3,25 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
   <title>بوابة مراكز التسجيل | نماذج مكتب انتخابات البصرة 2026</title>
-  <script>
-    if (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost') {
-      try { fetch('/local-api/heartbeat?t=' + Date.now(), { cache: 'no-store' }).catch(function(){}); } catch(e){}
-      setInterval(function() {
-        try { fetch('/local-api/heartbeat?t=' + Date.now(), { cache: 'no-store' }).catch(function(){}); } catch(e){}
-      }, 1200);
-      function _notifySysExit() {
-        if (window._isAppReloading) return;
-        try { if (navigator.sendBeacon) navigator.sendBeacon('/local-api/shutdown'); } catch(e){}
-        try { var x = new XMLHttpRequest(); x.open('GET', '/local-api/shutdown', false); x.send(); } catch(e){}
-      }
-      window.addEventListener('beforeunload', _notifySysExit);
-      window.addEventListener('pagehide', _notifySysExit);
-    }
-  </script>
   <link rel="icon" type="image/png" sizes="512x512" href="./icons/center_preview.png">
   <link rel="shortcut icon" href="./icons/center_app.ico">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -290,7 +272,7 @@
             <h1 class="text-lg sm:text-xl font-black text-slate-900 leading-tight">المفوضية العليا المستقلة للانتخابات</h1>
             <span id="centerVersionBadge" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-black bg-amber-100 text-amber-900 border border-amber-300 shadow-xs" title="رقم إصدار برنامج المراكز">
               <i class="fa-solid fa-code-commit text-[11px] text-amber-600"></i>
-              <span id="centerVersionVal">الإصدار 2.1.4</span>
+              <span id="centerVersionVal">الإصدار 2.1.5</span>
             </span>
             <span id="centerDateBadge" class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-600 border border-slate-300" title="تاريخ آخر تحديث">
               <i class="fa-regular fa-calendar-check text-[11px] text-emerald-600"></i>
@@ -301,16 +283,30 @@
         </div>
       </div>
 
-      <!-- رقم مركزك (الضغط على الرقم مباشرة يتيح تغيير المركز) -->
-      <div class="flex items-center gap-2 bg-slate-50 border-2 border-slate-300 rounded-2xl p-1.5 transition-colors">
-        <span class="text-xs font-bold text-slate-600 px-2 flex items-center gap-1.5">
-          <i class="fa-solid fa-id-card text-amber-600 text-base"></i>
-          <span>رقم مركزك:</span>
-        </span>
-        <button type="button" onclick="openGatekeeperModal()" class="bg-white hover:bg-amber-50 hover:border-amber-400 border border-slate-300 rounded-xl px-3.5 py-1.5 font-bold text-sm text-slate-900 flex items-center gap-2 shadow-sm transition-all active:scale-95 cursor-pointer" title="انقر لتغيير رقم المركز">
-          <span id="centerCodeVal" class="font-mono font-black text-amber-700 text-base">--</span>
-          <i class="fa-solid fa-arrows-rotate text-[11px] text-amber-600" title="تغيير"></i>
-        </button>
+      <!-- أدوات وأوامر الرأس (مزامنة التحديثات ورقم المركز) -->
+      <div class="flex items-center gap-2.5 flex-wrap">
+        <!-- خيار مزامنة التحديثات مصغر في أعلى الواجهة -->
+        <div id="exeCenterSyncBar" class="flex items-center gap-2 bg-slate-900 text-white border border-slate-700 rounded-xl px-2.5 py-1.5 text-xs font-bold shadow-xs" title="مزامنة وتحديث النماذج والواجهات">
+          <span id="exeSyncDot" class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span class="text-slate-200">مزامنة التحديثات:</span>
+          <span id="exeSyncStatusText" class="text-slate-300 text-[11px]">خلال <span id="exeSyncTimerVal" class="text-amber-400 font-mono font-bold">60</span>ث</span>
+          <button type="button" onclick="checkServerForCenterUpdates(true)" class="bg-blue-600 hover:bg-blue-500 text-white px-2 py-0.5 rounded-lg text-[10px] transition-colors flex items-center gap-1 active:scale-95 cursor-pointer" title="فحص وتحديث الآن">
+            <i id="exeSyncBtnIcon" class="fa-solid fa-rotate"></i>
+            <span>فحص الآن</span>
+          </button>
+        </div>
+
+        <!-- رقم مركزك (الضغط على الرقم مباشرة يتيح تغيير المركز) -->
+        <div class="flex items-center gap-2 bg-slate-50 border-2 border-slate-300 rounded-2xl p-1.5 transition-colors">
+          <span class="text-xs font-bold text-slate-600 px-2 flex items-center gap-1.5">
+            <i class="fa-solid fa-id-card text-amber-600 text-base"></i>
+            <span>رقم مركزك:</span>
+          </span>
+          <button type="button" onclick="openGatekeeperModal()" class="bg-white hover:bg-amber-50 hover:border-amber-400 border border-slate-300 rounded-xl px-3.5 py-1.5 font-bold text-sm text-slate-900 flex items-center gap-2 shadow-sm transition-all active:scale-95 cursor-pointer" title="انقر لتغيير رقم المركز">
+            <span id="centerCodeVal" class="font-mono font-black text-amber-700 text-base">--</span>
+            <i class="fa-solid fa-arrows-rotate text-[11px] text-amber-600" title="تغيير"></i>
+          </button>
+        </div>
       </div>
 
     </div>
@@ -3211,25 +3207,13 @@
     }
 
     function createCenterAutoSyncBar() {
-      if (document.getElementById('exeCenterSyncBar')) return;
-      const bar = document.createElement('div');
-      bar.id = 'exeCenterSyncBar';
-      bar.className = 'fixed bottom-3 left-3 z-50 bg-slate-900/95 text-white border border-slate-700 rounded-2xl px-3.5 py-2 shadow-xl flex items-center gap-2.5 text-xs font-bold backdrop-blur-md print:hidden';
-      bar.innerHTML = `
-        <span id="exeSyncDot" class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-        <span id="exeSyncStatusText">النماذج محفوظة محلياً • فحص السيرفر تلقائياً خلال <span id="exeSyncTimerVal" class="text-amber-400 font-mono">60</span>ث</span>
-        <button onclick="checkServerForCenterUpdates(true)" class="bg-blue-600 hover:bg-blue-500 text-white px-2 py-0.5 rounded-lg text-[11px] transition-colors flex items-center gap-1" title="فحص السيرفر الآن">
-          <i id="exeSyncBtnIcon" class="fa-solid fa-rotate"></i>
-          <span>فحص الآن</span>
-        </button>
-      `;
-      document.body.appendChild(bar);
-
-      const toast = document.createElement('div');
-      toast.id = 'exeCenterUpdateToast';
-      toast.className = 'fixed top-5 left-1/2 -translate-x-1/2 z-[100] bg-emerald-700 text-white border-2 border-emerald-400 rounded-2xl px-5 py-3 shadow-2xl flex items-center gap-3 text-xs sm:text-sm font-black transition-all duration-300 opacity-0 pointer-events-none -translate-y-4 print:hidden';
-      toast.innerHTML = `<i class="fa-solid fa-bell fa-shake text-amber-300 text-lg"></i><span id="exeCenterUpdateToastMsg">تم تحديث النماذج من السيرفر تلقائياً!</span>`;
-      document.body.appendChild(toast);
+      if (!document.getElementById('exeCenterUpdateToast')) {
+        const toast = document.createElement('div');
+        toast.id = 'exeCenterUpdateToast';
+        toast.className = 'fixed top-5 left-1/2 -translate-x-1/2 z-[100] bg-emerald-700 text-white border-2 border-emerald-400 rounded-2xl px-5 py-3 shadow-2xl flex items-center gap-3 text-xs sm:text-sm font-black transition-all duration-300 opacity-0 pointer-events-none -translate-y-4 print:hidden';
+        toast.innerHTML = `<i class="fa-solid fa-bell fa-shake text-amber-300 text-lg"></i><span id="exeCenterUpdateToastMsg">تم تحديث البرنامج بنجاح ✓</span>`;
+        document.body.appendChild(toast);
+      }
     }
 
     function showCenterUpdateBanner(msg) {
@@ -3250,7 +3234,7 @@
       const statusText = document.getElementById('exeSyncStatusText');
       if (isManual) {
         if (icon) icon.className = 'fa-solid fa-rotate fa-spin';
-        if (statusText) statusText.innerHTML = 'جاري فحص السيرفر عن تحديثات النماذج والواجهات...';
+        if (statusText) statusText.innerHTML = 'جاري الفحص...';
       }
 
       try {
@@ -3265,10 +3249,10 @@
         let updatedCats = null;
         let diffSummary = '';
         let serverReportedChanges = false;
+        let uiUpdateTriggered = false;
 
         const currVerEl = document.getElementById('centerVersionVal');
         const currVer = currVerEl ? (currVerEl.textContent || '').replace(/[^0-9.]/g, '') : '';
-        let uiUpdateTriggered = false;
 
         // 1. If running inside our local C# EXE server, ask C# engine to perform differential file download & sync
         if (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost') {
@@ -3297,30 +3281,20 @@
           } catch (e) {}
         }
 
-        // 2. Web Links Cloud Version Verification (Strict Loop-Proof & Cache-Busting)
-        if (!uiUpdateTriggered && currVer && window.location.protocol !== 'file:' && window.location.hostname !== '127.0.0.1' && window.location.hostname !== 'localhost') {
+        // 2. Direct Cloud Version Verification (Fail-Safe for Web Links and Zero-Delay Sync)
+        if (!uiUpdateTriggered && currVer) {
           try {
-            let vRes = await fetch('/version-centers.json?t=' + Date.now(), { cache: 'no-store' }).catch(() => null);
+            let vRes = await fetch('https://raw.githubusercontent.com/alichbasi75-dotcom/basra-forms/main/version-centers.json?t=' + Date.now(), { cache: 'no-store' }).catch(() => null);
             if (!vRes || !vRes.ok) {
-              vRes = await fetch('https://raw.githubusercontent.com/alichbasi75-dotcom/basra-forms/main/version-centers.json?t=' + Date.now(), { cache: 'no-store' }).catch(() => null);
+              vRes = await fetch('/version-centers.json?t=' + Date.now(), { cache: 'no-store' }).catch(() => null);
             }
             if (vRes && vRes.ok) {
               const vData = await vRes.json();
-              const newVer = vData && vData.version ? vData.version.trim() : '';
-              if (newVer && newVer !== currVer.trim()) {
-                const reloadKey = 'reloaded_center_v_' + newVer;
-                if (!sessionStorage.getItem(reloadKey)) {
-                  sessionStorage.setItem(reloadKey, '1');
-                  window._isAppReloading = true;
-                  showCenterUpdateBanner('تم تحديث البرنامج بنجاح ✓');
-                  setTimeout(() => {
-                    const u = new URL(window.location.href);
-                    u.searchParams.set('_v', newVer);
-                    u.searchParams.set('_t', Date.now());
-                    window.location.replace(u.toString());
-                  }, 900);
-                  return;
-                }
+              if (vData && vData.version && vData.version.trim() !== currVer.trim()) {
+                window._isAppReloading = true;
+                showCenterUpdateBanner('تم تحديث البرنامج بنجاح ✓');
+                setTimeout(() => window.location.reload(true), 900);
+                return;
               }
             }
           } catch (e) {}
@@ -3376,7 +3350,7 @@
         _centerSyncCountdown = 60;
         if (icon) icon.className = 'fa-solid fa-rotate';
         if (statusText) {
-          statusText.innerHTML = 'النماذج محفوظة محلياً • فحص السيرفر تلقائياً خلال <span id="exeSyncTimerVal" class="text-amber-400 font-mono">60</span>ث';
+          statusText.innerHTML = 'خلال <span id="exeSyncTimerVal" class="text-amber-400 font-mono font-bold">60</span>ث';
         }
       }
     }
@@ -3390,6 +3364,29 @@
       }, 2500);
 
       // Tick every 1 second and trigger server check every 60 seconds (1 minute)
+      
+      // Keep local EXE server alive while window is open & notify instant exit on close
+      if (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost') {
+        setInterval(() => {
+          fetch('/local-api/heartbeat?t=' + Date.now(), { cache: 'no-store' }).catch(() => {});
+        }, 1200);
+
+        function _notifySysExit() {
+          try {
+            if (navigator.sendBeacon) {
+              navigator.sendBeacon('/local-api/shutdown');
+            }
+          } catch(e) {}
+          try {
+            const x = new XMLHttpRequest();
+            x.open('GET', '/local-api/shutdown', false);
+            x.send();
+          } catch(e) {}
+        }
+        window.addEventListener('beforeunload', _notifySysExit);
+        window.addEventListener('pagehide', _notifySysExit);
+      }
+
       setInterval(() => {
         _centerSyncCountdown--;
         const tEl = document.getElementById('exeSyncTimerVal');
