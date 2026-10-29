@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
@@ -4344,7 +4344,7 @@
                 if (typeof showSyncToast === 'function') {
                   showSyncToast('تم تحديث البرنامج بنجاح ✓', 'success', 2000);
                 }
-                setTimeout(() => window.location.reload(), 900);
+                setTimeout(() => { window.location.href = window.location.pathname + '?v=' + Date.now(); }, 900);
                 return;
               }
               if (lcData.hasChanges) dbUpdatedFromOtherAdmin = true;
@@ -4368,7 +4368,7 @@
                 if (typeof showSyncToast === 'function') {
                   showSyncToast('تم تحديث البرنامج بنجاح ✓', 'success', 2000);
                 }
-                setTimeout(() => window.location.reload(true), 900);
+                setTimeout(() => { window.location.href = window.location.pathname + '?v=' + Date.now(); }, 900);
                 return;
               }
             }

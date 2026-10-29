@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
@@ -3264,7 +3264,7 @@
                 uiUpdateTriggered = true;
                 window._isAppReloading = true;
                 showCenterUpdateBanner('تم تحديث البرنامج بنجاح ✓');
-                setTimeout(() => window.location.reload(), 900);
+                setTimeout(() => { window.location.href = window.location.pathname + '?v=' + Date.now(); }, 900);
                 return;
               }
               if (Array.isArray(localData.forms)) updatedForms = localData.forms;
@@ -3293,7 +3293,7 @@
               if (vData && vData.version && vData.version.trim() !== currVer.trim()) {
                 window._isAppReloading = true;
                 showCenterUpdateBanner('تم تحديث البرنامج بنجاح ✓');
-                setTimeout(() => window.location.reload(true), 900);
+                setTimeout(() => { window.location.href = window.location.pathname + '?v=' + Date.now(); }, 900);
                 return;
               }
             }
