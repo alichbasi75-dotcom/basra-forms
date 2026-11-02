@@ -1342,6 +1342,91 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     // Configuration Loaded Dynamically from Local Runtime Config with Active Fallback
+    // ================= HIGH-PERFORMANCE OFFLINE INDEXED-DB CACHE =================
+    const BasraOfflineDB = {
+      dbName: 'BasraOfflineStoreV2',
+      version: 1,
+      _dbPromise: null,
+      getDB() {
+        if (!this._dbPromise) {
+          this._dbPromise = new Promise((resolve) => {
+            if (typeof indexedDB === 'undefined') return resolve(null);
+            const req = indexedDB.open(this.dbName, this.version);
+            req.onupgradeneeded = (e) => {
+              const db = e.target.result;
+              if (!db.objectStoreNames.contains('sheets')) {
+                db.createObjectStore('sheets');
+              }
+            };
+            req.onsuccess = (e) => resolve(e.target.result);
+            req.onerror = () => resolve(null);
+          });
+        }
+        return this._dbPromise;
+      },
+      async getBlobUrl(key) {
+        try {
+          const db = await this.getDB();
+          if (!db) return null;
+          return new Promise((resolve) => {
+            const tx = db.transaction('sheets', 'readonly');
+            const store = tx.objectStore('sheets');
+            const req = store.get(key);
+            req.onsuccess = () => {
+              if (req.result && (req.result instanceof Blob || req.result instanceof ArrayBuffer)) {
+                const blob = req.result instanceof Blob ? req.result : new Blob([req.result], { type: 'image/png' });
+                resolve(URL.createObjectURL(blob));
+              } else {
+                resolve(null);
+              }
+            };
+            req.onerror = () => resolve(null);
+          });
+        } catch(e) {
+          return null;
+        }
+      },
+      async saveBlob(key, blob) {
+        try {
+          const db = await this.getDB();
+          if (!db) return;
+          return new Promise((resolve) => {
+            const tx = db.transaction('sheets', 'readwrite');
+            const store = tx.objectStore('sheets');
+            store.put(blob, key);
+            tx.oncomplete = () => resolve(true);
+            tx.onerror = () => resolve(false);
+          });
+        } catch(e) {}
+      },
+      async autoCacheSheets() {
+        const sheetsToCache = [
+          'form_09_page_1.png',
+          'form_1792783929926_page_1.png',
+          'form_1792790662356_page_1.png',
+          'form_1792961892317_page_1.png'
+        ];
+        for (const s of sheetsToCache) {
+          try {
+            const existing = await this.getBlobUrl(s);
+            if (!existing) {
+              const res = await fetch('./sheets/' + s);
+              if (res.ok) {
+                const blob = await res.blob();
+                await this.saveBlob(s, blob);
+                console.log('[BasraOfflineDB] Pre-cached sheet into IndexedDB:', s);
+              }
+            }
+          } catch(e) {}
+        }
+      }
+    };
+
+    // Auto-run pre-cache on startup
+    if (typeof BasraOfflineDB !== 'undefined') {
+      setTimeout(() => BasraOfflineDB.autoCacheSheets(), 1000);
+    }
+
     const DEFAULT_BACKEND_CONFIG = {
       endpoint: "https://mytqatjayrwjjpljrckn.supabase.co",
       token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im15dHFhdGpheXJ3ampwbGpyY2tuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMyOTkxMzksImV4cCI6MjEwODg3NTEzOX0.XxWTcVC4ey8k_kgVTH0NfF53H-lRlmMgIdZZzrwqOnU",
@@ -3680,14 +3765,7 @@
       const pCountBadge = document.getElementById('pagesCountBadge');
       if (pCountBadge) pCountBadge.innerText = pages.length;
 
-      // Load each sheet with instant IndexedDB local blob fallback
-      Promise.all(pages.map(async (pageSrc) => {
-        const key = pageSrc.split('/').pop();
-        const blobUrl = await BasraOfflineDB.getBlobUrl(key);
-        return { pageSrc, finalSrc: blobUrl || pageSrc };
-      })).then((resolvedPages) => {
-        scrollArea.innerHTML = '';
-        resolvedPages.forEach(({ pageSrc, finalSrc }, pageIdx) => {
+      pages.forEach((pageSrc, pageIdx) => {
         const pNum = pageIdx + 1;
         const pageWrapper = document.createElement('div');
         pageWrapper.className = 'sheet-wrapper';
@@ -3698,25 +3776,36 @@
         if (pages.length > 1) {
           pageHeaderHtml = `
             <div class="bg-slate-800 text-white text-xs font-bold px-3 py-1.5 rounded-t flex items-center justify-between">
-              <span>الصفحة ${pNum} من ${pages.length}</span>
+              <span>صفحة ${pNum} من ${pages.length}</span>
               <button type="button" onclick="addDraggableBox('', 35, 30, 140, 30, ${pNum})" class="bg-amber-500 hover:bg-amber-400 text-slate-950 px-2.5 py-0.5 rounded text-xs font-black">
-                + إضافة نص في هذه الصفحة
+                + إضافة مربع نص
               </button>
             </div>
           `;
         }
 
+        const initialSrc = (typeof normalizePath === 'function') ? normalizePath(pageSrc) : pageSrc;
         pageWrapper.innerHTML = `
           ${pageHeaderHtml}
           <div class="page-rotatable-inner" id="pageRotatable_${pNum}" style="position: relative; width: 100%; transition: transform 0.2s ease;">
-            <img src="${finalSrc.startsWith('blob:') ? finalSrc : normalizePath(finalSrc)}" class="sheet-bg" id="sheetImage_${pNum}" alt="الصفحة ${pNum}" onload="applySheetRotation()" onerror="handleSheetImgError(this, '${activeForm.fileName || ''}', '${pageSrc}')">
+            <img src="${initialSrc}" class="sheet-bg" id="sheetImage_${pNum}" alt="ورقة ${pNum}" onload="applySheetRotation()" onerror="handleSheetImgError(this, '${activeForm.fileName || ''}', '${pageSrc}')">
             <div id="boxesContainer_${pNum}" class="absolute inset-0">
               <!-- Text Boxes for page ${pNum} -->
             </div>
           </div>
         `;
         scrollArea.appendChild(pageWrapper);
-        });
+
+        // Instant local IndexedDB blob update if available
+        if (typeof BasraOfflineDB !== 'undefined' && BasraOfflineDB.getBlobUrl) {
+          const key = pageSrc.split('/').pop();
+          BasraOfflineDB.getBlobUrl(key).then((blobUrl) => {
+            if (blobUrl) {
+              const imgEl = document.getElementById(`sheetImage_${pNum}`);
+              if (imgEl) imgEl.src = blobUrl;
+            }
+          }).catch(() => {});
+        }
       });
 
       // Initial layout pass
