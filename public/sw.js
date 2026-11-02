@@ -104,7 +104,7 @@ self.addEventListener('fetch', (event) => {
   // 3. Supabase REST API Queries: Network-First with Cache Fallback
   if (url.hostname.includes('supabase.co') && url.pathname.includes('/rest/v1/')) {
     event.respondWith(
-      fetch(req).then((response) => {
+      fetch(new Request(req, { cache: 'no-cache' })).then((response) => {
         if (response && response.ok) {
           const clone = response.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(req, clone));

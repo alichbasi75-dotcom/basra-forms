@@ -1113,8 +1113,9 @@
 
         <div id="syncPill" class="flex items-center gap-2.5 bg-slate-800/90 border border-slate-700 px-3.5 py-1.5 rounded-2xl shadow-inner">
           <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span class="text-slate-300 text-xs font-semibold">مزامنة تلقائية:</span>
-          <span id="syncTimerVal" class="text-amber-400 font-mono font-bold text-xs">60</span>ث
+          <span class="text-slate-300 text-xs font-bold">مزامنة تلقائية:</span>
+          <span id="syncTimerVal" class="text-emerald-300 font-mono font-black text-sm px-2 py-0.5 rounded-lg bg-emerald-950/80 border border-emerald-500/50 shadow-inner inline-flex items-center justify-center min-w-[32px]">60</span>
+          <span class="text-slate-400 text-xs font-bold">ث</span>
           <button onclick="fetchLatestData(true)" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-md active:scale-95" title="مزامنة وجلب التحديثات فوراً">
             <i id="syncIcon" class="fa-solid fa-rotate"></i>
             <span>تحديث فوري للاستمارات</span>
@@ -1953,32 +1954,49 @@
     // Fetch Contents from Supabase with Timeout Protection and Offline Cache
     async function fetchLatestData(isManual = false) {
       const syncIcon = document.getElementById('syncIcon');
-      if (syncIcon && isManual) syncIcon.classList.add('fa-spin');
+      if (syncIcon) syncIcon.classList.add('fa-spin');
 
       try {
         if (!supabaseClient) initSupabase();
         if (!supabaseClient) {
-          throw new Error('تعذر تهيئة الاتصال بخادم قاعدة البيانات');
+          throw new Error('تعذر الاتصال بقاعدة البيانات');
         }
 
+        // Always fetch latest departments to register any new departments or categories
+        await fetchDepartments().catch(() => {});
+
+        // Fetch fresh contents from Supabase
         const query = supabaseClient
           .from('contents_v2')
           .select('*')
           .eq('is_hidden', false)
           .order('created_at', { ascending: false });
 
-        const res = await withTimeout(query, 8000, 'انتهت مهلة استجابة السيرفر (8 ثوانٍ)');
+        const res = await withTimeout(query, 8000, 'مهلة الاتصال انتهت');
 
         if (!res.error && Array.isArray(res.data)) {
+          // Detect if data has changed compared to current memory
+          const prevHash = (allContents || []).map(c => `${c.id}_${c.updated_at || c.created_at}_${c.is_hidden}_${c.title}`).join('|');
+          const newHash = res.data.map(c => `${c.id}_${c.updated_at || c.created_at}_${c.is_hidden}_${c.title}`).join('|');
+          const hasChanged = prevHash !== newHash;
+
           allContents = res.data;
           networkErrorOccurred = false;
           try {
             localStorage.setItem('basra_cached_contents_v2', JSON.stringify(res.data));
           } catch(e) {}
           syncLocalDocumentCache(allContents);
+
+          if (typeof BasraOfflineDB !== 'undefined' && BasraOfflineDB.autoCacheSheets) {
+            BasraOfflineDB.autoCacheSheets();
+          }
+
           if (isManual) {
             if (typeof AudioEngine !== 'undefined') AudioEngine.success();
-            showToast(`تم تحديث البيانات وجلب أحدث الاستمارات بنجاح! (إجمالي المواد: ${allContents.length})`, 'success', 'مزامنة فورية ناجحة');
+            showToast(`تم تحديث المنظومة واستلام أحدث النماذج بنجاح! (العدد: ${allContents.length})`, 'success', 'مزامنة فورية');
+          } else if (hasChanged) {
+            if (typeof AudioEngine !== 'undefined') AudioEngine.info();
+            showToast(`تم استلام تحديثات جديدة للنماذج من الإدارة تلقائياً! (العدد: ${allContents.length})`, 'info', 'تحديث تلقائي');
           }
         } else {
           networkErrorOccurred = true;
@@ -1989,10 +2007,12 @@
         networkErrorOccurred = true;
         if (isManual) {
           if (typeof AudioEngine !== 'undefined') AudioEngine.error();
-          showToast('تعذر الاتصال بالخادم: ' + (err.message || 'خطأ في الشبكة'), 'error', 'خطأ في المزامنة');
+          showToast('تعذر التحديث: ' + (err.message || 'خطأ في الشبكة'), 'error', 'فشل التحديث');
         }
       } finally {
-        if (syncIcon) syncIcon.classList.remove('fa-spin');
+        if (syncIcon) {
+          setTimeout(() => syncIcon.classList.remove('fa-spin'), 600);
+        }
         filterAndRenderContent();
       }
     }
