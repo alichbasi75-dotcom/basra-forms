@@ -2473,6 +2473,91 @@
       await fetchAdminDepartments();
       await fetchAdminData();
 
+    
+    // ================= HIGH-PERFORMANCE OFFLINE INDEXED-DB CACHE =================
+    const BasraOfflineDB = {
+      dbName: 'BasraOfflineStoreV2',
+      version: 1,
+      _dbPromise: null,
+      getDB() {
+        if (!this._dbPromise) {
+          this._dbPromise = new Promise((resolve) => {
+            const req = indexedDB.open(this.dbName, this.version);
+            req.onupgradeneeded = (e) => {
+              const db = e.target.result;
+              if (!db.objectStoreNames.contains('sheets')) {
+                db.createObjectStore('sheets');
+              }
+            };
+            req.onsuccess = (e) => resolve(e.target.result);
+            req.onerror = () => resolve(null);
+          });
+        }
+        return this._dbPromise;
+      },
+      async getBlobUrl(key) {
+        try {
+          const db = await this.getDB();
+          if (!db) return null;
+          return new Promise((resolve) => {
+            const tx = db.transaction('sheets', 'readonly');
+            const store = tx.objectStore('sheets');
+            const req = store.get(key);
+            req.onsuccess = () => {
+              if (req.result && (req.result instanceof Blob || req.result instanceof ArrayBuffer)) {
+                const blob = req.result instanceof Blob ? req.result : new Blob([req.result], { type: 'image/png' });
+                resolve(URL.createObjectURL(blob));
+              } else {
+                resolve(null);
+              }
+            };
+            req.onerror = () => resolve(null);
+          });
+        } catch(e) {
+          return null;
+        }
+      },
+      async saveBlob(key, blob) {
+        try {
+          const db = await this.getDB();
+          if (!db) return;
+          return new Promise((resolve) => {
+            const tx = db.transaction('sheets', 'readwrite');
+            const store = tx.objectStore('sheets');
+            store.put(blob, key);
+            tx.oncomplete = () => resolve(true);
+            tx.onerror = () => resolve(false);
+          });
+        } catch(e) {}
+      },
+      async autoCacheSheets() {
+        const sheetsToCache = [
+          'form_09_page_1.png',
+          'form_1792783929926_page_1.png',
+          'form_1792790662356_page_1.png',
+          'form_1792961892317_page_1.png'
+        ];
+        for (const s of sheetsToCache) {
+          try {
+            const existing = await this.getBlobUrl(s);
+            if (!existing) {
+              const res = await fetch('./sheets/' + s);
+              if (res.ok) {
+                const blob = await res.blob();
+                await this.saveBlob(s, blob);
+                console.log('[BasraOfflineDB] Pre-cached sheet into IndexedDB:', s);
+              }
+            }
+          } catch(e) {}
+        }
+      }
+    };
+
+    // Auto-run pre-cache on startup
+    if (typeof BasraOfflineDB !== 'undefined') {
+      setTimeout(() => BasraOfflineDB.autoCacheSheets(), 500);
+    }
+
     // ================= PWA ENGINE & AUTO REFRESH (EVERY 60S) =================
     let adminDeferredPwaPrompt = null;
     window.addEventListener('beforeinstallprompt', (e) => {
@@ -5283,7 +5368,15 @@
     }
     try { preloadOfficialSheets(); } catch(e) {}
 
-    async function handleSheetImgError(img, fileName, origSrc) {
+    async async function handleSheetImgError(img, fileName, origSrc) {
+      const cleanKey = (origSrc || '').split('/').pop();
+      if (typeof BasraOfflineDB !== 'undefined') {
+        const blobUrl = await BasraOfflineDB.getBlobUrl(cleanKey);
+        if (blobUrl && img.src !== blobUrl) {
+          img.src = blobUrl;
+          return;
+        }
+      }
       const active = (typeof activeAdminForm !== 'undefined' ? activeAdminForm : null) || (typeof activeForm !== 'undefined' ? activeForm : null);
       if (!img._errStep) img._errStep = 1;
       else img._errStep++;
@@ -5610,7 +5703,14 @@
       const pCountBadge = document.getElementById('pagesCountBadge');
       if (pCountBadge) pCountBadge.innerText = pages.length;
 
-      pages.forEach((pageSrc, pageIdx) => {
+      // Load each sheet with instant IndexedDB local blob fallback
+      Promise.all(pages.map(async (pageSrc) => {
+        const key = pageSrc.split('/').pop();
+        const blobUrl = await BasraOfflineDB.getBlobUrl(key);
+        return { pageSrc, finalSrc: blobUrl || pageSrc };
+      })).then((resolvedPages) => {
+        scrollArea.innerHTML = '';
+        resolvedPages.forEach(({ pageSrc, finalSrc }, pageIdx) => {
         const pNum = pageIdx + 1;
         const pageWrapper = document.createElement('div');
         pageWrapper.className = 'sheet-wrapper';
@@ -5632,13 +5732,14 @@
         pageWrapper.innerHTML = `
           ${pageHeaderHtml}
           <div class="page-rotatable-inner" id="pageRotatable_${pNum}" style="position: relative; width: 100%; transition: transform 0.2s ease;">
-            <img src="${normalizePath(pageSrc)}" class="sheet-bg" id="sheetImage_${pNum}" alt="الصفحة ${pNum}" onload="applySheetRotation()" onerror="handleSheetImgError(this, '${activeForm.fileName || ''}', '${pageSrc}')">
+            <img src="${finalSrc.startsWith('blob:') ? finalSrc : normalizePath(finalSrc)}" class="sheet-bg" id="sheetImage_${pNum}" alt="الصفحة ${pNum}" onload="applySheetRotation()" onerror="handleSheetImgError(this, '${activeForm.fileName || ''}', '${pageSrc}')">
             <div id="boxesContainer_${pNum}" class="absolute inset-0">
               <!-- Text Boxes for page ${pNum} -->
             </div>
           </div>
         `;
         scrollArea.appendChild(pageWrapper);
+        });
       });
 
       // Initial layout pass

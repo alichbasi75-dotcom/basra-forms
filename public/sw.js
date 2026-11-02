@@ -1,5 +1,5 @@
-// Basra Forms System V2 - PWA Service Worker (Offline-First Engine)
-const CACHE_NAME = 'basra-pwa-v2-cache-v1';
+// Basra Forms System V2 - PWA Service Worker (Offline-First Engine V2)
+const CACHE_NAME = 'basra-pwa-v2-cache-v2';
 
 const STATIC_PRECACHE = [
   '/',
@@ -21,15 +21,15 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then(async (cache) => {
-      console.log('[SW] Pre-caching static assets...');
+      console.log('[SW] Pre-caching static assets into', CACHE_NAME);
       for (const url of STATIC_PRECACHE) {
         try {
-          const res = await fetch(url, { cache: 'reload' });
-          if (res && res.status === 200) {
+          const res = await fetch(url);
+          if (res && res.ok) {
             await cache.put(url, res);
           }
         } catch (e) {
-          console.warn('[SW] Could not pre-cache:', url, e.message);
+          console.warn('[SW] Pre-cache warning for:', url, e);
         }
       }
     })
@@ -42,7 +42,7 @@ self.addEventListener('activate', (event) => {
       return Promise.all(
         keys.map((key) => {
           if (key !== CACHE_NAME) {
-            console.log('[SW] Deleting old cache:', key);
+            console.log('[SW] Removing old cache:', key);
             return caches.delete(key);
           }
         })
@@ -57,11 +57,55 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(req.url);
 
-  // 1. Supabase REST API Queries: Network-First with Cache Fallback
+  // 1. Navigation requests (HTML pages)
+  if (req.mode === 'navigate') {
+    event.respondWith(
+      fetch(req).then((response) => {
+        if (response && response.ok) {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((c) => c.put(req, clone));
+        }
+        return response;
+      }).catch(async () => {
+        const cached = await caches.match(req) || await caches.match(url.pathname);
+        if (cached) return cached;
+        if (url.pathname.includes('admin')) {
+          return caches.match('/admin.html');
+        }
+        return caches.match('/') || caches.match('/index.html');
+      })
+    );
+    return;
+  }
+
+  // 2. Sheets and static images: Cache-First ALWAYS
+  if (url.pathname.includes('/sheets/') || url.pathname.includes('/uploads/')) {
+    event.respondWith(
+      caches.match(req, { ignoreSearch: true }).then((cached) => {
+        if (cached) return cached;
+        const fileName = url.pathname.split('/').pop();
+        return caches.match('/sheets/' + fileName).then((altCached) => {
+          if (altCached) return altCached;
+          return fetch(req).then((netRes) => {
+            if (netRes && netRes.ok) {
+              const clone = netRes.clone();
+              caches.open(CACHE_NAME).then((c) => c.put(req, clone));
+            }
+            return netRes;
+          }).catch(() => {
+            return new Response('Offline', { status: 503 });
+          });
+        });
+      })
+    );
+    return;
+  }
+
+  // 3. Supabase REST API Queries: Network-First with Cache Fallback
   if (url.hostname.includes('supabase.co') && url.pathname.includes('/rest/v1/')) {
     event.respondWith(
       fetch(req).then((response) => {
-        if (response && response.status === 200) {
+        if (response && response.ok) {
           const clone = response.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(req, clone));
         }
@@ -77,55 +121,21 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 2. Supabase Storage / Files / Sheets: Cache-First with Network Fetch & Cache
-  if (url.hostname.includes('supabase.co') || url.pathname.includes('/sheets/') || url.pathname.includes('/uploads/')) {
-    event.respondWith(
-      caches.match(req).then((cached) => {
-        if (cached) return cached;
-        return fetch(req).then((netRes) => {
-          if (netRes && netRes.status === 200) {
-            const clone = netRes.clone();
-            caches.open(CACHE_NAME).then((c) => c.put(req, clone));
-          }
-          return netRes;
-        }).catch(() => {
-          return new Response('File unavailable offline', { status: 503, statusText: 'Offline' });
-        });
-      })
-    );
-    return;
-  }
-
-  // 3. Static Assets, CDN Scripts, Fonts, Icons: Cache-First with Background Revalidation
+  // 4. Everything else: Cache-First with Network Fallback
   event.respondWith(
-    caches.match(req).then((cached) => {
-      const fetchPromise = fetch(req).then((networkRes) => {
-        if (networkRes && networkRes.status === 200) {
-          const clone = networkRes.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(req, clone));
+    caches.match(req, { ignoreSearch: true }).then((cached) => {
+      if (cached) return cached;
+      return fetch(req).then((netRes) => {
+        if (netRes && netRes.ok) {
+          const clone = netRes.clone();
+          caches.open(CACHE_NAME).then((c) => c.put(req, clone));
         }
-        return networkRes;
-      }).catch(() => {
-        if (req.mode === 'navigate') {
-          if (url.pathname.includes('admin')) {
-            return caches.match('/admin.html');
-          }
-          return caches.match('/') || caches.match('/index.html');
-        }
-        return null;
-      });
-
-      if (cached) {
-        // Return cached immediately, refresh in background
-        fetchPromise.catch(() => {});
-        return cached;
-      }
-      return fetchPromise;
+        return netRes;
+      }).catch(() => null);
     })
   );
 });
 
-// Message listener for caching dynamic URLs sent from client
 self.addEventListener('message', (event) => {
   if (event.data && event.data.action === 'cache-urls' && Array.isArray(event.data.urls)) {
     caches.open(CACHE_NAME).then((cache) => {
@@ -135,9 +145,7 @@ self.addEventListener('message', (event) => {
           const match = await cache.match(u);
           if (!match) {
             const res = await fetch(u, { mode: 'cors' });
-            if (res && res.status === 200) {
-              await cache.put(u, res);
-            }
+            if (res && res.ok) cache.put(u, res);
           }
         } catch(e) {}
       });
