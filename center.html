@@ -3331,7 +3331,7 @@
 
     
 
-    async async function handleSheetImgError(img, fileName, origSrc) {
+    async function handleSheetImgError(img, fileName, origSrc) {
       const cleanKey = (origSrc || '').split('/').pop();
       if (typeof BasraOfflineDB !== 'undefined') {
         const blobUrl = await BasraOfflineDB.getBlobUrl(cleanKey);
