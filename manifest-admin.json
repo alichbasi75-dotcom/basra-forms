@@ -1,0 +1,27 @@
+{
+  "name": "لوحة إدارة الاستمارات - المفوضية العليا المستقلة للانتخابات",
+  "short_name": "لوحة الإدارة",
+  "description": "لوحة الإدارة والتحكم في الاستمارات والنماذج لمكتب انتخابات البصرة",
+  "start_url": "/admin.html",
+  "id": "/admin.html",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "dir": "rtl",
+  "lang": "ar",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
