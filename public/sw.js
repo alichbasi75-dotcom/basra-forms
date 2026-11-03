@@ -109,7 +109,21 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 3. Supabase REST API Queries: Network-First with Cache Fallback
+  // 3. Supabase Auth / RPC / Users: Always LIVE network only, never fake or cache
+  if (url.hostname.includes('supabase.co') && (url.pathname.includes('/rpc/') || url.pathname.includes('/admin_users_v2'))) {
+    event.respondWith(
+      fetch(new Request(req, { cache: 'no-cache' })).catch(() => {
+        return new Response(JSON.stringify({ error: 'offline', message: 'No internet connection for auth' }), {
+          status: 503,
+          statusText: 'Service Unavailable',
+          headers: { 'Content-Type': 'application/json' }
+        });
+      })
+    );
+    return;
+  }
+
+  // 4. Supabase Content Queries (contents_v2, departments_v2): Network-First with Raw Array Fallback
   if (url.hostname.includes('supabase.co') && url.pathname.includes('/rest/v1/')) {
     event.respondWith(
       fetch(new Request(req, { cache: 'no-cache' })).then((response) => {
@@ -121,7 +135,7 @@ self.addEventListener('fetch', (event) => {
       }).catch(async () => {
         const cached = await caches.match(req);
         if (cached) return cached;
-        return new Response(JSON.stringify({ data: [], error: null }), {
+        return new Response('[]', {
           headers: { 'Content-Type': 'application/json' }
         });
       })
