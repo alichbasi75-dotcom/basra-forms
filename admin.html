@@ -2812,7 +2812,7 @@
     }
 
     let adminLastKnownHeartbeat = null;
-    async function fetchAdminData(isManual = false) {
+    async function fetchAdminData(isManual = true) {
       const refIcon = document.getElementById('refreshAdminIcon');
       if (refIcon && isManual) refIcon.classList.add('fa-spin');
       if (!navigator.onLine && !isManual) return;
@@ -3403,7 +3403,17 @@
       const performUpdate = async () => {
         try {
           if (!supabaseClient) initSupabase();
-          const { error: upErr } = await supabaseClient.from('contents_v2').update({ is_hidden: newHidden }).eq('id', id);
+          const nowIso = new Date().toISOString();
+          const { error: upErr } = await supabaseClient.from('contents_v2').update({ 
+            is_hidden: newHidden,
+            updated_at: nowIso
+          }).eq('id', id);
+          if (!upErr) {
+            item.is_hidden = newHidden;
+            item.updated_at = nowIso;
+            adminLastKnownHeartbeat = null;
+            renderContentsTable();
+          }
           if (upErr) {
             AudioEngine.error();
             showToast('تعذر تغيير حالة العرض: ' + upErr.message, 'error', 'خطأ');
@@ -3465,6 +3475,11 @@
           try {
             if (!supabaseClient) initSupabase();
             const { error: delErr } = await supabaseClient.from('contents_v2').delete().eq('id', id);
+            if (!delErr) {
+              adminContents = adminContents.filter(c => c.id !== id);
+              adminLastKnownHeartbeat = null;
+              renderContentsTable();
+            }
             if (delErr) {
               AudioEngine.error();
               showToast('تعذر حذف المحتوى: ' + delErr.message, 'error', 'فشل الحذف');
