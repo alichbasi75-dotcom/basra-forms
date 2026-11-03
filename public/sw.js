@@ -1,5 +1,5 @@
 // Basra Forms System V2 - PWA Service Worker (Offline-First Engine V2)
-const CACHE_NAME = 'basra-pwa-v2-cache-v3';
+const CACHE_NAME = 'basra-pwa-v2-cache-v2';
 
 const STATIC_PRECACHE = [
   '/',
@@ -109,27 +109,23 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 3. Supabase Content Queries (contents_v2, departments_v2 only for centers offline access)
-  if (url.hostname.includes('supabase.co')) {
-    if (url.pathname.includes('/rest/v1/contents_v2') || url.pathname.includes('/rest/v1/departments_v2')) {
-      event.respondWith(
-        fetch(req).then((response) => {
-          if (response && response.ok) {
-            const clone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(req, clone));
-          }
-          return response;
-        }).catch(async () => {
-          const cached = await caches.match(req);
-          if (cached) return cached;
-          return new Response('[]', {
-            headers: { 'Content-Type': 'application/json' }
-          });
-        })
-      );
-      return;
-    }
-    // Auth, admin_users, rpc, and all other mutations: bypass SW completely
+  // 3. Supabase REST API Queries: Network-First with Cache Fallback
+  if (url.hostname.includes('supabase.co') && url.pathname.includes('/rest/v1/')) {
+    event.respondWith(
+      fetch(new Request(req, { cache: 'no-cache' })).then((response) => {
+        if (response && response.ok) {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(req, clone));
+        }
+        return response;
+      }).catch(async () => {
+        const cached = await caches.match(req);
+        if (cached) return cached;
+        return new Response(JSON.stringify({ data: [], error: null }), {
+          headers: { 'Content-Type': 'application/json' }
+        });
+      })
+    );
     return;
   }
 

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <link rel="manifest" href="/manifest-admin.json">
@@ -1324,7 +1324,7 @@
   </header>
 
   <!-- Offline Notice Banner -->
-  <div id="adminOfflineNoticeBanner" class="hidden bg-amber-950/90 border-b border-amber-500/60 text-amber-200 px-4 py-2.5 text-center text-xs font-bold flex items-center justify-center gap-2 shadow-inner">
+  <div id="adminOfflineNoticeBanner" class="hidden bg-amber-500/20 border-b border-amber-500/40 text-amber-300 px-4 py-2 text-center text-xs font-bold flex items-center justify-center gap-2">
     <i class="fa-solid fa-plane-slash text-amber-400"></i>
     <span>أنت تعمل الآن في وضع عدم الاتصال (بدون إنترنت) - لوحة الإدارة تعمل في وضع القراءة من الذاكرة المحلية.</span>
   </div>
@@ -2255,16 +2255,13 @@
       const sessionStr = sessionStorage.getItem('basra_admin_session_v2');
       if (sessionStr) {
         try {
-          const parsed = JSON.parse(sessionStr);
-          if (parsed && parsed.id && parsed.username) {
-            currentUser = parsed;
-            updateUserHeader();
+          currentUser = JSON.parse(sessionStr);
+          updateUserHeader();
           initAdminDashboard();
           startSessionMonitoring();
           resetLoginButtonState();
           document.getElementById('loginModal').classList.add('hidden');
-            return;
-          }
+          return;
         } catch (e) {}
       }
 
@@ -2283,14 +2280,6 @@
       const u = (document.getElementById('loginUsername').value || '').trim();
       const p = (document.getElementById('loginPassword').value || '').trim();
       if (!u || !p) return;
-
-      // Strict security check: Login requires active internet to verify credentials with database
-      if (!navigator.onLine) {
-        if (typeof AudioEngine !== 'undefined') AudioEngine.error();
-        showToast('لا يوجد اتصال بالإنترنت. تسجيل الدخول إلى لوحة الإدارة يتطلب اتصالاً حياً بالإنترنت للتحقق من هوية المسؤول.', 'warning', 'انقطاع الإنترنت');
-        resetLoginButtonState();
-        return;
-      }
 
       const submitBtn = document.getElementById('loginSubmitBtn');
       const submitText = document.getElementById('loginSubmitText');
@@ -2344,7 +2333,7 @@
 
               if (!error) {
                 dbQueryExecuted = true;
-                if (data && data.id && data.username) {
+                if (data) {
                   if (data.is_active === false) {
                     AudioEngine.error();
                     showToast('هذا الحساب مجمد حالياً. يرجى مراجعة الإدارة المركزية.', 'warning', 'حساب مجمد');
@@ -2406,7 +2395,7 @@
     function updateUserHeader() {
       if (!currentUser) return;
       document.getElementById('headerUserName').innerText = currentUser.full_name;
-      document.getElementById('headerUserRole').innerText = currentUser.role === 'super_admin' ? 'المسؤول الأعلى (إدارة المنظومة وكافة الشعب والمحتوى)' : currentUser.department_name;
+      document.getElementById('headerUserRole').innerText = currentUser.role === 'super_admin' ? 'المسؤول الأعلى (استعراض المحتوى والمنظومة)' : currentUser.department_name;
 
       const superTabs = document.getElementById('superAdminTabs');
       const clearLogsBtn = document.getElementById('clearLogsBtn');
@@ -2419,8 +2408,8 @@
       if (currentUser.role === 'super_admin') {
         if (superTabs) superTabs.classList.remove('hidden');
         if (clearLogsBtn) clearLogsBtn.classList.remove('hidden');
-        if (tabBtnAdd) tabBtnAdd.classList.remove('hidden');
-        if (tabBtnContentsLabel) tabBtnContentsLabel.innerText = 'إدارة المحتوى والتعليمات';
+        if (tabBtnAdd) tabBtnAdd.classList.add('hidden');
+        if (tabBtnContentsLabel) tabBtnContentsLabel.innerText = 'استعراض المحتوى والتعليمات';
         if (tabActivityLabel) tabActivityLabel.innerText = 'سجل التغييرات العام';
         if (logsSectionTitle) logsSectionTitle.innerText = 'سجل تغييرات المحتوى والبيانات الموحد';
         if (logsSectionSubtitle) logsSectionSubtitle.innerText = 'توثيق كافة عمليات الإضافة والتعديل والحذف والإظهار والإخفاء للمواد والاستمارات';
@@ -2609,20 +2598,6 @@
     }
 
     // Network status listeners
-        // Global guard for online-only administrative actions (Add, Update, Delete)
-    function requireOnline(actionDesc = 'إجراء أي تعديل أو حفظ أو حذف') {
-      if (!navigator.onLine) {
-        if (typeof AudioEngine !== 'undefined') AudioEngine.error();
-        showToast(
-          `لا يوجد اتصال بالإنترنت. لا يمكن ${actionDesc} أثناء انقطاع الإنترنت. تتطلب عمليات الإدارة والتحديث اتصالاً حياً بالسيرفر المركزي.`,
-          'error',
-          'انقطاع الإنترنت'
-        );
-        return false;
-      }
-      return true;
-    }
-
     function updateAdminNetworkStatus() {
       const banner = document.getElementById('adminOfflineNoticeBanner');
       if (!navigator.onLine) {
@@ -2993,7 +2968,7 @@
       const dateStr = c.created_at ? new Date(c.created_at).toLocaleDateString('ar-IQ') : '';
       const isHidden = c.is_hidden === true;
       const isSuperAdmin = currentUser && currentUser.role === 'super_admin';
-      const canManage = Boolean(currentUser && (currentUser.role === 'super_admin' || (currentUser.role === 'dept_admin' && currentUser.department_id === c.department_id)));
+      const canManage = (currentUser && currentUser.role === 'dept_admin' && currentUser.department_id === c.department_id);
 
       const hasFile = Boolean(c.file_url || (c.file_name && c.file_name.trim()));
       let fIcon = 'fa-file-lines';
@@ -3087,8 +3062,11 @@
 
     // Modal Actions: Add / Edit Content
     function openNewContentModal() {
-      if (!requireOnline('إضافة مادة أو استمارة جديدة')) return;
-      
+      if (currentUser && currentUser.role === 'super_admin') {
+        AudioEngine.warning();
+        showToast('المدير العام لا يملك صلاحية إضافة المحتوى مباشرة.', 'warning', 'تنبيه');
+        return;
+      }
       document.getElementById('contentModalTitle').innerText = 'إضافة محتوى جديد';
       document.getElementById('contentEditId').value = '';
       document.getElementById('contentTitle').value = '';
@@ -3105,8 +3083,11 @@
     }
 
     function editContentItem(id) {
-      if (!requireOnline('تعديل هذه المادة أو الاستمارة')) return;
-      
+      if (currentUser && currentUser.role === 'super_admin') {
+        AudioEngine.warning();
+        showToast('المدير العام لا يملك صلاحية تعديل المحتوى مباشرة.', 'warning', 'تنبيه');
+        return;
+      }
       const item = adminContents.find(c => String(c.id) === String(id));
       if (!item) return;
 
@@ -3148,7 +3129,6 @@
     // Save Content to Supabase
     async function saveContentItem(e) {
       e.preventDefault();
-      if (!requireOnline('حفظ أو نشر التغييرات في المنظومة')) return;
       const saveBtn = document.getElementById('saveContentBtn');
       saveBtn.disabled = true;
       saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ...';
@@ -3372,8 +3352,11 @@
     }
 
     async function toggleContentHide(id) {
-      if (!requireOnline('تغيير حالة إظهار أو إخفاء المحتوى')) return;
-      
+      if (currentUser && currentUser.role === 'super_admin') {
+        AudioEngine.warning();
+        showToast('المدير العام لا يملك صلاحية إخفاء أو إظهار المحتوى.', 'warning', 'تنبيه');
+        return;
+      }
       const item = adminContents.find(c => c.id === id);
       if (!item) return;
 
@@ -3426,8 +3409,11 @@
     }
 
     function deleteContentItem(id) {
-      if (!requireOnline('حذف هذا المحتوى نهائياً')) return;
-      
+      if (currentUser && currentUser.role === 'super_admin') {
+        AudioEngine.warning();
+        showToast('صلاحية حذف المحتوى مخصصة لمسؤولي الشعب الإدارية فقط.', 'warning', 'تنبيه الصلاحيات');
+        return;
+      }
       const item = adminContents.find(c => c.id === id);
       if (!item) return;
 
@@ -3518,7 +3504,6 @@
 
     // Departments Management (Super Admin Only)
     function openNewDeptModal() {
-      if (!requireOnline('إضافة شعبة إدارية جديدة')) return;
       document.getElementById('deptModalTitle').innerText = 'إضافة شعبة إدارية جديدة وتعيين مسؤولها';
       document.getElementById('deptEditId').value = '';
       document.getElementById('deptNameInput').value = '';
@@ -3540,7 +3525,6 @@
     }
 
     function editDepartment(id) {
-      if (!requireOnline('تعديل بيانات الشعبة')) return;
       const dept = adminDepartments.find(d => d.id === id);
       if (!dept) return;
 
@@ -3570,7 +3554,6 @@
 
     async function saveDepartmentSubmit(e) {
       e.preventDefault();
-      if (!requireOnline('حفظ أو تعديل بيانات الشعبة')) return;
       const id = document.getElementById('deptEditId').value;
       const name = (document.getElementById('deptNameInput').value || '').trim();
       let code = (document.getElementById('deptCodeInput').value || '').trim().toLowerCase();
@@ -3710,7 +3693,6 @@
     }
 
     function deleteDepartment(id, name) {
-      if (!requireOnline('حذف هذه الشعبة الإدارية')) return;
       showConfirmModal(
         'حذف شعبة إدارية',
         `هل أنت متأكد من حذف الشعبة (${name}) نهائياً؟\n\nتنبيه: سيؤدي هذا الإجراء إلى حذف كافة المواد والاستمارات المرتبطة بهذه الشعبة.`,
@@ -3739,7 +3721,6 @@
 
     // Users Management (Super Admin Only)
     function openNewUserModal() {
-      if (!requireOnline('إضافة حساب مسؤول جديد')) return;
       if (adminDepartments.length === 0) {
         AudioEngine.warning();
         showToast('يرجى إنشاء شعبة إدارية أولاً من تبويب "إدارة الشعب" قبل إضافة مسؤولي الشعب.', 'warning', 'تنبيه إداري');
@@ -3756,7 +3737,6 @@
 
     async function saveUserSubmit(e) {
       e.preventDefault();
-      if (!requireOnline('إنشاء حساب مسؤول جديد')) return;
       const full_name = (document.getElementById('userFullNameInput').value || '').trim();
       const username = (document.getElementById('userUsernameInput').value || '').trim().toLowerCase();
       const dept_id = document.getElementById('userDeptSelect').value;
@@ -3913,7 +3893,6 @@
     function toggleUserFreeze(id, name, currentlyActive) {
       const willFreeze = currentlyActive;
       const actionText = willFreeze ? 'تجميد' : 'تنشيط';
-      if (!requireOnline(actionText + ' حساب المسؤول')) return;
       const confirmMsg = willFreeze 
         ? `هل أنت متأكد من تجميد حساب (${name})؟\nسيتم تسجيل خروجه فوراً إذا كان مسجلاً للدخول في أي حاسبة ولن يتمكن من الدخول حتى إعادة تنشيطه.`
         : `هل أنت متأكد من إعادة تنشيط حساب (${name})؟\nسيتمكن المستخدم من تسجيل الدخول للمنظومة مجدداً.`;
@@ -3954,7 +3933,6 @@
     }
 
     function deleteUserAccount(id, name) {
-      if (!requireOnline('حذف حساب المسؤول')) return;
       showConfirmModal(
         'حذف حساب مسؤول شعبة',
         `هل أنت متأكد من حذف حساب (${name}) نهائياً؟\nسيتم تسجيل خروجه فوراً إذا كان مسجلاً للدخول في أي حاسبة، مع الحفاظ الكامل على كافة سجلات نشاطاته السابقة في المنظومة للتوثيق.`,
@@ -3983,7 +3961,6 @@
 
     // تصفير كلمة المرور إلى القيمة الافتراضية (123456) من قبل المسؤول الأعلى
     function resetUserPasswordToDefault(userId, userName) {
-      if (!requireOnline('تصفير كلمة المرور إلى الافتراضية')) return;
       showConfirmModal(
         'تصفير كلمة المرور إلى الافتراضية',
         `هل أنت متأكد من تصفير كلمة مرور حساب (${userName}) وإعادتها إلى كلمة المرور الافتراضية (123456)؟\n\nلن يستطيع أحد تعيين كلمة مرور جديدة لهذا الحساب إلا صاحبه بعد تسجيل دخوله (3 مراتب على الأقل).`,
@@ -4016,7 +3993,6 @@
 
     // Change Own Password
     function openChangePasswordModal() {
-      if (!requireOnline('تغيير كلمة المرور الخاصة بك')) return;
       document.getElementById('newPass1').value = '';
       document.getElementById('newPass2').value = '';
       document.getElementById('changePasswordModal').classList.remove('hidden');
@@ -4028,7 +4004,6 @@
 
     async function handleChangePasswordSubmit(e) {
       e.preventDefault();
-      if (!requireOnline('تحديث كلمة المرور الخاصة بك')) return;
       const p1 = (document.getElementById('newPass1').value || '').trim();
       const p2 = (document.getElementById('newPass2').value || '').trim();
       if (!p1 || !p2) {
@@ -6655,7 +6630,7 @@
         }
 
         const fileSizeFormatted = c.file_size ? (String(c.file_size).toUpperCase().includes('B') ? c.file_size : `KB ${c.file_size}`) : 'KB 357.0';
-        const canManage = Boolean(currentUser && (currentUser.role === 'super_admin' || (currentUser.role === 'dept_admin' && currentUser.department_id === c.department_id)));
+        const canManage = (currentUser && currentUser.role === 'dept_admin' && currentUser.department_id === c.department_id);
 
         return `
           <div class="content-card ${c.is_hidden ? 'card-hidden-content border-rose-400' : 'bg-white border-slate-200'} border-2 hover:border-amber-400 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
