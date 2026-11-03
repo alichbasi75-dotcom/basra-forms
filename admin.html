@@ -2811,9 +2811,35 @@
       }
     }
 
+    let adminLastKnownHeartbeat = null;
     async function fetchAdminData(isManual = false) {
       const refIcon = document.getElementById('refreshAdminIcon');
       if (refIcon && isManual) refIcon.classList.add('fa-spin');
+      if (!navigator.onLine && !isManual) return;
+      if (!supabaseClient) initSupabase();
+
+      // Lightweight Heartbeat Check for Admin
+      if (!isManual && adminLastKnownHeartbeat && adminContents && adminContents.length > 0) {
+        try {
+          const checkQuery = supabaseClient
+            .from('contents_v2')
+            .select('id, updated_at', { count: 'exact' })
+            .order('updated_at', { ascending: false })
+            .limit(1);
+          const checkRes = await checkQuery;
+          if (!checkRes.error) {
+            const count = checkRes.count !== null ? checkRes.count : 0;
+            const latestItem = (checkRes.data && checkRes.data[0]) || {};
+            const currentKey = `${count}_${latestItem.id || 'none'}_${latestItem.updated_at || 'none'}`;
+            if (currentKey === adminLastKnownHeartbeat) {
+              if (refIcon) refIcon.classList.remove('fa-spin');
+              return;
+            }
+          }
+        } catch (e) {
+          console.warn('Admin heartbeat check error:', e);
+        }
+      }
 
       try {
         if (!supabaseClient) initSupabase();
@@ -2823,6 +2849,12 @@
         const { data: cData } = await contentQuery;
         adminContents = Array.isArray(cData) ? cData : [];
         syncLocalDocumentCache(adminContents);
+
+        const latestUpdated = adminContents.reduce((max, c) => {
+          const t = new Date(c.updated_at || c.created_at || 0).getTime();
+          return t > max.time ? { time: t, id: c.id, ts: (c.updated_at || c.created_at) } : max;
+        }, { time: 0, id: 'none', ts: 'none' });
+        adminLastKnownHeartbeat = `${adminContents.length}_${latestUpdated.id}_${latestUpdated.ts}`;
 
         // Update category suggestions dynamically from actual data
         updateCategorySuggestions();

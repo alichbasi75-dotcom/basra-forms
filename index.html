@@ -1114,7 +1114,7 @@
         <div id="syncPill" class="flex items-center gap-2.5 bg-slate-800/90 border border-slate-700 px-3.5 py-1.5 rounded-2xl shadow-inner">
           <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
           <span class="text-slate-300 text-xs font-bold">مزامنة تلقائية:</span>
-          <span id="syncTimerVal" class="text-emerald-300 font-mono font-black text-sm px-2 py-0.5 rounded-lg bg-emerald-950/80 border border-emerald-500/50 shadow-inner inline-flex items-center justify-center min-w-[32px]">60</span>
+          <span id="syncTimerVal" class="text-amber-300 font-mono font-black text-base px-2.5 py-0.5 rounded-lg bg-amber-950/80 border border-amber-400/60 shadow-inner inline-flex items-center justify-center min-w-[36px]">60</span>
           <span class="text-slate-400 text-xs font-bold">ث</span>
           <button onclick="fetchLatestData(true)" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-md active:scale-95" title="مزامنة وجلب التحديثات فوراً">
             <i id="syncIcon" class="fa-solid fa-rotate"></i>
@@ -1952,6 +1952,7 @@
     }
 
     // Fetch Contents from Supabase with Timeout Protection and Offline Cache
+    let lastKnownHeartbeat = null;
     async function fetchLatestData(isManual = false) {
       const syncIcon = document.getElementById('syncIcon');
       if (syncIcon) syncIcon.classList.add('fa-spin');
@@ -1963,6 +1964,32 @@
         }
 
         // Always fetch latest departments to register any new departments or categories
+        if (!navigator.onLine && !isManual) return;
+
+        // Lightweight Heartbeat Check
+        if (!isManual && lastKnownHeartbeat && allContents && allContents.length > 0) {
+          try {
+            const checkQuery = supabaseClient
+              .from('contents_v2')
+              .select('id, updated_at', { count: 'exact' })
+              .eq('is_hidden', false)
+              .order('updated_at', { ascending: false })
+              .limit(1);
+            const checkRes = await withTimeout(checkQuery, 5000, 'timeout');
+            if (!checkRes.error) {
+              const count = checkRes.count !== null ? checkRes.count : 0;
+              const latestItem = (checkRes.data && checkRes.data[0]) || {};
+              const currentKey = `${count}_${latestItem.id || 'none'}_${latestItem.updated_at || 'none'}`;
+              if (currentKey === lastKnownHeartbeat) {
+                networkErrorOccurred = false;
+                return;
+              }
+            }
+          } catch (e) {
+            console.warn('Heartbeat check error:', e);
+          }
+        }
+
         await fetchDepartments().catch(() => {});
 
         // Fetch fresh contents from Supabase
@@ -1982,6 +2009,12 @@
 
           allContents = res.data;
           networkErrorOccurred = false;
+
+          const latestUpdated = allContents.reduce((max, c) => {
+            const t = new Date(c.updated_at || c.created_at || 0).getTime();
+            return t > max.time ? { time: t, id: c.id, ts: (c.updated_at || c.created_at) } : max;
+          }, { time: 0, id: 'none', ts: 'none' });
+          lastKnownHeartbeat = `${allContents.length}_${latestUpdated.id}_${latestUpdated.ts}`;
           try {
             localStorage.setItem('basra_cached_contents_v2', JSON.stringify(res.data));
           } catch(e) {}
