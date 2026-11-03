@@ -2406,7 +2406,7 @@
     function updateUserHeader() {
       if (!currentUser) return;
       document.getElementById('headerUserName').innerText = currentUser.full_name;
-      document.getElementById('headerUserRole').innerText = currentUser.role === 'super_admin' ? 'المسؤول الأعلى (استعراض المحتوى والمنظومة)' : currentUser.department_name;
+      document.getElementById('headerUserRole').innerText = currentUser.role === 'super_admin' ? 'المسؤول الأعلى (إدارة المنظومة وكافة الشعب والمحتوى)' : currentUser.department_name;
 
       const superTabs = document.getElementById('superAdminTabs');
       const clearLogsBtn = document.getElementById('clearLogsBtn');
@@ -2419,8 +2419,8 @@
       if (currentUser.role === 'super_admin') {
         if (superTabs) superTabs.classList.remove('hidden');
         if (clearLogsBtn) clearLogsBtn.classList.remove('hidden');
-        if (tabBtnAdd) tabBtnAdd.classList.add('hidden');
-        if (tabBtnContentsLabel) tabBtnContentsLabel.innerText = 'استعراض المحتوى والتعليمات';
+        if (tabBtnAdd) tabBtnAdd.classList.remove('hidden');
+        if (tabBtnContentsLabel) tabBtnContentsLabel.innerText = 'إدارة المحتوى والتعليمات';
         if (tabActivityLabel) tabActivityLabel.innerText = 'سجل التغييرات العام';
         if (logsSectionTitle) logsSectionTitle.innerText = 'سجل تغييرات المحتوى والبيانات الموحد';
         if (logsSectionSubtitle) logsSectionSubtitle.innerText = 'توثيق كافة عمليات الإضافة والتعديل والحذف والإظهار والإخفاء للمواد والاستمارات';
@@ -2993,7 +2993,7 @@
       const dateStr = c.created_at ? new Date(c.created_at).toLocaleDateString('ar-IQ') : '';
       const isHidden = c.is_hidden === true;
       const isSuperAdmin = currentUser && currentUser.role === 'super_admin';
-      const canManage = (currentUser && currentUser.role === 'dept_admin' && currentUser.department_id === c.department_id);
+      const canManage = Boolean(currentUser && (currentUser.role === 'super_admin' || (currentUser.role === 'dept_admin' && currentUser.department_id === c.department_id)));
 
       const hasFile = Boolean(c.file_url || (c.file_name && c.file_name.trim()));
       let fIcon = 'fa-file-lines';
@@ -3088,11 +3088,7 @@
     // Modal Actions: Add / Edit Content
     function openNewContentModal() {
       if (!requireOnline('إضافة مادة أو استمارة جديدة')) return;
-      if (currentUser && currentUser.role === 'super_admin') {
-        AudioEngine.warning();
-        showToast('المدير العام لا يملك صلاحية إضافة المحتوى مباشرة.', 'warning', 'تنبيه');
-        return;
-      }
+      
       document.getElementById('contentModalTitle').innerText = 'إضافة محتوى جديد';
       document.getElementById('contentEditId').value = '';
       document.getElementById('contentTitle').value = '';
@@ -3110,11 +3106,7 @@
 
     function editContentItem(id) {
       if (!requireOnline('تعديل هذه المادة أو الاستمارة')) return;
-      if (currentUser && currentUser.role === 'super_admin') {
-        AudioEngine.warning();
-        showToast('المدير العام لا يملك صلاحية تعديل المحتوى مباشرة.', 'warning', 'تنبيه');
-        return;
-      }
+      
       const item = adminContents.find(c => String(c.id) === String(id));
       if (!item) return;
 
@@ -3381,11 +3373,7 @@
 
     async function toggleContentHide(id) {
       if (!requireOnline('تغيير حالة إظهار أو إخفاء المحتوى')) return;
-      if (currentUser && currentUser.role === 'super_admin') {
-        AudioEngine.warning();
-        showToast('المدير العام لا يملك صلاحية إخفاء أو إظهار المحتوى.', 'warning', 'تنبيه');
-        return;
-      }
+      
       const item = adminContents.find(c => c.id === id);
       if (!item) return;
 
@@ -3439,11 +3427,7 @@
 
     function deleteContentItem(id) {
       if (!requireOnline('حذف هذا المحتوى نهائياً')) return;
-      if (currentUser && currentUser.role === 'super_admin') {
-        AudioEngine.warning();
-        showToast('صلاحية حذف المحتوى مخصصة لمسؤولي الشعب الإدارية فقط.', 'warning', 'تنبيه الصلاحيات');
-        return;
-      }
+      
       const item = adminContents.find(c => c.id === id);
       if (!item) return;
 
@@ -6671,7 +6655,7 @@
         }
 
         const fileSizeFormatted = c.file_size ? (String(c.file_size).toUpperCase().includes('B') ? c.file_size : `KB ${c.file_size}`) : 'KB 357.0';
-        const canManage = (currentUser && currentUser.role === 'dept_admin' && currentUser.department_id === c.department_id);
+        const canManage = Boolean(currentUser && (currentUser.role === 'super_admin' || (currentUser.role === 'dept_admin' && currentUser.department_id === c.department_id)));
 
         return `
           <div class="content-card ${c.is_hidden ? 'card-hidden-content border-rose-400' : 'bg-white border-slate-200'} border-2 hover:border-amber-400 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
