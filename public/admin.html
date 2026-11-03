@@ -13,9 +13,9 @@
   <title>لوحة إدارة المنظومة - مكتب انتخابات البصرة V2</title>
 
   <!-- Tailwind CSS & Font Awesome -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="./libs/tailwind.min.js"></script>
+  <link rel="stylesheet" href="./libs/all.min.css">
+  <script src="./libs/pdf.min.js"></script>
 
   <!-- Cairo Font -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1189,12 +1189,12 @@
   </style>
 
   <!-- PDF.js, Mammoth.js & XLSX.js for in-browser sheet rendering -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="./libs/pdf.min.js"></script>
+  <script src="./libs/mammoth.browser.min.js"></script>
+  <script src="./libs/xlsx.full.min.js"></script>
   <script>
     if (window.pdfjsLib) {
-      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+      pdfjsLib.GlobalWorkerOptions.workerSrc = './libs/pdf.worker.min.js';
     }
   </script>
 
@@ -4321,7 +4321,7 @@
       }
       try {
         try {
-          pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+          pdfjsLib.GlobalWorkerOptions.workerSrc = './libs/pdf.worker.min.js';
         } catch(e) {}
 
         let loadingTask;

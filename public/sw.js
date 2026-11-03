@@ -14,7 +14,15 @@ const STATIC_PRECACHE = [
   '/sheets/form_09_page_1.png',
   '/sheets/form_1792783929926_page_1.png',
   '/sheets/form_1792790662356_page_1.png',
-  '/sheets/form_1792961892317_page_1.png'
+  '/sheets/form_1792961892317_page_1.png',
+  '/libs/tailwind.min.js',
+  '/libs/all.min.css',
+  '/libs/pdf.min.js',
+  '/libs/pdf.worker.min.js',
+  '/libs/mammoth.browser.min.js',
+  '/libs/xlsx.full.min.js',
+  '/webfonts/fa-solid-900.woff2',
+  '/webfonts/fa-regular-400.woff2'
 ];
 
 self.addEventListener('install', (event) => {
