@@ -1053,6 +1053,174 @@
       -webkit-text-fill-color: #000000 !important;
     }
 
+  
+    /* =========================================================================
+       HIGH-CONTRAST READABILITY & CLARITY ENGINE (DARK & LIGHT MODES)
+       ========================================================================= */
+
+    /* --- Dark Mode High Contrast --- */
+    body:not(.light-theme) #adminContentsTableBody tr,
+    body:not(.light-theme) #contentTableBody tr {
+      background-color: #0d1527 !important;
+      border-bottom: 1.5px solid #1e293b !important;
+      transition: background-color 0.15s ease;
+    }
+    body:not(.light-theme) #adminContentsTableBody tr:nth-child(even),
+    body:not(.light-theme) #contentTableBody tr:nth-child(even) {
+      background-color: #111c33 !important;
+    }
+    body:not(.light-theme) #adminContentsTableBody tr:hover,
+    body:not(.light-theme) #contentTableBody tr:hover {
+      background-color: #1e2e4f !important;
+    }
+
+    body:not(.light-theme) .table-title,
+    body:not(.light-theme) .card-title {
+      color: #ffffff !important;
+      -webkit-text-fill-color: #ffffff !important;
+      font-weight: 900 !important;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+    }
+
+    body:not(.light-theme) .table-desc,
+    body:not(.light-theme) .card-desc {
+      color: #f1f5f9 !important;
+      -webkit-text-fill-color: #f1f5f9 !important;
+      font-weight: 700 !important;
+    }
+
+    body:not(.light-theme) .instruction-box-table {
+      background-color: rgba(15, 23, 42, 0.8) !important;
+      border: 1px solid #334155 !important;
+      color: #f8fafc !important;
+    }
+
+    body:not(.light-theme) .instruction-box-card {
+      background-color: rgba(15, 23, 42, 0.85) !important;
+      border: 1.5px solid #334155 !important;
+      color: #f8fafc !important;
+    }
+
+    body:not(.light-theme) .table-dept-cell {
+      color: #fbbf24 !important;
+      -webkit-text-fill-color: #fbbf24 !important;
+      font-weight: 900 !important;
+    }
+
+    body:not(.light-theme) .table-publisher-badge {
+      background-color: rgba(99, 102, 241, 0.22) !important;
+      border: 1px solid rgba(99, 102, 241, 0.5) !important;
+      color: #c7d2fe !important;
+      font-weight: 800 !important;
+    }
+
+    body:not(.light-theme) .table-date-cell {
+      color: #e2e8f0 !important;
+      font-weight: 800 !important;
+    }
+
+    body:not(.light-theme) .table-status-visible {
+      background-color: rgba(16, 185, 129, 0.22) !important;
+      border: 1px solid rgba(16, 185, 129, 0.5) !important;
+      color: #6ee7b7 !important;
+      font-weight: 900 !important;
+    }
+
+    body:not(.light-theme) .table-status-hidden {
+      background-color: rgba(244, 63, 94, 0.22) !important;
+      border: 1px solid rgba(244, 63, 94, 0.5) !important;
+      color: #fca5a5 !important;
+      font-weight: 900 !important;
+    }
+
+    body:not(.light-theme) .table-badge-textonly {
+      background-color: rgba(245, 158, 11, 0.2) !important;
+      border: 1px solid rgba(245, 158, 11, 0.5) !important;
+      color: #fde047 !important;
+      font-weight: 800 !important;
+    }
+
+    /* --- Light Mode High Contrast --- */
+    body.light-theme #adminContentsTableBody tr,
+    body.light-theme #contentTableBody tr {
+      background-color: #ffffff !important;
+      border-bottom: 1.5px solid #e2e8f0 !important;
+      transition: background-color 0.15s ease;
+    }
+    body.light-theme #adminContentsTableBody tr:nth-child(even),
+    body.light-theme #contentTableBody tr:nth-child(even) {
+      background-color: #f8fafc !important;
+    }
+    body.light-theme #adminContentsTableBody tr:hover,
+    body.light-theme #contentTableBody tr:hover {
+      background-color: #f1f5f9 !important;
+    }
+
+    body.light-theme .table-title,
+    body.light-theme .card-title {
+      color: #0f172a !important;
+      -webkit-text-fill-color: #0f172a !important;
+      font-weight: 900 !important;
+    }
+
+    body.light-theme .table-desc,
+    body.light-theme .card-desc {
+      color: #1e293b !important;
+      -webkit-text-fill-color: #1e293b !important;
+      font-weight: 700 !important;
+    }
+
+    body.light-theme .instruction-box-table {
+      background-color: #f8fafc !important;
+      border: 1px solid #cbd5e1 !important;
+      color: #0f172a !important;
+    }
+
+    body.light-theme .instruction-box-card {
+      background-color: #f8fafc !important;
+      border: 1.5px solid #cbd5e1 !important;
+      color: #0f172a !important;
+    }
+
+    body.light-theme .table-dept-cell {
+      color: #9a3412 !important;
+      -webkit-text-fill-color: #9a3412 !important;
+      font-weight: 900 !important;
+    }
+
+    body.light-theme .table-publisher-badge {
+      background-color: #e0e7ff !important;
+      border: 1px solid #a5b4fc !important;
+      color: #312e81 !important;
+      font-weight: 900 !important;
+    }
+
+    body.light-theme .table-date-cell {
+      color: #0f172a !important;
+      font-weight: 800 !important;
+    }
+
+    body.light-theme .table-status-visible {
+      background-color: #d1fae5 !important;
+      border: 1px solid #10b981 !important;
+      color: #065f46 !important;
+      font-weight: 900 !important;
+    }
+
+    body.light-theme .table-status-hidden {
+      background-color: #ffe4e6 !important;
+      border: 1px solid #f43f5e !important;
+      color: #9f1239 !important;
+      font-weight: 900 !important;
+    }
+
+    body.light-theme .table-badge-textonly {
+      background-color: #fef3c7 !important;
+      border: 1px solid #f59e0b !important;
+      color: #78350f !important;
+      font-weight: 900 !important;
+    }
+
   </style>
 
   <!-- PDF.js, Mammoth.js & XLSX.js for in-browser sheet rendering -->
@@ -2190,58 +2358,162 @@
       if (!tbody) return;
 
       if (items.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-500 font-bold">لا توجد عناصر مطابقة للبحث أو التصنيف.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-400 font-bold">لا توجد نماذج أو تعليمات مطابقة.</td></tr>`;
         return;
       }
 
       tbody.innerHTML = items.map(c => {
         const dateStr = c.created_at ? new Date(c.created_at).toLocaleDateString('ar-IQ') : '';
-        const hasFile = Boolean(c.file_url || (c.file_name && c.file_name.trim()));
+        const hasFile = Boolean(c.file_url && c.file_url.trim() && c.file_type !== 'text_only');
         const hasBodyText = Boolean(c.body_text && c.body_text.trim());
+        const publisherName = (c.updated_by_name && c.updated_by_name.trim()) ? c.updated_by_name.trim() : 'إدارة المنظومة';
+
+        const ext = (c.file_name || c.file_type || '').split('.').pop().toLowerCase();
+        const isImage = (['png', 'jpg', 'jpeg', 'webp', 'gif', 'svg'].includes(ext) || c.file_type === 'image');
+        const isPdf = (ext === 'pdf' || c.file_type === 'pdf');
+        const isWord = (ext === 'doc' || ext === 'docx' || c.file_type === 'doc' || c.file_type === 'docx');
+        const isExcel = (ext === 'xls' || ext === 'xlsx' || c.file_type === 'xls' || c.file_type === 'xlsx');
 
         let fIcon = 'fa-file-lines';
-        let fBadgeStyle = 'bg-blue-600/20 text-blue-400 border-blue-500/40';
-        const ext = (c.file_name || c.file_type || '').split('.').pop().toLowerCase();
-        if (ext === 'pdf') { fIcon = 'fa-file-pdf text-rose-500'; fBadgeStyle = 'bg-rose-500/20 text-rose-400 border-rose-500/40'; }
-        else if (ext === 'doc' || ext === 'docx') { fIcon = 'fa-file-word text-blue-500'; fBadgeStyle = 'bg-blue-500/20 text-blue-400 border-blue-500/40'; }
-        else if (ext === 'xls' || ext === 'xlsx') { fIcon = 'fa-file-excel text-emerald-500'; fBadgeStyle = 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40'; }
-        else if (['png', 'jpg', 'jpeg', 'webp'].includes(ext)) { fIcon = 'fa-file-image text-amber-500'; fBadgeStyle = 'bg-amber-500/20 text-amber-400 border-amber-500/40'; }
+        let fBadgeStyle = 'bg-blue-600/20 text-blue-300 border-blue-500/40';
+        let fTileBg = 'bg-blue-600/20 text-blue-400 border-blue-500/40';
+        let fLabel = 'ملف مرفق';
 
-        return `
-          <tr class="hover:bg-slate-800/40 transition-colors border-b border-slate-800/60">
-            <td class="p-4">
-              <div class="font-black text-white text-xs">${escapeHtml(c.title || 'بدون عنوان')}</div>
-              ${hasBodyText ? `<div class="text-[11px] text-slate-400 line-clamp-1 max-w-xs mt-0.5">${escapeHtml(c.body_text)}</div>` : ''}
-            </td>
-            <td class="p-4 text-amber-500 font-black">${escapeHtml(c.department_name || 'جهة غير محددة')}</td>
-            <td class="p-4">
-              <span class="px-2.5 py-1 rounded-md text-[10px] bg-slate-800 text-slate-200 border border-slate-700 font-bold">${escapeHtml(c.category_name || 'عام')}</span>
-            </td>
-            <td class="p-4">
-              ${hasFile ? `
-                <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl ${fBadgeStyle} border font-black text-xs shadow-sm select-none" title="${escapeHtml(c.file_name || c.title || 'ملف مرفق')}">
-                  <i class="fa-solid ${fIcon}"></i>
-                  <span class="truncate max-w-[140px]">${escapeHtml(c.file_name || c.title || 'ملف مرفق')}</span>
+        if (isPdf) {
+          fIcon = 'fa-file-pdf text-rose-500';
+          fBadgeStyle = 'bg-rose-500/20 text-rose-300 border-rose-500/40';
+          fTileBg = 'bg-rose-600/20 text-rose-400 border-rose-500/40';
+          fLabel = 'مستند PDF';
+        } else if (isWord) {
+          fIcon = 'fa-file-word text-blue-500';
+          fBadgeStyle = 'bg-blue-500/20 text-blue-300 border-blue-500/40';
+          fTileBg = 'bg-blue-600/20 text-blue-400 border-blue-500/40';
+          fLabel = 'مستند Word';
+        } else if (isExcel) {
+          fIcon = 'fa-file-excel text-emerald-500';
+          fBadgeStyle = 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40';
+          fTileBg = 'bg-emerald-600/20 text-emerald-400 border-emerald-500/40';
+          fLabel = 'جدول Excel';
+        } else if (isImage) {
+          fIcon = 'fa-file-image text-purple-500';
+          fBadgeStyle = 'bg-purple-500/20 text-purple-300 border-purple-500/40';
+          fTileBg = 'bg-purple-600/20 text-purple-400 border-purple-500/40';
+          fLabel = 'صورة';
+        }
+
+        let thumbnailHtml = '';
+        if (!hasFile) {
+          thumbnailHtml = `
+            <div onclick="openUnifiedModal('${c.id}')" class="table-badge-textonly inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold shadow-sm select-none cursor-pointer hover:scale-105 transition-transform" title="نص تعليمات وتوجيهات فقط - اضغط للقراءة">
+              <i class="fa-solid fa-align-right text-amber-400"></i>
+              <span>نص تعليمات فقط</span>
+            </div>
+          `;
+        } else if (isImage && c.file_url) {
+          thumbnailHtml = `
+            <div class="flex items-center gap-2">
+              <div onclick="openSheetModal('${c.id}')" class="relative group cursor-pointer w-12 h-12 rounded-xl overflow-hidden border-2 border-slate-600 dark:border-slate-500 light:border-slate-300 shadow-md hover:scale-110 transition-transform shrink-0 bg-slate-900" title="اضغط لتكبير الصورة">
+                <img src="${c.file_url}" alt="${escapeHtml(c.title)}" class="w-full h-full object-cover" loading="lazy" />
+                <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-[11px]">
+                  <i class="fa-solid fa-magnifying-glass-plus"></i>
                 </div>
-              ` : '<span class="px-2.5 py-1 rounded-lg text-slate-400 bg-slate-800/60 font-bold text-[11px] inline-flex items-center gap-1 select-none"><i class="fa-solid fa-file-lines"></i> بدون مرفق</span>'}
-            </td>
-            <td class="p-4 text-slate-400 font-mono text-[11px]">${dateStr}</td>
-            <td class="p-4 text-center">
-              <div class="flex items-center justify-center gap-2">
-                <button type="button" onclick="openSheetModal('${c.id}')" class="bg-blue-600 hover:bg-blue-500 text-white font-black text-xs sm:text-sm py-2 px-3.5 rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-sm active:scale-95 cursor-pointer whitespace-nowrap" title="عرض النموذج ومعاينته">
-                  <i class="fa-regular fa-eye text-base text-white"></i>
-                  <span class="text-white font-black">عرض النموذج</span>
-                </button>
-                <button type="button" onclick="downloadFormFile('${c.id}')" class="bg-slate-100 hover:bg-slate-200 text-slate-800 font-black text-xs sm:text-sm py-2 px-3.5 rounded-xl flex items-center justify-center gap-1.5 transition-colors border border-slate-300 shadow-sm active:scale-95 cursor-pointer whitespace-nowrap" title="تنزيل الملف واختيار موقع الحفظ باسم: ${escapeHtml(c.file_name || c.title)}">
-                  <i class="fa-solid fa-download text-amber-600 text-sm"></i>
-                  <span class="text-slate-800 font-black">تنزيل الملف</span>
-                </button>
               </div>
-            </td>
-          </tr>
+              <div class="min-w-0">
+                <div onclick="openSheetModal('${c.id}')" class="truncate max-w-[120px] text-xs font-black text-slate-100 dark:text-slate-100 light:text-slate-900 cursor-pointer hover:text-blue-400" title="${escapeHtml(c.file_name || fLabel)}">${escapeHtml(c.file_name || fLabel)}</div>
+                <div class="text-[10px] text-purple-400 font-bold">${c.file_size ? (String(c.file_size).toUpperCase().includes('B') ? c.file_size : `KB ${c.file_size}`) : 'صورة'}</div>
+              </div>
+            </div>
+          `;
+        } else {
+          thumbnailHtml = `
+            <div class="flex items-center gap-2">
+              <div onclick="openSheetModal('${c.id}')" class="w-12 h-12 rounded-xl ${fTileBg} border-2 flex flex-col items-center justify-center cursor-pointer hover:scale-110 transition-transform shrink-0 shadow-sm" title="اضغط لمعاينة المستند">
+              <i class="fa-solid ${fIcon} text-lg"></i>
+              <span class="text-[9px] font-black uppercase mt-0.5">${ext || 'FILE'}</span>
+            </div>
+            <div class="min-w-0">
+              <div onclick="openSheetModal('${c.id}')" class="truncate max-w-[120px] text-xs font-black text-slate-100 dark:text-slate-100 light:text-slate-900 cursor-pointer hover:text-blue-400" title="${escapeHtml(c.file_name || fLabel)}">${escapeHtml(c.file_name || fLabel)}</div>
+              <div class="text-[10px] text-slate-400 font-bold">${c.file_size ? (String(c.file_size).toUpperCase().includes('B') ? c.file_size : `KB ${c.file_size}`) : fLabel}</div>
+            </div>
+          </div>
         `;
-      }).join('');
-    }
+      }
+
+      return `
+        <tr class="transition-colors border-b">
+          <!-- 1. عنوان النموذج والتعليمات (مساحة واسعة وواضحة جداً) -->
+          <td class="p-4 min-w-[280px] max-w-lg">
+            <div onclick="openUnifiedModal('${c.id}')" class="font-black table-title text-sm cursor-pointer hover:underline hover:text-blue-400 transition-colors leading-snug" title="اضغط لقراءة وطباعة التعليمات كاملة">
+              ${escapeHtml(c.title || 'بدون عنوان')}
+            </div>
+            ${hasBodyText ? `
+              <div onclick="openUnifiedModal('${c.id}')" class="instruction-box-table text-xs table-desc rounded-xl p-2.5 mt-2 font-semibold cursor-pointer hover:border-blue-500 transition-all shadow-sm leading-relaxed" title="اضغط لعرض وقراءة التعليمات كاملة">
+                <div class="line-clamp-2 select-text">${escapeHtml(c.body_text)}</div>
+                <div class="mt-1 flex items-center gap-1.5 text-[11px] text-blue-400 hover:text-blue-300 font-black">
+                  <i class="fa-solid fa-book-open text-[10px] text-amber-300"></i>
+                  <span class="underline">قراءة وطباعة التعليمات كاملة</span>
+                </div>
+              </div>
+            ` : ''}
+          </td>
+
+          <!-- 2. المسؤول الناشر -->
+          <td class="p-4 whitespace-nowrap">
+            <div class="table-publisher-badge inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs shadow-sm" title="المسؤول الناشر">
+              <i class="fa-solid fa-user-shield text-[11px]"></i>
+              <span class="truncate max-w-[130px]">${escapeHtml(publisherName)}</span>
+            </div>
+          </td>
+
+          <!-- 3. الشعبة المصدرة -->
+          <td class="p-4 whitespace-nowrap font-black text-xs table-dept-cell">
+            <div class="flex items-center gap-1.5">
+              <i class="fa-solid fa-building-columns text-[11px] opacity-80"></i>
+              <span>${escapeHtml(c.department_name || '—')}</span>
+            </div>
+          </td>
+
+          <!-- 4. التصنيف -->
+          <td class="p-4 whitespace-nowrap">
+            <span class="px-3 py-1.5 rounded-xl text-xs bg-slate-800 text-slate-200 border border-slate-700 font-bold shadow-sm">${escapeHtml(c.category_name || 'عام')}</span>
+          </td>
+
+          <!-- 5. المرفق / المعاينة مع صورة مصغرة -->
+          <td class="p-4">
+            ${thumbnailHtml}
+          </td>
+
+          <!-- 6. تاريخ النشر -->
+          <td class="p-4 whitespace-nowrap table-date-cell font-mono text-xs">
+            <div class="flex items-center gap-1.5">
+              <i class="fa-regular fa-calendar-days text-[11px] opacity-70"></i>
+              <span>${dateStr}</span>
+            </div>
+          </td>
+
+          <!-- 7. الإجراءات -->
+          <td class="p-4 text-center">
+            <div class="flex items-center justify-center gap-2 flex-wrap">
+              ${!hasFile ? `
+                <button type="button" onclick="openUnifiedModal('${c.id}')" class="bg-gradient-to-r from-blue-700 to-indigo-600 hover:from-blue-600 hover:to-indigo-500 text-white font-black text-xs py-2 px-3.5 rounded-xl flex items-center justify-center gap-1.5 shadow-md active:scale-95 cursor-pointer whitespace-nowrap transition-all" title="قراءة التعليمات كاملة مع خيارات الطباعة والنسخ">
+                  <i class="fa-solid fa-book-open text-amber-300 text-sm"></i>
+                  <span>قراءة التعليمات</span>
+                </button>
+              ` : `
+                <button type="button" onclick="openSheetModal('${c.id}')" class="bg-blue-600 hover:bg-blue-500 text-white font-black text-xs py-2 px-3.5 rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-md active:scale-95 cursor-pointer whitespace-nowrap" title="عرض النموذج">
+                  <i class="fa-regular fa-eye text-sm text-white"></i>
+                  <span>عرض النموذج</span>
+                </button>
+                <button type="button" onclick="downloadFormFile('${c.id}')" class="bg-slate-800 hover:bg-slate-700 text-slate-100 font-black text-xs py-2 px-2.5 rounded-xl flex items-center justify-center gap-1 transition-colors border border-slate-600 shadow-sm active:scale-95 cursor-pointer" title="تنزيل الملف">
+                  <i class="fa-solid fa-download text-amber-400 text-xs"></i>
+                </button>
+              `}
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
 
     function renderGrid(items) {
       const grid = document.getElementById('contentGrid');
@@ -2255,11 +2527,11 @@
               <div class="w-16 h-16 rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center text-3xl mx-auto mb-4">
                 <i class="fa-solid fa-cloud-arrow-down"></i>
               </div>
-              <h3 class="card-title text-base sm:text-lg font-black text-white mb-2">تعذر مزامنة النماذج حالياً</h3>
+              <h3 class="card-title text-base sm:text-lg font-black text-white mb-2">تعذر مزامنة النماذج والتعليمات</h3>
               <p class="text-xs text-slate-200 max-w-md mx-auto mb-5 leading-relaxed font-bold">
-                يرجى التأكد من اتصال الشبكة وسيعاود النظام المحاولة تلقائياً.
+                يرجى التحقق من اتصال الإنترنت أو النقر لإعادة المحاولة.
               </p>
-              <button onclick="fetchLatestData(true)" class="bg-blue-600 hover:bg-blue-500 text-white font-black text-xs px-6 py-2.5 rounded-xl transition-all shadow-md active:scale-95 inline-flex items-center gap-2">
+              <button onclick="fetchLatestData(true)" class="bg-blue-600 hover:bg-blue-500 text-white font-black text-xs px-6 py-2.5 rounded-xl transition-all shadow-md active:scale-95 inline-flex items-center gap-2 cursor-pointer">
                 <i class="fa-solid fa-rotate"></i>
                 <span>إعادة المحاولة الآن</span>
               </button>
@@ -2284,103 +2556,138 @@
         const isExcel = (ext === 'xls' || ext === 'xlsx' || f.file_type === 'xls' || f.file_type === 'xlsx');
         const isPdf = (ext === 'pdf' || f.file_type === 'pdf');
         const isImage = (['png', 'jpg', 'jpeg', 'webp', 'gif', 'svg'].includes(ext) || f.file_type === 'image');
-        const isOffice = isWord || isExcel;
 
         const hasFile = Boolean(f.file_url && f.file_url.trim() && f.file_type !== 'text_only');
         const hasBodyText = Boolean(f.body_text && f.body_text.trim());
+        const publisherName = (f.updated_by_name && f.updated_by_name.trim()) ? f.updated_by_name.trim() : 'إدارة المنظومة';
 
         let typeBadge = '';
         let fileIcon = '';
 
         if (!hasFile) {
-          typeBadge = '<span class="bg-amber-100 text-amber-900 border border-amber-300 text-xs font-bold px-2.5 py-1 rounded-lg flex items-center gap-1"><i class="fa-solid fa-align-right text-[10px]"></i> توجيهات نصية</span>';
+          typeBadge = '<span class="table-badge-textonly text-xs font-black px-3 py-1 rounded-xl border flex items-center gap-1.5"><i class="fa-solid fa-align-right text-[11px]"></i> تعليمات نصية فقط</span>';
           fileIcon = 'fa-file-lines text-amber-500';
         } else if (isWord) {
-          typeBadge = '<span class="bg-blue-100 text-blue-800 text-xs font-bold px-2.5 py-1 rounded-lg">ملف Word</span>';
-          fileIcon = 'fa-file-word text-blue-600';
+          typeBadge = '<span class="bg-blue-600/20 text-blue-300 border border-blue-500/40 text-xs font-black px-3 py-1 rounded-xl">مستند Word</span>';
+          fileIcon = 'fa-file-word text-blue-500';
         } else if (isExcel) {
-          typeBadge = '<span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-2.5 py-1 rounded-lg">ملف Excel</span>';
-          fileIcon = 'fa-file-excel text-emerald-600';
+          typeBadge = '<span class="bg-emerald-600/20 text-emerald-300 border border-emerald-500/40 text-xs font-black px-3 py-1 rounded-xl">جدول Excel</span>';
+          fileIcon = 'fa-file-excel text-emerald-500';
         } else if (isImage) {
-          typeBadge = '<span class="bg-purple-100 text-purple-800 text-xs font-bold px-2.5 py-1 rounded-lg">صورة JPG</span>';
-          fileIcon = 'fa-file-image text-purple-600';
+          typeBadge = '<span class="bg-purple-600/20 text-purple-300 border border-purple-500/40 text-xs font-black px-3 py-1 rounded-xl">صورة مرفقة</span>';
+          fileIcon = 'fa-file-image text-purple-500';
         } else if (isPdf) {
-          typeBadge = '<span class="bg-rose-100 text-rose-800 text-xs font-bold px-2.5 py-1 rounded-lg">ملف PDF</span>';
-          fileIcon = 'fa-file-pdf text-rose-600';
+          typeBadge = '<span class="bg-rose-600/20 text-rose-300 border border-rose-500/40 text-xs font-black px-3 py-1 rounded-xl">مستند PDF</span>';
+          fileIcon = 'fa-file-pdf text-rose-500';
         } else {
-          typeBadge = '<span class="bg-blue-100 text-blue-800 text-xs font-bold px-2.5 py-1 rounded-lg">مستند رسمي</span>';
-          fileIcon = 'fa-file-lines text-blue-600';
+          typeBadge = '<span class="bg-blue-600/20 text-blue-300 border border-blue-500/40 text-xs font-black px-3 py-1 rounded-xl">مستند رسمي</span>';
+          fileIcon = 'fa-file-lines text-blue-500';
         }
 
         const fileSizeFormatted = hasFile
           ? (f.file_size ? (String(f.file_size).toUpperCase().includes('B') ? f.file_size : `KB ${f.file_size}`) : '')
           : '';
 
+        // Media Thumbnail Banner
+        let mediaBannerHtml = '';
+        if (hasFile && isImage && f.file_url) {
+          mediaBannerHtml = `
+            <div onclick="openSheetModal('${f.id}')" class="relative group cursor-pointer overflow-hidden rounded-xl border border-slate-700/70 mb-3 bg-slate-900 h-32 flex items-center justify-center shadow-inner" title="اضغط لتكبير الصورة">
+              <img src="${f.file_url}" alt="${escapeHtml(f.title)}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
+              <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 text-white text-xs font-black backdrop-blur-[2px]">
+                <i class="fa-solid fa-magnifying-glass-plus text-base text-amber-300"></i>
+                <span>تكبير وعرض الصورة</span>
+              </div>
+            </div>
+          `;
+        } else if (hasFile) {
+          mediaBannerHtml = `
+            <div onclick="openSheetModal('${f.id}')" class="cursor-pointer rounded-xl border border-slate-700/70 bg-slate-800/40 p-2.5 mb-3 flex items-center gap-3 hover:border-blue-500 transition-all shadow-sm" title="اضغط لمعاينة المستند">
+              <div class="w-10 h-10 rounded-lg bg-blue-600/20 text-blue-400 border border-blue-500/30 flex items-center justify-center text-lg font-black shrink-0 shadow-sm">
+                <i class="fa-solid ${fileIcon}"></i>
+              </div>
+              <div class="min-w-0 flex-1">
+                <div class="text-xs font-black text-slate-100 truncate">${escapeHtml(f.file_name || 'ملف مرفق')}</div>
+                <div class="text-[10px] text-slate-400 font-bold">${fileSizeFormatted || 'مرفق رسمي'} • اضغط للعرض والمعاينة</div>
+              </div>
+              <i class="fa-regular fa-eye text-blue-400 text-sm"></i>
+            </div>
+          `;
+        }
+
         let actionButtonsHtml = '';
         if (!hasFile) {
           actionButtonsHtml = `
-            <button type="button" onclick="openUnifiedModal('${f.id}')" class="flex-1 w-full bg-gradient-to-r from-blue-700 to-indigo-600 hover:from-blue-600 hover:to-indigo-500 text-white font-black text-xs sm:text-sm py-2.5 px-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md active:scale-95 cursor-pointer">
+            <button type="button" onclick="openUnifiedModal('${f.id}')" class="flex-1 w-full bg-gradient-to-r from-blue-700 to-indigo-600 hover:from-blue-600 hover:to-indigo-500 text-white font-black text-sm py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md active:scale-95 cursor-pointer">
               <i class="fa-solid fa-book-open text-base text-amber-300"></i>
               <span>قراءة وطباعة التعليمات كاملة</span>
             </button>
           `;
         } else {
           actionButtonsHtml = `
-            <button type="button" onclick="openSheetModal('${f.id}')" class="flex-1 w-1/2 bg-blue-600 hover:bg-blue-500 text-white font-black text-xs sm:text-sm py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-sm active:scale-95 cursor-pointer" title="معاينة النموذج واستخدام أدوات الكتابة والطباعة">
+            <button type="button" onclick="openSheetModal('${f.id}')" class="flex-1 w-1/2 bg-blue-600 hover:bg-blue-500 text-white font-black text-sm py-3 px-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md active:scale-95 cursor-pointer" title="عرض النموذج">
               <i class="fa-regular fa-eye text-base text-white"></i>
               <span class="text-white font-black">عرض النموذج</span>
             </button>
-            <button type="button" onclick="downloadFormFile('${f.id}')" class="flex-1 w-1/2 bg-slate-100 hover:bg-slate-200 text-slate-800 font-black text-xs sm:text-sm py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 transition-colors border border-slate-300 shadow-sm active:scale-95 cursor-pointer" title="تنزيل الملف واختيار موقع الحفظ باسم: ${escapeHtml(f.file_name || f.title)}">
-              <i class="fa-solid fa-download text-amber-600 text-sm"></i>
-              <span class="text-slate-800 font-black">تنزيل الملف</span>
+            <button type="button" onclick="downloadFormFile('${f.id}')" class="flex-1 w-1/2 bg-slate-800 hover:bg-slate-700 text-slate-100 font-black text-sm py-3 px-3 rounded-xl flex items-center justify-center gap-2 transition-colors border border-slate-700 shadow-sm active:scale-95 cursor-pointer" title="تنزيل الملف">
+              <i class="fa-solid fa-download text-amber-400 text-sm"></i>
+              <span>تنزيل الملف</span>
             </button>
           `;
         }
 
         return `
-          <div class="content-card bg-white border-2 border-slate-200 hover:border-amber-400 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+          <div class="content-card bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg flex flex-col justify-between transition-all hover:border-slate-700">
             <div>
-              <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center justify-between gap-2 mb-3">
                 ${typeBadge}
-                ${hasFile && fileSizeFormatted ? `<span class="card-size text-xs text-slate-400 font-mono">${escapeHtml(fileSizeFormatted)}</span>` : `<span class="card-size text-[11px] text-amber-700 dark:text-amber-300 font-bold bg-amber-500/15 px-2 py-0.5 rounded-md border border-amber-500/30 flex items-center gap-1"><i class="fa-solid fa-file-lines text-[9px]"></i> تعليمات نصية</span>`}
+                ${fileSizeFormatted ? `<span class="text-[11px] font-mono font-bold text-slate-400 select-none">${fileSizeFormatted}</span>` : ''}
               </div>
 
-              <div class="flex items-start gap-3 mb-2">
-                <i class="fa-solid ${fileIcon} text-3xl mt-0.5 shrink-0"></i>
+              ${mediaBannerHtml}
+
+              <div class="flex items-start gap-3">
+                <i class="fa-solid ${fileIcon} text-2xl mt-1 shrink-0"></i>
                 <div class="min-w-0 flex-1">
-                  <h3 class="card-title text-base font-bold text-slate-900 leading-snug cursor-pointer hover:text-blue-600 transition-colors" onclick="openUnifiedModal('${f.id}')" title="${escapeHtml(f.title || f.file_name || 'نموذج')}">
-                    ${escapeHtml(f.title || f.file_name || 'نموذج')}
+                  <h3 class="card-title text-base font-black text-slate-100 leading-snug cursor-pointer hover:text-blue-400 transition-colors" onclick="openUnifiedModal('${f.id}')" title="${escapeHtml(f.title || f.file_name || 'بدون عنوان')}">
+                    ${escapeHtml(f.title || f.file_name || 'بدون عنوان')}
                   </h3>
 
-                  <div class="mt-1">
-                    <div id="cardDesc_${f.id}" class="card-desc text-xs text-slate-600 dark:text-slate-300 leading-relaxed line-clamp-2 transition-all select-text">
-                      ${formatBodyTextWithClickableLinks(f.body_text || f.title || '')}
-                    </div>
-                    ${(hasBodyText && f.body_text.trim().length > 70) ? `
-                      <div class="mt-1 flex items-center gap-2">
-                        <button type="button" onclick="toggleCardText('${f.id}', event)" class="text-blue-600 hover:text-blue-800 dark:text-blue-400 font-black text-[11px] inline-flex items-center gap-1 select-none cursor-pointer py-0.5">
-                          <span id="cardToggleText_${f.id}">... قراءة المزيد</span>
-                          <i id="cardToggleIcon_${f.id}" class="fa-solid fa-chevron-down text-[9px]"></i>
-                        </button>
-                        <span class="text-slate-300 dark:text-slate-700">•</span>
-                        <button type="button" onclick="openUnifiedModal('${f.id}'); event.stopPropagation();" class="text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 font-bold text-[11px] inline-flex items-center gap-1 select-none cursor-pointer py-0.5" title="فتح بنافذة القراءة والطباعة">
-                          <i class="fa-solid fa-book-open text-[10px]"></i>
-                          <span>نافذة كاملة</span>
-                        </button>
+                  <div class="mt-2.5">
+                    <div class="instruction-box-card p-3.5 rounded-xl border leading-relaxed shadow-sm">
+                      <div id="cardDesc_${f.id}" class="card-desc text-xs font-bold leading-relaxed line-clamp-4 transition-all select-text">
+                        ${formatBodyTextWithClickableLinks(f.body_text || f.title || '')}
                       </div>
-                    ` : ''}
+                      ${(hasBodyText && f.body_text.trim().length > 90) ? `
+                        <div class="mt-2 pt-2 border-t border-slate-700/50 flex items-center justify-between">
+                          <button type="button" onclick="toggleCardText('${f.id}', event)" class="text-blue-400 hover:text-blue-300 font-black text-xs inline-flex items-center gap-1.5 select-none cursor-pointer py-0.5">
+                            <span id="cardToggleText_${f.id}">... قراءة المزيد</span>
+                            <i id="cardToggleIcon_${f.id}" class="fa-solid fa-chevron-down text-[10px]"></i>
+                          </button>
+                          <button type="button" onclick="openUnifiedModal('${f.id}'); event.stopPropagation();" class="text-amber-300 hover:text-amber-200 font-bold text-xs inline-flex items-center gap-1.5 select-none cursor-pointer py-0.5" title="قراءة وطباعة التعليمات كاملة">
+                            <i class="fa-solid fa-book-open text-xs"></i>
+                            <span>قراءة كاملة</span>
+                          </button>
+                        </div>
+                      ` : ''}
+                    </div>
                   </div>
 
-                  <div class="card-dept text-xs font-bold mt-2 flex items-center gap-1.5 text-amber-600 dark:text-amber-400">
-                    <i class="fa-solid fa-building-columns text-[11px]"></i>
-                    <span>${escapeHtml(f.department_name || 'عام')}</span>
+                  <div class="mt-3 flex items-center justify-between text-xs font-bold gap-2 flex-wrap">
+                    <div class="card-dept flex items-center gap-1.5 text-amber-400 font-black">
+                      <i class="fa-solid fa-building-columns text-[11px]"></i>
+                      <span>${escapeHtml(f.department_name || '—')}</span>
+                    </div>
+                    <div class="table-publisher-badge px-2.5 py-1 rounded-lg border text-[11px] font-bold flex items-center gap-1" title="المسؤول الناشر">
+                      <i class="fa-solid fa-user-shield text-[10px]"></i>
+                      <span class="truncate max-w-[120px]">${escapeHtml(publisherName)}</span>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            <!-- Action Buttons Container -->
-            <div class="pt-4 mt-3 border-t border-slate-100 flex items-center gap-2">
+            <div class="pt-4 mt-3 border-t border-slate-800 flex items-center gap-2">
               ${actionButtonsHtml}
             </div>
           </div>
