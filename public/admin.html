@@ -6987,23 +6987,6 @@
         const isPdf = (ext === 'pdf' || c.file_type === 'pdf');
         const isImage = (['png', 'jpg', 'jpeg', 'webp', 'gif', 'svg'].includes(ext) || c.file_type === 'image');
 
-        let typeBadge = '<span class="bg-blue-100 text-blue-800 text-xs font-bold px-2.5 py-1 rounded-lg">مستند رسمي</span>';
-        let fileIcon = 'fa-file-lines text-blue-600';
-
-        if (isWord) {
-          typeBadge = '<span class="bg-blue-100 text-blue-800 text-xs font-bold px-2.5 py-1 rounded-lg">ملف Word</span>';
-          fileIcon = 'fa-file-word text-blue-600';
-        } else if (isExcel) {
-          typeBadge = '<span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-2.5 py-1 rounded-lg">ملف Excel</span>';
-          fileIcon = 'fa-file-excel text-emerald-600';
-        } else if (isImage) {
-          typeBadge = '<span class="bg-purple-100 text-purple-800 text-xs font-bold px-2.5 py-1 rounded-lg">صورة JPG</span>';
-          fileIcon = 'fa-file-image text-purple-600';
-        } else if (isPdf) {
-          typeBadge = '<span class="bg-rose-100 text-rose-800 text-xs font-bold px-2.5 py-1 rounded-lg">ملف PDF</span>';
-          fileIcon = 'fa-file-pdf text-rose-600';
-        }
-
         const hasFile = Boolean(c.file_url && c.file_url.trim() && c.file_type !== 'text_only');
         const hasBodyText = Boolean(c.body_text && c.body_text.trim());
 
