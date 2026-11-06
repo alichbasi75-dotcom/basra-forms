@@ -3543,14 +3543,15 @@
         let fileName = null;
         let fileType = 'text_only';
         let fileSize = null;
+        let existingItem = null;
 
         if (id) {
-          const existing = adminContents.find(c => c.id === id);
-          if (existing) {
-            fileUrl = existing.file_url;
-            fileName = existing.file_name;
-            fileType = existing.file_type || 'text_only';
-            fileSize = existing.file_size;
+          existingItem = adminContents.find(c => String(c.id) === String(id));
+          if (existingItem) {
+            fileUrl = existingItem.file_url;
+            fileName = existingItem.file_name;
+            fileType = existingItem.file_type || 'text_only';
+            fileSize = existingItem.file_size;
           }
         }
 
@@ -3594,7 +3595,7 @@
 
             const { data: urlData } = supabaseClient.storage.from(bucketName).getPublicUrl(filePath);
             if (urlData && urlData.publicUrl) {
-              const oldFileUrlToDelete = (id && existing && existing.file_url) ? existing.file_url : null;
+              const oldFileUrlToDelete = (existingItem && existingItem.file_url) ? existingItem.file_url : null;
               fileUrl = urlData.publicUrl;
               // Clean replaced file from Supabase storage bucket
               if (oldFileUrlToDelete && oldFileUrlToDelete !== fileUrl) {
