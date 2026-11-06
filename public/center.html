@@ -1268,6 +1268,10 @@
             <span>طباعة المستند فقط</span>
           </button>
           <!-- الخيار 2: طباعة التوجيهات فقط مع بيانات الشعبة والمسؤول -->
+                    <button id="btnCopyBodyText" type="button" onclick="copyUnifiedBodyText()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 px-3.5 py-1.5 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 shadow-md active:scale-95 cursor-pointer" title="نسخ نص التعليمات إلى الحافظة">
+            <i class="fa-solid fa-copy text-amber-400"></i>
+            <span id="btnCopyBodyTextLabel">نسخ النص</span>
+          </button>
           <button id="btnPrintFullReport" onclick="printUnifiedFullReport()" class="bg-amber-600 hover:bg-amber-500 text-white px-3.5 py-1.5 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 shadow-md active:scale-95" title="طباعة التوجيهات والنص المكتوب فقط مع اسم المسؤول والشعبة">
             <i class="fa-solid fa-print"></i>
             <span id="btnPrintFullReportLabel">طباعة التوجيهات فقط</span>
@@ -2299,43 +2303,100 @@
           fileIcon = 'fa-file-pdf text-rose-600';
         }
 
-        const fileSizeFormatted = f.file_size ? (String(f.file_size).toUpperCase().includes('B') ? f.file_size : `KB ${f.file_size}`) : 'KB 357.0';
+        const hasFile = Boolean(f.file_url && f.file_url.trim() && f.file_type !== 'text_only');
+        const hasBodyText = Boolean(f.body_text && f.body_text.trim());
 
-        // Equal Buttons: View & In-App Text Box Editing (50%) and Download with Picker (50%)
-        const actionButtonsHtml = `
-          <button type="button" onclick="openSheetModal('${f.id}')" class="flex-1 w-1/2 bg-blue-600 hover:bg-blue-500 text-white font-black text-xs sm:text-sm py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-sm active:scale-95 cursor-pointer">
-            <i class="fa-regular fa-eye text-base text-white"></i>
-            <span class="text-white font-black">عرض النموذج</span>
-          </button>
+        let typeBadge = '';
+        let fileIcon = '';
 
-          <button type="button" onclick="downloadFormFile('${f.id}')" class="flex-1 w-1/2 bg-slate-100 hover:bg-slate-200 text-slate-800 font-black text-xs sm:text-sm py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 transition-colors border border-slate-300 shadow-sm active:scale-95 cursor-pointer" title="تنزيل الملف واختيار موقع الحفظ باسم: ${escapeHtml(f.file_name || f.title)}">
-            <i class="fa-solid fa-download text-amber-600 text-sm"></i>
-            <span class="text-slate-800 font-black">تنزيل الملف</span>
-          </button>
-        `;
+        if (!hasFile) {
+          typeBadge = '<span class="bg-amber-100 text-amber-900 border border-amber-300 text-xs font-bold px-2.5 py-1 rounded-lg flex items-center gap-1"><i class="fa-solid fa-align-right text-[10px]"></i> توجيهات نصية</span>';
+          fileIcon = 'fa-file-lines text-amber-500';
+        } else if (isWord) {
+          typeBadge = '<span class="bg-blue-100 text-blue-800 text-xs font-bold px-2.5 py-1 rounded-lg">ملف Word</span>';
+          fileIcon = 'fa-file-word text-blue-600';
+        } else if (isExcel) {
+          typeBadge = '<span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-2.5 py-1 rounded-lg">ملف Excel</span>';
+          fileIcon = 'fa-file-excel text-emerald-600';
+        } else if (isImage) {
+          typeBadge = '<span class="bg-purple-100 text-purple-800 text-xs font-bold px-2.5 py-1 rounded-lg">صورة JPG</span>';
+          fileIcon = 'fa-file-image text-purple-600';
+        } else if (isPdf) {
+          typeBadge = '<span class="bg-rose-100 text-rose-800 text-xs font-bold px-2.5 py-1 rounded-lg">ملف PDF</span>';
+          fileIcon = 'fa-file-pdf text-rose-600';
+        } else {
+          typeBadge = '<span class="bg-blue-100 text-blue-800 text-xs font-bold px-2.5 py-1 rounded-lg">مستند رسمي</span>';
+          fileIcon = 'fa-file-lines text-blue-600';
+        }
+
+        const fileSizeFormatted = hasFile
+          ? (f.file_size ? (String(f.file_size).toUpperCase().includes('B') ? f.file_size : `KB ${f.file_size}`) : '')
+          : '';
+
+        let actionButtonsHtml = '';
+        if (!hasFile) {
+          actionButtonsHtml = `
+            <button type="button" onclick="openUnifiedModal('${f.id}')" class="flex-1 w-full bg-gradient-to-r from-blue-700 to-indigo-600 hover:from-blue-600 hover:to-indigo-500 text-white font-black text-xs sm:text-sm py-2.5 px-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md active:scale-95 cursor-pointer">
+              <i class="fa-solid fa-book-open text-base text-amber-300"></i>
+              <span>قراءة وطباعة التعليمات كاملة</span>
+            </button>
+          `;
+        } else {
+          actionButtonsHtml = `
+            <button type="button" onclick="openSheetModal('${f.id}')" class="flex-1 w-1/2 bg-blue-600 hover:bg-blue-500 text-white font-black text-xs sm:text-sm py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-sm active:scale-95 cursor-pointer" title="معاينة النموذج واستخدام أدوات الكتابة والطباعة">
+              <i class="fa-regular fa-eye text-base text-white"></i>
+              <span class="text-white font-black">عرض النموذج</span>
+            </button>
+            <button type="button" onclick="downloadFormFile('${f.id}')" class="flex-1 w-1/2 bg-slate-100 hover:bg-slate-200 text-slate-800 font-black text-xs sm:text-sm py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 transition-colors border border-slate-300 shadow-sm active:scale-95 cursor-pointer" title="تنزيل الملف واختيار موقع الحفظ باسم: ${escapeHtml(f.file_name || f.title)}">
+              <i class="fa-solid fa-download text-amber-600 text-sm"></i>
+              <span class="text-slate-800 font-black">تنزيل الملف</span>
+            </button>
+          `;
+        }
 
         return `
           <div class="content-card bg-white border-2 border-slate-200 hover:border-amber-400 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
             <div>
               <div class="flex items-center justify-between mb-3">
                 ${typeBadge}
-                <span class="card-size text-xs text-slate-400 font-mono">${escapeHtml(fileSizeFormatted)}</span>
+                ${hasFile && fileSizeFormatted ? `<span class="card-size text-xs text-slate-400 font-mono">${escapeHtml(fileSizeFormatted)}</span>` : `<span class="card-size text-[11px] text-amber-700 dark:text-amber-300 font-bold bg-amber-500/15 px-2 py-0.5 rounded-md border border-amber-500/30 flex items-center gap-1"><i class="fa-solid fa-file-lines text-[9px]"></i> تعليمات نصية</span>`}
               </div>
 
               <div class="flex items-start gap-3 mb-2">
                 <i class="fa-solid ${fileIcon} text-3xl mt-0.5 shrink-0"></i>
-                <div class="min-w-0">
-                  <h3 class="card-title text-base font-bold text-slate-900 leading-snug truncate" title="${escapeHtml(f.title || f.file_name || 'نموذج')}">
+                <div class="min-w-0 flex-1">
+                  <h3 class="card-title text-base font-bold text-slate-900 leading-snug cursor-pointer hover:text-blue-600 transition-colors" onclick="openUnifiedModal('${f.id}')" title="${escapeHtml(f.title || f.file_name || 'نموذج')}">
                     ${escapeHtml(f.title || f.file_name || 'نموذج')}
                   </h3>
-                  <p class="card-desc text-xs text-slate-500 mt-1 leading-relaxed line-clamp-2">
-                    ${escapeHtml(f.body_text || f.title || '')}
-                  </p>
+
+                  <div class="mt-1">
+                    <div id="cardDesc_${f.id}" class="card-desc text-xs text-slate-600 dark:text-slate-300 leading-relaxed line-clamp-2 transition-all select-text">
+                      ${formatBodyTextWithClickableLinks(f.body_text || f.title || '')}
+                    </div>
+                    ${(hasBodyText && f.body_text.trim().length > 70) ? `
+                      <div class="mt-1 flex items-center gap-2">
+                        <button type="button" onclick="toggleCardText('${f.id}', event)" class="text-blue-600 hover:text-blue-800 dark:text-blue-400 font-black text-[11px] inline-flex items-center gap-1 select-none cursor-pointer py-0.5">
+                          <span id="cardToggleText_${f.id}">... قراءة المزيد</span>
+                          <i id="cardToggleIcon_${f.id}" class="fa-solid fa-chevron-down text-[9px]"></i>
+                        </button>
+                        <span class="text-slate-300 dark:text-slate-700">•</span>
+                        <button type="button" onclick="openUnifiedModal('${f.id}'); event.stopPropagation();" class="text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 font-bold text-[11px] inline-flex items-center gap-1 select-none cursor-pointer py-0.5" title="فتح بنافذة القراءة والطباعة">
+                          <i class="fa-solid fa-book-open text-[10px]"></i>
+                          <span>نافذة كاملة</span>
+                        </button>
+                      </div>
+                    ` : ''}
+                  </div>
+
+                  <div class="card-dept text-xs font-bold mt-2 flex items-center gap-1.5 text-amber-600 dark:text-amber-400">
+                    <i class="fa-solid fa-building-columns text-[11px]"></i>
+                    <span>${escapeHtml(f.department_name || 'عام')}</span>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <!-- Action Buttons: Exactly Equal Size (50% / 50%) -->
+            <!-- Action Buttons Container -->
             <div class="pt-4 mt-3 border-t border-slate-100 flex items-center gap-2">
               ${actionButtonsHtml}
             </div>
@@ -2346,6 +2407,57 @@
       setTimeout(syncAllContrasts, 30);
     }
 
+
+    
+    // =========================================================================
+    // OPTION 3: EXPANDABLE TEXT & RICH INSTRUCTION VIEWER
+    // =========================================================================
+    function formatBodyTextWithClickableLinks(text) {
+      if (!text) return '';
+      const escaped = escapeHtml(text);
+      const urlRegex = /(https?:\/\/[^\s<]+[^<.,:;"')\]\s])/g;
+      return escaped.replace(urlRegex, (url) => {
+        return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-blue-500 dark:text-blue-400 underline font-bold hover:text-blue-700 transition-colors" onclick="event.stopPropagation()">${url} <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i></a>`;
+      });
+    }
+
+    function toggleCardText(id, event) {
+      if (event) event.stopPropagation();
+      const descEl = document.getElementById(`cardDesc_${id}`);
+      const toggleText = document.getElementById(`cardToggleText_${id}`);
+      const toggleIcon = document.getElementById(`cardToggleIcon_${id}`);
+      if (!descEl) return;
+
+      const isClamped = descEl.classList.contains('line-clamp-2');
+      if (isClamped) {
+        descEl.classList.remove('line-clamp-2');
+        if (toggleText) toggleText.innerText = 'عرض أقل';
+        if (toggleIcon) toggleIcon.className = 'fa-solid fa-chevron-up text-[9px]';
+      } else {
+        descEl.classList.add('line-clamp-2');
+        if (toggleText) toggleText.innerText = '... قراءة المزيد';
+        if (toggleIcon) toggleIcon.className = 'fa-solid fa-chevron-down text-[9px]';
+      }
+    }
+
+    function copyUnifiedBodyText() {
+      if (!currentUnifiedItem || !currentUnifiedItem.body_text) {
+        if (typeof showToast === 'function') showToast('لا يوجد نص لنسخه.', 'warning', 'تنبيه');
+        return;
+      }
+      navigator.clipboard.writeText(currentUnifiedItem.body_text).then(() => {
+        const btnLabel = document.getElementById('btnCopyBodyTextLabel');
+        if (btnLabel) {
+          const old = btnLabel.innerText;
+          btnLabel.innerText = 'تم النسخ ✓';
+          setTimeout(() => { btnLabel.innerText = old; }, 2000);
+        }
+        if (typeof showToast === 'function') showToast('تم نسخ نص التعليمات إلى الحافظة بنجاح.', 'success', 'نسخ النص');
+        if (typeof AudioEngine !== 'undefined' && AudioEngine.success) AudioEngine.success();
+      }).catch(() => {
+        if (typeof showToast === 'function') showToast('تعذر نسخ النص تلقائياً.', 'error', 'خطأ');
+      });
+    }
 
     function openUnifiedModal(itemId) {
       const item = allContents.find(c => c.id === itemId);
@@ -2382,7 +2494,13 @@
         bodyTextEl.style.backgroundColor = isLight ? '#f8fafc' : '#1e293b';
         bodyTextEl.style.color = isLight ? '#0f172a' : '#f8fafc';
         bodyTextEl.style.borderColor = isLight ? '#cbd5e1' : '#334155';
-        bodyTextEl.innerText = item.body_text.trim();
+        bodyTextEl.innerHTML = formatBodyTextWithClickableLinks(item.body_text.trim());
+        const fileSec = document.getElementById('unifiedFileSection');
+        const hasActualFile = Boolean(item.file_url && item.file_url.trim() && item.file_type !== 'text_only');
+        if (fileSec) {
+          if (hasActualFile) fileSec.classList.remove('hidden');
+          else fileSec.classList.add('hidden');
+        }
       } else {
         textSection.classList.remove('hidden');
         bodyTextEl.className = "p-3.5 rounded-2xl border text-xs leading-relaxed font-sans flex items-center gap-2.5 shadow-sm";
