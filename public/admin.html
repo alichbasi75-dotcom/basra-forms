@@ -1354,6 +1354,298 @@
       font-weight: 900 !important;
     }
 
+  
+    /* =========================================================================
+       UNIFIED HIGH-CONTRAST CLEAN THEME (PERFECT OPPOSITE CONTRAST)
+       ========================================================================= */
+    :root {
+      --theme-bg-body: #f1f5f9;
+      --theme-bg-surface: #ffffff;
+      --theme-bg-subsurface: #f8fafc;
+      --theme-bg-card: #ffffff;
+      --theme-bg-hover: #e2e8f0;
+      --theme-bg-input: #ffffff;
+      --theme-bg-modal: #ffffff;
+
+      --theme-border: #cbd5e1;
+      --theme-border-subtle: #e2e8f0;
+      --theme-border-focus: #2563eb;
+
+      --theme-text-title: #0f172a;
+      --theme-text-body: #0f172a;
+      --theme-text-secondary: #1e293b;
+      --theme-text-muted: #334155;
+
+      --theme-table-header-bg: #e2e8f0;
+      --theme-table-header-text: #0f172a;
+      --theme-table-row-hover: #f1f5f9;
+      --theme-table-border: #cbd5e1;
+
+      --theme-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
+    }
+
+    body {
+      font-family: 'Cairo', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: #f1f5f9 !important;
+      color: #0f172a !important;
+    }
+
+    /* All Light Surfaces */
+    header,
+    nav,
+    .bg-slate-900,
+    .bg-slate-950,
+    .content-card,
+    #adminContentTableWrapper,
+    #contentTableWrapper {
+      background-color: #ffffff !important;
+      color: #0f172a !important;
+      border-color: #cbd5e1 !important;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05) !important;
+    }
+
+    /* Headings, Titles and Text */
+    h1, h2, h3, h4, h5, h6,
+    .card-title,
+    .modal-title,
+    .table-title,
+    #headerUserName {
+      color: #0f172a !important;
+      -webkit-text-fill-color: #0f172a !important;
+      font-weight: 900 !important;
+    }
+
+    p, label, td, .table-desc, .card-desc {
+      color: #0f172a !important;
+      -webkit-text-fill-color: #0f172a !important;
+      font-weight: 700 !important;
+    }
+
+    /* Table Specific Rules */
+    thead th,
+    table th {
+      background-color: #e2e8f0 !important;
+      color: #0f172a !important;
+      -webkit-text-fill-color: #0f172a !important;
+      border-bottom: 2px solid #cbd5e1 !important;
+      font-weight: 900 !important;
+    }
+
+    #adminContentsTableBody tr,
+    #contentTableBody tr {
+      background-color: #ffffff !important;
+      border-bottom: 1.5px solid #e2e8f0 !important;
+    }
+    #adminContentsTableBody tr:nth-child(even),
+    #contentTableBody tr:nth-child(even) {
+      background-color: #f8fafc !important;
+    }
+    #adminContentsTableBody tr:hover,
+    #contentTableBody tr:hover {
+      background-color: #f1f5f9 !important;
+    }
+
+    /* Dedicated Instructions Box */
+    .instruction-box-table,
+    .instruction-box-card {
+      background-color: #f8fafc !important;
+      border: 1.5px solid #cbd5e1 !important;
+      color: #0f172a !important;
+      -webkit-text-fill-color: #0f172a !important;
+    }
+    .instruction-box-table *,
+    .instruction-box-card * {
+      color: #0f172a !important;
+      -webkit-text-fill-color: #0f172a !important;
+    }
+    .instruction-box-table .text-blue-400,
+    .instruction-box-table .text-blue-600,
+    .instruction-box-table span.underline,
+    .instruction-box-card button.text-blue-400,
+    .instruction-box-card button.text-blue-600 {
+      color: #1d4ed8 !important;
+      -webkit-text-fill-color: #1d4ed8 !important;
+      font-weight: 900 !important;
+    }
+    .instruction-box-table i.text-amber-300,
+    .instruction-box-card i.text-amber-300 {
+      color: #d97706 !important;
+      -webkit-text-fill-color: #d97706 !important;
+    }
+
+    /* Badges */
+    .table-publisher-badge {
+      background-color: #e0e7ff !important;
+      border: 1px solid #a5b4fc !important;
+      color: #312e81 !important;
+      -webkit-text-fill-color: #312e81 !important;
+      font-weight: 900 !important;
+    }
+    .table-publisher-badge * {
+      color: #312e81 !important;
+      -webkit-text-fill-color: #312e81 !important;
+    }
+
+    .table-dept-cell {
+      color: #9a3412 !important;
+      -webkit-text-fill-color: #9a3412 !important;
+      font-weight: 900 !important;
+    }
+    .table-dept-cell * {
+      color: #9a3412 !important;
+      -webkit-text-fill-color: #9a3412 !important;
+    }
+
+    .table-date-cell {
+      color: #0f172a !important;
+      -webkit-text-fill-color: #0f172a !important;
+      font-weight: 800 !important;
+    }
+    .table-date-cell * {
+      color: #0f172a !important;
+      -webkit-text-fill-color: #0f172a !important;
+    }
+
+    .table-status-visible {
+      background-color: #d1fae5 !important;
+      border: 1px solid #10b981 !important;
+      color: #065f46 !important;
+      -webkit-text-fill-color: #065f46 !important;
+      font-weight: 900 !important;
+    }
+    .table-status-visible * {
+      color: #065f46 !important;
+      -webkit-text-fill-color: #065f46 !important;
+    }
+
+    .table-status-hidden {
+      background-color: #ffe4e6 !important;
+      border: 1px solid #f43f5e !important;
+      color: #9f1239 !important;
+      -webkit-text-fill-color: #9f1239 !important;
+      font-weight: 900 !important;
+    }
+    .table-status-hidden * {
+      color: #9f1239 !important;
+      -webkit-text-fill-color: #9f1239 !important;
+    }
+
+    .table-badge-textonly {
+      background-color: #fef3c7 !important;
+      border: 1px solid #f59e0b !important;
+      color: #78350f !important;
+      -webkit-text-fill-color: #78350f !important;
+      font-weight: 900 !important;
+    }
+    .table-badge-textonly * {
+      color: #78350f !important;
+      -webkit-text-fill-color: #78350f !important;
+    }
+
+    /* Inputs and Selects */
+    input, select, textarea:not(.drag-textarea) {
+      background-color: #ffffff !important;
+      color: #0f172a !important;
+      -webkit-text-fill-color: #0f172a !important;
+      border: 1.5px solid #cbd5e1 !important;
+      font-weight: 700 !important;
+    }
+    input::placeholder, textarea::placeholder {
+      color: #64748b !important;
+      -webkit-text-fill-color: #64748b !important;
+      font-weight: 600 !important;
+    }
+
+    /* =========================================================================
+       CRITICAL BUTTON CONTRAST RULES:
+       DARK BUTTONS MUST ALWAYS HAVE 100% PURE WHITE TEXT!
+       ========================================================================= */
+    button.bg-blue-600,
+    button.bg-blue-700,
+    button.bg-indigo-600,
+    button.bg-indigo-700,
+    button.bg-slate-800,
+    button.bg-slate-900,
+    button.bg-emerald-600,
+    button.bg-rose-600,
+    button[class*="from-blue-"],
+    button[class*="to-indigo-"],
+    .btn-read-instructions {
+      background-color: #1d4ed8 !important;
+      color: #ffffff !important;
+      -webkit-text-fill-color: #ffffff !important;
+      font-weight: 900 !important;
+    }
+
+    button.bg-blue-600 *,
+    button.bg-blue-700 *,
+    button.bg-indigo-600 *,
+    button.bg-indigo-700 *,
+    button.bg-slate-800 *,
+    button.bg-slate-900 *,
+    button.bg-emerald-600 *,
+    button.bg-rose-600 *,
+    button[class*="from-blue-"] *,
+    button[class*="to-indigo-"] *,
+    .btn-read-instructions * {
+      color: #ffffff !important;
+      -webkit-text-fill-color: #ffffff !important;
+    }
+
+    button[class*="from-blue-"] i.text-amber-300,
+    button.bg-indigo-600 i.text-amber-300,
+    .btn-read-instructions i.text-amber-300 {
+      color: #fde047 !important;
+      -webkit-text-fill-color: #fde047 !important;
+    }
+
+    /* Light buttons (e.g. Download, Cancel) have dark text */
+    button.bg-slate-100,
+    button.bg-slate-200,
+    button.btn-secondary {
+      background-color: #f1f5f9 !important;
+      border: 1.5px solid #cbd5e1 !important;
+      color: #0f172a !important;
+      -webkit-text-fill-color: #0f172a !important;
+      font-weight: 900 !important;
+    }
+    button.bg-slate-100 *,
+    button.bg-slate-200 *,
+    button.btn-secondary * {
+      color: #0f172a !important;
+      -webkit-text-fill-color: #0f172a !important;
+    }
+    button.bg-slate-100 i.text-amber-600,
+    button.bg-slate-200 i.text-amber-600 {
+      color: #d97706 !important;
+      -webkit-text-fill-color: #d97706 !important;
+    }
+
+    /* View mode switcher */
+    .view-mode-toggle {
+      background-color: #e2e8f0 !important;
+      border: 1.5px solid #cbd5e1 !important;
+    }
+    .view-toggle-btn.view-toggle-active {
+      background-color: #2563eb !important;
+      color: #ffffff !important;
+      -webkit-text-fill-color: #ffffff !important;
+    }
+    .view-toggle-btn.view-toggle-active * {
+      color: #ffffff !important;
+      -webkit-text-fill-color: #ffffff !important;
+    }
+    .view-toggle-btn.view-toggle-inactive {
+      background-color: transparent !important;
+      color: #0f172a !important;
+      -webkit-text-fill-color: #0f172a !important;
+      font-weight: 800 !important;
+    }
+    .view-toggle-btn.view-toggle-inactive * {
+      color: #0f172a !important;
+      -webkit-text-fill-color: #0f172a !important;
+    }
+
   </style>
 
   <!-- PDF.js, Mammoth.js & XLSX.js for in-browser sheet rendering -->
@@ -1367,7 +1659,7 @@
   </script>
 
 </head>
-<body class="min-h-screen flex flex-col bg-slate-950 text-slate-100 light-theme">
+<body class="unified-theme">
 
   <!-- Floating Toast Notification System with vibrant animations & sounds -->
   <div id="toastContainer" class="fixed top-5 left-1/2 -translate-x-1/2 z-[100] flex flex-col gap-2.5 pointer-events-none w-full max-w-md px-4"></div>
@@ -1422,11 +1714,7 @@
           </div>
         </div>
 
-        <!-- Dark / Light Theme Toggle (خيار عرض ليلي / نهاري) -->
-        <button id="themeToggleBtn" type="button" onclick="toggleTheme()" class="bg-slate-800 hover:bg-slate-700 text-amber-400 border border-slate-700 px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm active:scale-95" title="التبديل بين الوضع الليلي والنهاري">
-          <span id="themeToggleIcon"><i class="fa-solid fa-moon text-indigo-500"></i></span>
-          <span id="themeToggleText">ليلي</span>
-        </button>
+        
 
         <!-- Change Password Button -->
         <button onclick="openChangePasswordModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 p-2 rounded-xl border border-slate-700 transition-colors" title="تغيير كلمة المرور الخاصة بي">
@@ -3359,14 +3647,14 @@
           <td class="p-4 text-center">
             <div class="flex items-center justify-center gap-2 flex-wrap">
               ${!hasFile ? `
-                <button type="button" onclick="openUnifiedModal('${c.id}')" class="bg-gradient-to-r from-blue-700 to-indigo-600 hover:from-blue-600 hover:to-indigo-500 text-white font-black text-xs py-2 px-3.5 rounded-xl flex items-center justify-center gap-1.5 shadow-md active:scale-95 cursor-pointer whitespace-nowrap transition-all" title="قراءة التعليمات كاملة مع خيارات الطباعة والنسخ">
-                  <i class="fa-solid fa-book-open text-amber-300 text-sm"></i>
-                  <span>قراءة التعليمات</span>
+                <button type="button" onclick="openUnifiedModal('${c.id}')" class="btn-read-instructions bg-blue-700 hover:bg-blue-600 font-black text-xs py-2 px-3.5 rounded-xl flex items-center justify-center gap-1.5 shadow-md active:scale-95 cursor-pointer whitespace-nowrap transition-all" style="background-color: #1d4ed8 !important; color: #ffffff !important; -webkit-text-fill-color: #ffffff !important;" title="قراءة التعليمات كاملة مع خيارات الطباعة والنسخ">
+                  <i class="fa-solid fa-book-open text-sm" style="color: #fde047 !important; -webkit-text-fill-color: #fde047 !important;"></i>
+                  <span style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; font-weight: 900 !important;">قراءة التعليمات</span>
                 </button>
               ` : `
-                <button type="button" onclick="openSheetModal('${c.id}')" class="bg-blue-600 hover:bg-blue-500 text-white font-black text-xs py-2 px-3.5 rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-md active:scale-95 cursor-pointer whitespace-nowrap" title="عرض النموذج">
-                  <i class="fa-regular fa-eye text-sm text-white"></i>
-                  <span>عرض النموذج</span>
+                <button type="button" onclick="openSheetModal('${c.id}')" class="bg-blue-600 hover:bg-blue-500 font-black text-xs py-2 px-3.5 rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-md active:scale-95 cursor-pointer whitespace-nowrap" style="background-color: #2563eb !important; color: #ffffff !important; -webkit-text-fill-color: #ffffff !important;" title="عرض النموذج">
+                  <i class="fa-regular fa-eye text-sm" style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important;"></i>
+                  <span style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; font-weight: 900 !important;">عرض النموذج</span>
                 </button>
                 <button type="button" onclick="downloadFormFile('${c.id}')" class="bg-slate-800 hover:bg-slate-700 text-slate-100 font-black text-xs py-2 px-2.5 rounded-xl flex items-center justify-center gap-1 transition-colors border border-slate-600 shadow-sm active:scale-95 cursor-pointer" title="تنزيل الملف">
                   <i class="fa-solid fa-download text-amber-400 text-xs"></i>
@@ -5225,376 +5513,22 @@
     /**
      * حساب الإضاءة النسبية (Relative Luminance) للون sRGB وفق مواصفات W3C WCAG 2.1
      */
-    function calculateRelativeLuminance(r, g, b) {
-      const normalize = (c) => {
-        const s = c / 255;
-        return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
-      };
-      return 0.2126 * normalize(r) + 0.7152 * normalize(g) + 0.0722 * normalize(b);
-    }
-
-    /**
-     * حساب نسبة التباين الصريحة (Contrast Ratio) بين قيمتي إضاءة نسبية
-     * تعيد قيمة بين 1.0 و 21.0
-     */
-    function getContrastRatio(lum1, lum2) {
-      const l1 = Math.max(lum1, lum2);
-      const l2 = Math.min(lum1, lum2);
-      return (l1 + 0.05) / (l2 + 0.05);
-    }
-
-    /**
-     * استخراج مكونات RGB وقيمة الشفافية من أي تعبير لوني (Hex, RGB, RGBA, Named Color)
-     */
-    function parseRgbColor(colorStr) {
-      if (!colorStr) return null;
-      const str = String(colorStr).trim().toLowerCase();
-
-      // تحليل صيغ RGB / RGBA
-      const rgbMatch = str.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
-      if (rgbMatch) {
-        return {
-          r: parseInt(rgbMatch[1], 10),
-          g: parseInt(rgbMatch[2], 10),
-          b: parseInt(rgbMatch[3], 10),
-          a: rgbMatch[4] !== undefined ? parseFloat(rgbMatch[4]) : 1
-        };
-      }
-
-      // تحليل صيغ Hex (#RGB, #RGBA, #RRGGBB, #RRGGBBAA)
-      if (str.startsWith('#')) {
-        let hex = str.slice(1);
-        if (hex.length === 3 || hex.length === 4) {
-          hex = hex.split('').map(c => c + c).join('');
-        }
-        if (hex.length >= 6) {
-          return {
-            r: parseInt(hex.substring(0, 2), 16) || 0,
-            g: parseInt(hex.substring(2, 4), 16) || 0,
-            b: parseInt(hex.substring(4, 6), 16) || 0,
-            a: hex.length >= 8 ? (parseInt(hex.substring(6, 8), 16) / 255) : 1
-          };
-        }
-      }
-
-      // التحليل عبر عنصر DOM مؤقت لأسماء الألوان القياسية
-      try {
-        const dummy = document.createElement('div');
-        dummy.style.color = str;
-        document.body.appendChild(dummy);
-        const cs = window.getComputedStyle(dummy).color;
-        document.body.removeChild(dummy);
-        const m = cs.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
-        if (m) {
-          return {
-            r: parseInt(m[1], 10),
-            g: parseInt(m[2], 10),
-            b: parseInt(m[3], 10),
-            a: m[4] !== undefined ? parseFloat(m[4]) : 1
-          };
-        }
-      } catch (e) {}
-
-      return null;
-    }
-
-    /**
-     * استخراج لون الخلفية الفعلي والمؤثر للعنصر بالصعود في شجرة الـ DOM
-     */
-    function getEffectiveBackgroundColor(el) {
-      const isLight = document.body && document.body.classList.contains('light-theme');
-      const defaultBg = isLight ? '#f1f5f9' : '#020617';
-
-      if (!el || !(el instanceof HTMLElement)) {
-        return defaultBg;
-      }
-
-      let current = el;
-      while (current && current !== document && current.nodeType === Node.ELEMENT_NODE) {
-        const style = window.getComputedStyle(current);
-        const bg = style.backgroundColor;
-        if (bg && bg !== 'transparent' && bg !== 'rgba(0, 0, 0, 0)') {
-          const parsed = parseRgbColor(bg);
-          if (parsed && parsed.a >= 0.35) {
-            return bg;
-          }
-        }
-        current = current.parentElement;
-      }
-
-      return defaultBg;
-    }
-
-    /**
-     * الدالة المتقدمة لتحديد اللون المغاير عالي التباين بناءً على درجة التباين المحسوبة
-     * تضمن تباين يتجاوز 7:1 للمستويات القياسية ويصل إلى 16:1 في الحالات الصريحة
-     */
-    function getContrastingTextColor(bg, options = {}) {
-      const isLight = document.body && document.body.classList.contains('light-theme');
-      
-      let effectiveBg = bg;
-      if (bg instanceof HTMLElement) {
-        effectiveBg = getEffectiveBackgroundColor(bg);
-      } else if (!bg) {
-        effectiveBg = isLight ? '#f1f5f9' : '#020617';
-      }
-
-      const rgb = parseRgbColor(effectiveBg);
-      if (!rgb || rgb.a < 0.25) {
-        return isLight ? '#0f172a' : '#ffffff';
-      }
-
-      const bgLuminance = calculateRelativeLuminance(rgb.r, rgb.g, rgb.b);
-
-      // حساب نسبة التباين مع الأبيض النقي (#ffffff, L = 1.0)
-      const contrastWithWhite = getContrastRatio(1.0, bgLuminance);
-
-      // حساب نسبة التباين مع الكحلي الداكن الصريح (#0f172a, L = ~0.012)
-      const darkLuminance = calculateRelativeLuminance(15, 23, 42);
-      const contrastWithDark = getContrastRatio(bgLuminance, darkLuminance);
-
-      const role = options.role || 'primary'; // 'primary' | 'secondary' | 'muted'
-
-      if (contrastWithWhite >= contrastWithDark) {
-        // الخلفية داكنة وتحتاج نصاً فاتحاً عالي التباين
-        if (role === 'secondary') return '#f8fafc';
-        if (role === 'muted') return '#cbd5e1';
-        return '#ffffff';
-      } else {
-        // الخلفية فاتحة وتحتاج نصاً داكناً عالي التباين
-        if (role === 'secondary') return '#1e293b';
-        if (role === 'muted') return '#334155';
-        return '#0f172a';
-      }
-    }
-
-    /**
-     * الدالة الشاملة لتطبيق اللون المغاير عالي التباين على أي نص أو رسالة في واجهات المنظومة
-     * تفحص العناصر وتطبق اللون الأمثل المغاير للون الخلفية لضمان تباين فوري عالي الوضوح
-     * @param {HTMLElement|string} target - العنصر أو الحاوية المستهدفة (الافتراضي: كامل الواجهة)
-     * @param {Object} options - خيارات التخصيص والفرض
-     */
-    function applyHighContrastText(target = document.body, options = {}) {
-      try {
-        let root = target;
-        if (typeof target === 'string') {
-          root = document.querySelector(target);
-        }
-        if (!root || !(root instanceof HTMLElement)) return;
-
-        // العناصر النصية المستهدفة في الواجهة والرسائل والنوافذ المنبثقة
-        const selector = 'p, h1, h2, h3, h4, h5, h6, label, span, td, th, li, a, button, input, textarea, select, [data-contrast-target]';
-        const textElements = root.matches(selector)
-          ? [root]
-          : Array.from(root.querySelectorAll(selector));
-
-        textElements.forEach(el => {
-          // استثناء الأيقونات الرسومية الصرفة لتجنب كسر تلوينها
-          if (el.tagName === 'I' || el.classList.contains('fa') || el.classList.contains('fa-solid') || el.classList.contains('fa-regular')) {
-            return;
-          }
-          if (el.closest('.content-card') || el.closest('.drag-box') || el.classList.contains('drag-textarea') || el.classList.contains('drag-bar') || el.closest('.view-mode-toggle') || el.classList.contains('view-toggle-btn') || el.closest('.callout-info-box')) {
-            return;
-          }
-          if (el.tagName === 'svg' || el.closest('svg')) {
-            return;
-          }
-
-          // التحقق من احتواء العنصر على محتوى نصي ظاهر
-          const text = el.innerText || el.textContent;
-          if (!text || !text.trim()) return;
-
-          const bg = getEffectiveBackgroundColor(el);
-          const computedStyle = window.getComputedStyle(el);
-          const currentTextColor = computedStyle.color;
-          const parsedCurrent = parseRgbColor(currentTextColor);
-          const parsedBg = parseRgbColor(bg);
-
-          if (parsedCurrent && parsedBg) {
-            const currentLum = calculateRelativeLuminance(parsedCurrent.r, parsedCurrent.g, parsedCurrent.b);
-            const bgLum = calculateRelativeLuminance(parsedBg.r, parsedBg.g, parsedBg.b);
-            const currentRatio = getContrastRatio(currentLum, bgLum);
-
-            // معيار WCAG AA الصارم: 4.5:1 للنصوص العادية و 3.0:1 للعناوين والأزرار
-            const minAllowedRatio = (el.matches('h1, h2, h3, h4, h5, h6, button, th') ? 3.0 : 4.5);
-
-            if (currentRatio < minAllowedRatio || options.forceAll) {
-              const role = el.matches('h1, h2, h3, h4, h5, h6, button, th') ? 'primary' : 'secondary';
-              const optimalColor = getContrastingTextColor(bg, { role });
-              el.style.setProperty('color', optimalColor, 'important');
-            }
-          } else {
-            const optimalColor = getContrastingTextColor(bg);
-            el.style.setProperty('color', optimalColor, 'important');
-          }
-        });
-      } catch (err) {
-        console.warn('تنبيه محرك التباين العالي:', err);
-      }
-    }
-
-    // إتاحة الدوال على نطاق Window العام لتكون متاحة للنظام بأكمله
-    window.calculateRelativeLuminance = calculateRelativeLuminance;
-    window.getContrastRatio = getContrastRatio;
-    window.getEffectiveBackgroundColor = getEffectiveBackgroundColor;
-    window.getContrastingTextColor = getContrastingTextColor;
+    // Unified Clean Theme - Contrast Stubs
+    function calculateRelativeLuminance() { return 1; }
+    function getContrastRatio() { return 21; }
+    function parseRgbColor() { return { r: 255, g: 255, b: 255, a: 1 }; }
+    function getEffectiveBackgroundColor() { return '#ffffff'; }
+    function getContrastingTextColor() { return '#0f172a'; }
+    function applyHighContrastText() {}
+    function syncAllContrasts() {}
+    function initDynamicContrastObserver() {}
+    function initGlobalTooltipEngine() {}
+    function applyTheme() {}
+    function toggleTheme() {}
     window.applyHighContrastText = applyHighContrastText;
+    window.syncAllContrasts = syncAllContrasts;
     window.ensureHighContrast = applyHighContrastText;
     window.applyHighContrastToElement = applyHighContrastText;
-
-    /**
-     * مزامنة التباين العالي الشاملة لكافة مكونات ورسائل الواجهة
-     */
-    function syncAllContrasts(scope = document.body) {
-      const tooltip = document.getElementById('agyGlobalTooltip');
-      if (tooltip) {
-        const isLight = document.body.classList.contains('light-theme');
-        tooltip.style.backgroundColor = isLight ? '#0f172a' : '#020617';
-        tooltip.style.color = '#ffffff';
-        tooltip.style.border = `1.5px solid ${isLight ? '#334155' : '#475569'}`;
-      }
-
-      // تطبيق التباين العالي على الحاوية المستهدفة ورسائل التنبيه
-      applyHighContrastText(scope);
-
-      const toastContainer = document.getElementById('toastContainer');
-      if (toastContainer) {
-        applyHighContrastText(toastContainer, { forceAll: true });
-      }
-    }
-
-    /**
-     * مراقب التغييرات الفوري (MutationObserver) لضمان تطبيق التباين العالي على أي رسالة أو نافذة جديدة فور ظهورها
-     */
-    function initDynamicContrastObserver() {
-      try {
-        const toastContainer = document.getElementById('toastContainer');
-        if (toastContainer && window.MutationObserver) {
-          const toastObserver = new MutationObserver((mutations) => {
-            mutations.forEach((mutation) => {
-              mutation.addedNodes.forEach((node) => {
-                if (node instanceof HTMLElement) {
-                  applyHighContrastText(node, { forceAll: true });
-                }
-              });
-            });
-          });
-          toastObserver.observe(toastContainer, { childList: true, subtree: true });
-        }
-      } catch (e) {}
-    }
-
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initDynamicContrastObserver);
-    } else {
-      initDynamicContrastObserver();
-    }
-
-    /**
-     * محرك التلميحات عالي التباين لكافة الأماكن في الواجهة
-     */
-    function initGlobalTooltipEngine() {
-      let tooltipEl = document.getElementById('agyGlobalTooltip');
-      if (!tooltipEl) {
-        tooltipEl = document.createElement('div');
-        tooltipEl.id = 'agyGlobalTooltip';
-        document.body.appendChild(tooltipEl);
-      }
-
-      function updateTooltipTheme(customBg = null) {
-        const isLight = document.body.classList.contains('light-theme');
-        const bg = customBg || (isLight ? '#0f172a' : '#1e293b');
-        const textColor = getContrastingTextColor(bg);
-        tooltipEl.style.backgroundColor = bg;
-        tooltipEl.style.color = textColor;
-        tooltipEl.style.border = `1.5px solid ${isLight ? '#334155' : '#475569'}`;
-      }
-
-      document.addEventListener('mouseover', (e) => {
-        const target = e.target.closest('[title], [data-tooltip]');
-        if (!target) return;
-
-        const text = target.getAttribute('data-tooltip') || target.getAttribute('title');
-        if (!text || !text.trim()) return;
-
-        if (target.hasAttribute('title')) {
-          target.setAttribute('data-tooltip', text);
-          target.removeAttribute('title');
-        }
-
-        tooltipEl.innerText = text;
-        updateTooltipTheme();
-        tooltipEl.classList.add('visible');
-
-        const rect = target.getBoundingClientRect();
-        const tooltipRect = tooltipEl.getBoundingClientRect();
-
-        let top = rect.top - tooltipRect.height - 8;
-        let left = rect.left + (rect.width / 2) - (tooltipRect.width / 2);
-
-        if (top < 10) {
-          top = rect.bottom + 8;
-        }
-        if (left < 10) left = 10;
-        if (left + tooltipRect.width > window.innerWidth - 10) {
-          left = window.innerWidth - tooltipRect.width - 10;
-        }
-
-        tooltipEl.style.top = `${top}px`;
-        tooltipEl.style.left = `${left}px`;
-      }, true);
-
-      document.addEventListener('mouseout', (e) => {
-        const target = e.target.closest('[data-tooltip]');
-        if (target) {
-          tooltipEl.classList.remove('visible');
-        }
-      }, true);
-    }
-
-    // تفعيل محرك التلميحات عالي التباين
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initGlobalTooltipEngine);
-    } else {
-      initGlobalTooltipEngine();
-    }
-
-    // Day / Night Theme Engine (الوضع الليلي والنهاري)
-    function applyTheme(mode) {
-      const icon = document.getElementById('themeToggleIcon');
-      const text = document.getElementById('themeToggleText');
-      if (mode === 'light') {
-        document.body.classList.add('light-theme');
-        if (icon) icon.innerHTML = '<i class="fa-solid fa-moon text-indigo-500"></i>';
-        if (text) text.innerText = 'ليلي';
-      } else {
-        document.body.classList.remove('light-theme');
-        if (icon) icon.innerHTML = '<i class="fa-solid fa-sun text-amber-400"></i>';
-        if (text) text.innerText = 'نهاري';
-      }
-      try {
-        document.querySelectorAll('.content-card, .content-card *').forEach(el => el.style.removeProperty('color'));
-      } catch (e) {}
-      syncAllContrasts();
-    }
-
-    function toggleTheme() {
-      const isLight = document.body.classList.contains('light-theme');
-      const newMode = isLight ? 'dark' : 'light';
-      applyTheme(newMode);
-      try {
-        localStorage.setItem('basra_theme_mode_v2', newMode);
-        localStorage.setItem('basra_theme_mode', newMode);
-      } catch (e) {}
-    }
-
-    // Initialize saved theme on start (الوضعية الافتراضية عند التشغيل هي الوضعية النهارية)
-    try {
-      const savedTheme = localStorage.getItem('basra_theme_mode_v2') || 'light';
-      applyTheme(savedTheme);
-    } catch (e) {
-      applyTheme('light');
-    }
 
     function escapeHtml(str) {
       if (!str) return '';
@@ -7075,7 +7009,7 @@
             }
           </style>
 </head>
-        <body id="printBody">
+        <body class="unified-theme" id="printBody">
         </body>
         </html>
       `);
@@ -7363,142 +7297,17 @@
         let actionButtonsHtml = '';
         if (!hasFile) {
           actionButtonsHtml = `
-            <button type="button" onclick="openUnifiedModal('${c.id}')" class="flex-1 w-full bg-gradient-to-r from-blue-700 to-indigo-600 hover:from-blue-600 hover:to-indigo-500 text-white font-black text-sm py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md active:scale-95 cursor-pointer">
-              <i class="fa-solid fa-book-open text-base text-amber-300"></i>
-              <span>قراءة وطباعة التعليمات كاملة</span>
+            <button type="button" onclick="openUnifiedModal('${c.id}')" class="btn-read-instructions flex-1 w-full bg-blue-700 hover:bg-blue-600 font-black text-sm py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md active:scale-95 cursor-pointer" style="background-color: #1d4ed8 !important; color: #ffffff !important; -webkit-text-fill-color: #ffffff !important;">
+              <i class="fa-solid fa-book-open text-base" style="color: #fde047 !important; -webkit-text-fill-color: #fde047 !important;"></i>
+              <span style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; font-weight: 900 !important;">قراءة وطباعة التعليمات كاملة</span>
             </button>
           `;
         } else {
           actionButtonsHtml = `
-            <button type="button" onclick="openSheetModal('${c.id}')" class="flex-1 w-1/2 bg-blue-600 hover:bg-blue-500 text-white font-black text-sm py-3 px-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md active:scale-95 cursor-pointer" title="عرض النموذج">
-              <i class="fa-regular fa-eye text-base text-white"></i>
-              <span class="text-white font-black">عرض النموذج</span>
-            </button>
-            <button type="button" onclick="downloadFormFile('${c.id}')" class="flex-1 w-1/2 bg-slate-800 hover:bg-slate-700 text-slate-100 font-black text-sm py-3 px-3 rounded-xl flex items-center justify-center gap-2 transition-colors border border-slate-700 shadow-sm active:scale-95 cursor-pointer" title="تنزيل الملف">
-              <i class="fa-solid fa-download text-amber-400 text-sm"></i>
-              <span>تنزيل الملف</span>
-            </button>
-          `;
-        }
-
-        const canManage = (currentUser && currentUser.role === 'dept_admin' && currentUser.department_id === c.department_id);
-
-        return `
-          <div class="content-card ${c.is_hidden ? 'card-hidden-content' : ''} bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg flex flex-col justify-between transition-all hover:border-slate-700">
-            <div>
-              <!-- Top Badges Row -->
-              <div class="flex items-center justify-between gap-2 mb-3">
-                <div class="flex items-center gap-1.5 flex-wrap">
-                  ${typeBadge}
-                  <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-[11px] ${c.is_hidden ? 'table-status-hidden' : 'table-status-visible'} font-black shadow-sm">
-                    <span class="w-2 h-2 rounded-full ${c.is_hidden ? 'bg-rose-500' : 'bg-emerald-400 animate-pulse'}"></span>
-                    <span>${c.is_hidden ? 'مخفي' : 'ظاهر للمراكز'}</span>
-                  </span>
-                </div>
-                ${fileSizeFormatted ? `<span class="text-[11px] font-mono font-bold text-slate-400 select-none">${fileSizeFormatted}</span>` : ''}
-              </div>
-
-              <!-- Media Thumbnail Banner if present -->
-              ${mediaBannerHtml}
-
-              <!-- Title -->
-              <h3 class="card-title text-base font-black text-slate-100 leading-snug cursor-pointer hover:text-blue-400 transition-colors" onclick="openUnifiedModal('${c.id}')" title="${escapeHtml(c.title || c.file_name || 'بدون عنوان')}">
-                ${escapeHtml(c.title || c.file_name || 'بدون عنوان')}
-              </h3>
-
-              <!-- Instructions / Description: Larger Dedicated Box -->
-              <div class="mt-2.5">
-                <div class="instruction-box-card p-3.5 rounded-xl border leading-relaxed shadow-sm">
-                  <div id="cardDesc_${c.id}" class="card-desc text-xs font-bold leading-relaxed line-clamp-4 transition-all select-text">
-                    ${formatBodyTextWithClickableLinks(c.body_text || c.title || '')}
-                  </div>
-                  ${(hasBodyText && c.body_text.trim().length > 90) ? `
-                    <div class="mt-2 pt-2 border-t border-slate-700/50 flex items-center justify-between">
-                      <button type="button" onclick="toggleCardText('${c.id}', event)" class="text-blue-400 hover:text-blue-300 font-black text-xs inline-flex items-center gap-1.5 select-none cursor-pointer py-0.5">
-                        <span id="cardToggleText_${c.id}">... قراءة المزيد</span>
-                        <i id="cardToggleIcon_${c.id}" class="fa-solid fa-chevron-down text-[10px]"></i>
-                      </button>
-                      <button type="button" onclick="openUnifiedModal('${c.id}'); event.stopPropagation();" class="text-amber-300 hover:text-amber-200 font-bold text-xs inline-flex items-center gap-1.5 select-none cursor-pointer py-0.5" title="قراءة وطباعة التعليمات كاملة">
-                        <i class="fa-solid fa-book-open text-xs"></i>
-                        <span>قراءة كاملة</span>
-                      </button>
-                    </div>
-                  ` : ''}
-                </div>
-              </div>
-
-              <!-- Meta Details: Department & Publisher -->
-              <div class="mt-3 flex items-center justify-between text-xs font-bold gap-2 flex-wrap">
-                <div class="card-dept flex items-center gap-1.5 text-amber-400 font-black">
-                  <i class="fa-solid fa-building-columns text-[11px]"></i>
-                  <span>${escapeHtml(c.department_name || '—')}</span>
-                </div>
-                <div class="table-publisher-badge px-2.5 py-1 rounded-lg border text-[11px] font-bold flex items-center gap-1" title="المسؤول الناشر">
-                  <i class="fa-solid fa-user-shield text-[10px]"></i>
-                  <span class="truncate max-w-[120px]">${escapeHtml(publisherName)}</span>
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <!-- Action Buttons Container (مساحة التعليمات واضحة وأكبر من أزرار التحكم) -->
-              <div class="pt-4 mt-3 border-t border-slate-800 flex items-center gap-2">
-                ${actionButtonsHtml}
-              </div>
-
-              <!-- Admin Quick Control Strip (تعديل / إخفاء / حذف) -->
-              ${canManage ? `
-                <div class="mt-2.5 pt-2 border-t border-slate-800 flex items-center justify-between text-xs gap-2">
-                  <button type="button" onclick="editContent('${c.id}')" class="admin-btn-edit flex-1 py-1.5 px-2 rounded-xl bg-blue-500/15 hover:bg-blue-500/25 text-blue-300 font-black border border-blue-500/30 flex items-center justify-center gap-1.5 transition-all">
-                    <i class="fa-solid fa-pen-to-square text-[11px]"></i>
-                    <span>تعديل</span>
-                  </button>
-                  <button type="button" onclick="toggleContentVisibility('${c.id}')" class="admin-btn-${c.is_hidden ? 'hide' : 'show'} flex-1 py-1.5 px-2 rounded-xl ${c.is_hidden ? 'bg-amber-500/15 text-amber-300 border-amber-500/30' : 'bg-slate-800 text-slate-200 border-slate-700'} font-black border flex items-center justify-center gap-1.5 transition-all">
-                    <i class="fa-solid ${c.is_hidden ? 'fa-eye' : 'fa-eye-slash'} text-[11px]"></i>
-                    <span>${c.is_hidden ? 'إظهار' : 'إخفاء'}</span>
-                  </button>
-                  <button type="button" onclick="deleteContent('${c.id}')" class="admin-btn-delete flex-1 py-1.5 px-2 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 font-black border border-rose-500/30 flex items-center justify-center gap-1.5 transition-all">
-                    <i class="fa-solid fa-trash text-[11px]"></i>
-                    <span>حذف</span>
-                  </button>
-                </div>
-              ` : `
-                <div class="mt-2.5 pt-2 border-t border-slate-800 flex items-center justify-center text-[11px] text-slate-400 font-bold gap-1.5 py-0.5">
-                  <i class="fa-solid fa-lock text-[10px] text-amber-500"></i>
-                  <span>مخصص لشعبة ${escapeHtml(c.department_name || '')}</span>
-                </div>
-              `}
-            </div>
-          </div>
-        `;
-      }).join('');
-    }
-
-
-</script>
-
-
-<div id="sheetModal" class="fixed inset-0 z-50 bg-slate-900 hidden flex flex-col w-screen h-[100dvh] overflow-hidden m-0 p-0">
-    <div class="bg-white w-full h-full flex flex-col overflow-hidden m-0 p-0 rounded-none border-0">
-      
-      <!-- Top Action Toolbar (متجاوب للهواتف والشاشات الكبيرة) -->
-      <div class="bg-amber-500 text-slate-950 px-2 sm:px-4 py-1.5 sm:py-2 flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-2 border-b border-amber-600 shadow-sm shrink-0">
-        
-        <!-- Row 1 on Mobile: Title + Pinned Close Button (ALWAYS 100% visible, never pushed away) -->
-        <div class="flex items-center justify-between gap-2 w-full sm:w-auto min-w-0">
-          <div class="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-1 overflow-hidden">
-            <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-slate-950 text-amber-400 flex items-center justify-center text-xs sm:text-sm shadow shrink-0">
-              <i class="fa-solid fa-file-invoice"></i>
-            </div>
-            <div class="min-w-0">
-              <h3 id="modalSheetTitle" class="text-xs sm:text-sm font-black text-slate-950 truncate sm:line-clamp-2 leading-tight">عرض النموذج</h3>
-            </div>
-          </div>
-          <!-- Close Button on Mobile (Pinned) -->
-          <button type="button" onclick="closeSheetModal()" class="sm:hidden shrink-0 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white font-black text-xs px-3 py-1.5 rounded-xl flex items-center gap-1 shadow-md active:scale-95 border border-red-400/40 cursor-pointer" title="إغلاق النافذة">
-            <i class="fa-solid fa-xmark text-sm"></i>
-            <span>إغلاق</span>
-          </button>
+            <button type="button" onclick="openSheetModal('${c.id}')" class="bg-blue-600 hover:bg-blue-500 font-black text-xs py-2 px-3.5 rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-md active:scale-95 cursor-pointer whitespace-nowrap" style="background-color: #2563eb !important; color: #ffffff !important; -webkit-text-fill-color: #ffffff !important;" title="عرض النموذج">
+                  <i class="fa-regular fa-eye text-sm" style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important;"></i>
+                  <span style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; font-weight: 900 !important;">عرض النموذج</span>
+                </button>
         </div>
 
         <!-- Row 2 on Mobile / Left on Desktop: Horizontally Scrollable Ribbon of Tools -->
