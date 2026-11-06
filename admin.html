@@ -1335,6 +1335,34 @@
 
     <!-- TAB 1: Content Management -->
     <section id="sectionContents" class="space-y-5">
+      <!-- Storage Quota & Health Monitor Widget (الخطة المجانية - سحابة Supabase) -->
+      <div id="storageQuotaWidget" class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex flex-wrap items-center justify-between gap-4 shadow-sm mb-5">
+        <div class="flex items-center gap-3.5">
+          <div class="w-11 h-11 rounded-2xl bg-blue-500/10 text-blue-400 border border-blue-500/20 flex items-center justify-center text-xl shadow-inner">
+            <i class="fa-solid fa-hard-drive"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h4 class="text-xs font-black text-white">مساحة التخزين السحابي (سحابة Supabase)</h4>
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">1,000 MB مجاني</span>
+              <span id="serverHealthBadge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 inline-flex items-center gap-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                السيرفر متصل ونشط
+              </span>
+            </div>
+            <p id="storageQuotaText" class="text-[11px] text-slate-400 font-bold mt-1">جاري فحص المساحة المستهلكة بدقة...</p>
+          </div>
+        </div>
+        <div class="flex-1 max-w-sm min-w-[220px]">
+          <div class="w-full bg-slate-800 h-3 rounded-full overflow-hidden border border-slate-700/60 p-0.5 shadow-inner">
+            <div id="storageQuotaBar" class="h-full bg-emerald-500 rounded-full transition-all duration-500" style="width: 2%;"></div>
+          </div>
+          <div class="flex items-center justify-between text-[10px] text-slate-400 font-bold mt-1.5">
+            <span id="storageFileCountText">0 ملفات مخزنة</span>
+            <span>الحد الأقصى المجاني: 1,000 MB</span>
+          </div>
+        </div>
+      </div>
       <!-- Search and Filter Bar -->
       <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex flex-wrap items-center justify-between gap-4">
         <div class="flex items-center gap-3 flex-1 min-w-[280px]">
@@ -1551,11 +1579,17 @@
 
         <!-- File Upload Section -->
         <div class="p-4 rounded-2xl bg-slate-800/60 border border-slate-700/80 space-y-3">
-          <label class="block text-slate-300 font-bold">الملف المرفق (PDF, Word, Excel, صور):</label>
+          <div class="flex items-center justify-between">
+            <label class="block text-slate-300 font-bold">الملف المرفق (PDF, Word, Excel, صور):</label>
+            <span class="text-[10px] text-slate-400 font-semibold bg-slate-700/50 px-2.5 py-0.5 rounded-lg border border-slate-600/40">الحد الأقصى: 15 ميجابايت • ضغط تلقائي للصور</span>
+          </div>
           
           <div class="flex items-center gap-3">
-            <input type="file" id="contentFileInput" accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.webp" class="block w-full text-xs text-slate-400 file:mr-0 file:ml-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-500 cursor-pointer">
+            <input type="file" id="contentFileInput" onchange="handleFileInputChange(event)" accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.webp" class="block w-full text-xs text-slate-400 file:mr-0 file:ml-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-500 cursor-pointer">
           </div>
+
+          <!-- Optimization & Size Feedback Badge -->
+          <div id="fileOptimizationFeedback" class="hidden text-xs p-2.5 rounded-xl border flex items-center gap-2"></div>
 
           <div id="currentFileInfo" class="hidden text-[11px] text-emerald-400 flex items-center gap-2">
             <i class="fa-solid fa-check-circle"></i>
@@ -3074,9 +3108,222 @@
       `;
     }
 
+
+    // =========================================================================
+    // STORAGE & SERVER OPTIMIZATION SUITE (V2 FREE-TIER SHIELD)
+    // =========================================================================
+    let currentOptimizedFile = null;
+
+    // Helper: Extract relative storage path from full Supabase public URL
+    function extractStoragePath(fileUrl, bucketName = 'basra-files-new') {
+      if (!fileUrl) return null;
+      const marker = `/storage/v1/object/public/${bucketName}/`;
+      const idx = fileUrl.indexOf(marker);
+      if (idx !== -1) {
+        return decodeURIComponent(fileUrl.substring(idx + marker.length));
+      }
+      try {
+        const urlObj = new URL(fileUrl);
+        const parts = urlObj.pathname.split(`/${bucketName}/`);
+        if (parts.length > 1) {
+          return decodeURIComponent(parts[1]);
+        }
+      } catch (e) {}
+      return null;
+    }
+
+    // Clean Orphaned File from Supabase Storage Bucket
+    async function deleteFileFromStorage(fileUrl) {
+      if (!fileUrl) return;
+      try {
+        if (!supabaseClient) initSupabase();
+        const cfg = getBackendConfig();
+        const bucketName = cfg.bucket || 'basra-files-new';
+        const filePath = extractStoragePath(fileUrl, bucketName);
+        if (filePath) {
+          console.log('[Storage Cleaner] Deleting orphaned file from bucket:', filePath);
+          const { error } = await supabaseClient.storage.from(bucketName).remove([filePath]);
+          if (error) {
+            console.warn('[Storage Cleaner] Supabase remove error:', error);
+          } else {
+            console.log('[Storage Cleaner] Successfully deleted file from storage:', filePath);
+          }
+        }
+      } catch (err) {
+        console.warn('[Storage Cleaner] Failed to remove file from storage:', err);
+      }
+    }
+
+    // In-browser Image Compression using HTML5 Canvas (Preserves text readability & slashes file size)
+    function compressImageFile(file, maxWidth = 2200, maxHeight = 2200, quality = 0.82) {
+      return new Promise((resolve) => {
+        if (!file.type.startsWith('image/') || file.size <= 400 * 1024) {
+          return resolve({ file, compressed: false, originalSize: file.size, newSize: file.size });
+        }
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            let width = img.width;
+            let height = img.height;
+            if (width > maxWidth || height > maxHeight) {
+              const ratio = Math.min(maxWidth / width, maxHeight / height);
+              width = Math.round(width * ratio);
+              height = Math.round(height * ratio);
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(0, 0, width, height);
+            ctx.drawImage(img, 0, 0, width, height);
+            canvas.toBlob((blob) => {
+              if (blob && blob.size < file.size) {
+                const dotIdx = file.name.lastIndexOf('.');
+                const baseName = dotIdx > 0 ? file.name.substring(0, dotIdx) : file.name;
+                const optimizedFile = new File([blob], `${baseName}.jpg`, {
+                  type: 'image/jpeg',
+                  lastModified: Date.now()
+                });
+                resolve({ file: optimizedFile, compressed: true, originalSize: file.size, newSize: blob.size });
+              } else {
+                resolve({ file, compressed: false, originalSize: file.size, newSize: file.size });
+              }
+            }, 'image/jpeg', quality);
+          };
+          img.onerror = () => resolve({ file, compressed: false, originalSize: file.size, newSize: file.size });
+          img.src = e.target.result;
+        };
+        reader.onerror = () => resolve({ file, compressed: false, originalSize: file.size, newSize: file.size });
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // File input handler: live validation, compression, and feedback
+    async function handleFileInputChange(e) {
+      const fileInput = e.target;
+      const feedback = document.getElementById('fileOptimizationFeedback');
+      currentOptimizedFile = null;
+      if (!feedback) return;
+
+      feedback.className = 'hidden text-xs p-2.5 rounded-xl border flex items-center gap-2';
+      feedback.innerHTML = '';
+      if (!fileInput.files || fileInput.files.length === 0) return;
+
+      const file = fileInput.files[0];
+      const sizeMB = file.size / (1024 * 1024);
+      const ext = (file.name.split('.').pop() || '').toLowerCase();
+
+      // 1. Strict Max Limit: 15 MB
+      if (sizeMB > 15) {
+        if (typeof AudioEngine !== 'undefined') AudioEngine.error();
+        feedback.className = 'text-xs p-2.5 rounded-xl border border-rose-500/40 bg-rose-500/10 text-rose-300 flex items-center gap-2 font-bold';
+        feedback.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-rose-400 text-sm"></i>
+          <span>حجم الملف (${sizeMB.toFixed(1)} MB) يتجاوز الحد الأقصى المسموح به (15 MB). يرجى تقليله أولاً لحماية مساحة السيرفر.</span>`;
+        fileInput.value = '';
+        return;
+      }
+
+      // 2. Automatic Image Compression for JPG/PNG/WebP > 400 KB
+      const isImage = ['png', 'jpg', 'jpeg', 'webp'].includes(ext) || file.type.startsWith('image/');
+      if (isImage && file.size > 400 * 1024) {
+        feedback.className = 'text-xs p-2.5 rounded-xl border border-blue-500/40 bg-blue-500/10 text-blue-300 flex items-center gap-2 font-semibold';
+        feedback.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-blue-400"></i>
+          <span>جاري ضغط وتحسين الصورة تلقائياً لتوفير مساحة السيرفر...</span>`;
+
+        try {
+          const compResult = await compressImageFile(file, 2200, 2200, 0.82);
+          if (compResult.compressed && compResult.newSize < compResult.originalSize) {
+            currentOptimizedFile = compResult.file;
+            const savedPercent = Math.round((1 - compResult.newSize / compResult.originalSize) * 100);
+            const oldMB = (compResult.originalSize / (1024 * 1024)).toFixed(2);
+            const newKB = (compResult.newSize / 1024).toFixed(0);
+            feedback.className = 'text-xs p-2.5 rounded-xl border border-emerald-500/40 bg-emerald-500/10 text-emerald-300 flex items-center gap-2 font-bold';
+            feedback.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles text-emerald-400 text-sm"></i>
+              <span>تم تحسين الصورة تلقائياً: تم تقليل الحجم من (${oldMB} MB) إلى (${newKB} KB) بتوفير ${savedPercent}% مع الحفاظ على وضوح الخطوط!</span>`;
+            return;
+          }
+        } catch (compErr) {
+          console.warn('Image compression fallback:', compErr);
+        }
+      }
+
+      // 3. Advisory Warning for files > 4 MB
+      if (sizeMB > 4) {
+        feedback.className = 'text-xs p-2.5 rounded-xl border border-amber-500/40 bg-amber-500/10 text-amber-300 flex items-center gap-2 font-bold';
+        feedback.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-amber-400 text-sm"></i>
+          <span>تنبيه: حجم الملف (${sizeMB.toFixed(1)} MB) كبير نسبياً. يُفضل استخدام ملفات أقل من 4MB لسرعة تحميلها في المراكز وتوفير المساحة.</span>`;
+      } else {
+        feedback.className = 'text-xs p-2.5 rounded-xl border border-slate-700 bg-slate-800/80 text-slate-300 flex items-center gap-2 font-semibold';
+        feedback.innerHTML = `<i class="fa-solid fa-check text-emerald-400"></i>
+          <span>الملف جاهز للرفع: ${(file.size / 1024).toFixed(1)} KB (حجم ممتاز ومتوافق).</span>`;
+      }
+    }
+
+    // Storage Quota Display Calculator
+    function updateStorageQuotaDisplay() {
+      const textLabel = document.getElementById('storageQuotaText');
+      const countLabel = document.getElementById('storageFileCountText');
+      const fillBar = document.getElementById('storageQuotaBar');
+      if (!textLabel || !fillBar) return;
+
+      let totalBytes = 0;
+      let fileCount = 0;
+
+      (adminContents || []).forEach(item => {
+        if (item.file_url) {
+          fileCount++;
+          if (item.file_size) {
+            const parts = String(item.file_size).trim().split(' ');
+            const num = parseFloat(parts[0]) || 0;
+            const unit = (parts[1] || 'KB').toUpperCase();
+            if (unit === 'MB') totalBytes += num * 1024 * 1024;
+            else if (unit === 'KB') totalBytes += num * 1024;
+            else if (unit === 'GB') totalBytes += num * 1024 * 1024 * 1024;
+            else totalBytes += num;
+          }
+        }
+      });
+
+      const totalMB = (totalBytes / (1024 * 1024)).toFixed(1);
+      const maxMB = 1000; // 1 GB free tier
+      const percent = Math.min(100, Math.round((totalMB / maxMB) * 100));
+
+      fillBar.style.width = `${Math.max(2, percent)}%`;
+      if (percent > 85) {
+        fillBar.className = 'h-full bg-rose-500 rounded-full transition-all duration-500';
+      } else if (percent > 60) {
+        fillBar.className = 'h-full bg-amber-500 rounded-full transition-all duration-500';
+      } else {
+        fillBar.className = 'h-full bg-emerald-500 rounded-full transition-all duration-500';
+      }
+
+      textLabel.innerText = `${totalMB} ميجابايت مستهلكة من أصل 1,000 MB (${percent}%)`;
+      if (countLabel) countLabel.innerText = `${fileCount} ملفات مخزنة`;
+    }
+
+    // Update Server Health Status in header
+    function updateServerHealthStatus(isOnline, isWaking = false) {
+      const badge = document.getElementById('serverHealthBadge');
+      if (!badge) return;
+      if (isOnline) {
+        badge.className = 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 inline-flex items-center gap-1';
+        badge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>السيرفر متصل ونشط';
+      } else if (isWaking) {
+        badge.className = 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 inline-flex items-center gap-1';
+        badge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-spin"></span>جاري تنشيط السيرفر...';
+      } else {
+        badge.className = 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30 inline-flex items-center gap-1';
+        badge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span>تعذر الاتصال بالسيرفر';
+      }
+    }
+
     function renderContentsTable() {
       const badge = document.getElementById('badgeContentsCount');
       if (badge) badge.innerText = adminContents.length;
+      if (typeof updateStorageQuotaDisplay === 'function') updateStorageQuotaDisplay();
+      if (typeof updateServerHealthStatus === 'function') updateServerHealthStatus(true);
 
       if (typeof filterAdminContents === 'function') {
         filterAdminContents();
@@ -3111,6 +3358,9 @@
       if (fileInfo) fileInfo.classList.add('hidden');
       const fileInput = document.getElementById('contentFileInput');
       if (fileInput) fileInput.value = '';
+      currentOptimizedFile = null;
+      const optFb = document.getElementById('fileOptimizationFeedback');
+      if (optFb) { optFb.className = 'hidden'; optFb.innerHTML = ''; }
       document.getElementById('contentModal').classList.remove('hidden');
     }
 
@@ -3146,6 +3396,9 @@
       } else {
         fileInfo.classList.add('hidden');
       }
+      currentOptimizedFile = null;
+      const optFbEdit = document.getElementById('fileOptimizationFeedback');
+      if (optFbEdit) { optFbEdit.className = 'hidden'; optFbEdit.innerHTML = ''; }
 
       document.getElementById('contentModal').classList.remove('hidden');
     }
@@ -3292,7 +3545,7 @@
         }
 
         if (fileInput.files && fileInput.files.length > 0) {
-          const file = fileInput.files[0];
+          const file = currentOptimizedFile || fileInput.files[0];
           fileName = file.name;
           fileSize = (file.size / 1024).toFixed(1) + ' KB';
           const ext = file.name.split('.').pop().toLowerCase();
@@ -3331,7 +3584,12 @@
 
             const { data: urlData } = supabaseClient.storage.from(bucketName).getPublicUrl(filePath);
             if (urlData && urlData.publicUrl) {
+              const oldFileUrlToDelete = (id && existing && existing.file_url) ? existing.file_url : null;
               fileUrl = urlData.publicUrl;
+              // Clean replaced file from Supabase storage bucket
+              if (oldFileUrlToDelete && oldFileUrlToDelete !== fileUrl) {
+                deleteFileFromStorage(oldFileUrlToDelete);
+              }
             }
           } catch (uploadException) {
             console.error('Upload exception:', uploadException);
@@ -3476,6 +3734,9 @@
             if (!supabaseClient) initSupabase();
             const { error: delErr } = await supabaseClient.from('contents_v2').delete().eq('id', id);
             if (!delErr) {
+              if (item && item.file_url) {
+                await deleteFileFromStorage(item.file_url);
+              }
               adminContents = adminContents.filter(c => c.id !== id);
               adminLastKnownHeartbeat = null;
               renderContentsTable();
