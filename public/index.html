@@ -102,81 +102,81 @@
     /* ========================================================================== */
     /* 2. ثوابت الوضع الليلي الصارمة (STRICT DARK MODE RULES)                     */
     /* ========================================================================== */
-    body.dark-mode-disabled {
+    body:not(.light-theme) {
       background-color: #020617 !important;
       color: #f8fafc !important;
     }
 
     /* العناوين والنصوص الرئيسية في الوضع الليلي: أبيض ناصع دائماً */
-    body.dark-mode-disabled h1,
-    body.dark-mode-disabled h2,
-    body.dark-mode-disabled h3,
-    body.dark-mode-disabled h4,
-    body.dark-mode-disabled .card-title,
-    body.dark-mode-disabled .modal-title,
-    body.dark-mode-disabled .table-title,
-    body.dark-mode-disabled #headerUserName,
-    body.dark-mode-disabled .text-white {
+    body:not(.light-theme) h1,
+    body:not(.light-theme) h2,
+    body:not(.light-theme) h3,
+    body:not(.light-theme) h4,
+    body:not(.light-theme) .card-title,
+    body:not(.light-theme) .modal-title,
+    body:not(.light-theme) .table-title,
+    body:not(.light-theme) #headerUserName,
+    body:not(.light-theme) .text-white {
       color: #ffffff !important;
       -webkit-text-fill-color: #ffffff !important;
       font-weight: 900 !important;
     }
 
     /* النصوص العادية والفقرات في الوضع الليلي */
-    body.dark-mode-disabled p,
-    body.dark-mode-disabled label,
-    body.dark-mode-disabled .text-slate-100,
-    body.dark-mode-disabled .text-slate-200 {
+    body:not(.light-theme) p,
+    body:not(.light-theme) label,
+    body:not(.light-theme) .text-slate-100,
+    body:not(.light-theme) .text-slate-200 {
       color: #f8fafc !important;
       font-weight: 700 !important;
     }
 
     /* النصوص التوضيحية والوصف في الوضع الليلي */
-    body.dark-mode-disabled .text-slate-300,
-    body.dark-mode-disabled .text-slate-400,
-    body.dark-mode-disabled .text-slate-500,
-    body.dark-mode-disabled .table-desc,
-    body.dark-mode-disabled .text-muted,
-    body.dark-mode-disabled small {
+    body:not(.light-theme) .text-slate-300,
+    body:not(.light-theme) .text-slate-400,
+    body:not(.light-theme) .text-slate-500,
+    body:not(.light-theme) .table-desc,
+    body:not(.light-theme) .text-muted,
+    body:not(.light-theme) small {
       color: #cbd5e1 !important;
       font-weight: 600 !important;
     }
 
     /* تمييز الشعب المصدرة والتحذيرات بلون ذهبي ناصع ومقروء */
-    body.dark-mode-disabled .text-amber-400,
-    body.dark-mode-disabled .text-amber-500,
-    body.dark-mode-disabled #headerUserRole,
-    body.dark-mode-disabled .card-dept,
-    body.dark-mode-disabled td.text-amber-500 {
+    body:not(.light-theme) .text-amber-400,
+    body:not(.light-theme) .text-amber-500,
+    body:not(.light-theme) #headerUserRole,
+    body:not(.light-theme) .card-dept,
+    body:not(.light-theme) td.text-amber-500 {
       color: #fbbf24 !important;
       -webkit-text-fill-color: #fbbf24 !important;
       font-weight: 900 !important;
     }
 
     /* حقول الإدخال والبحث وقوائم الاختيار في الوضع الليلي */
-    body.dark-mode-disabled input,
-    body.dark-mode-disabled textarea:not(.drag-textarea),
-    body.dark-mode-disabled select {
+    body:not(.light-theme) input,
+    body:not(.light-theme) textarea:not(.drag-textarea),
+    body:not(.light-theme) select {
       background-color: #1e293b !important;
       color: #ffffff !important;
       -webkit-text-fill-color: #ffffff !important;
       border: 1.5px solid #475569 !important;
       font-weight: 700 !important;
     }
-    body.dark-mode-disabled select option {
+    body:not(.light-theme) select option {
       background-color: #1e293b !important;
       color: #ffffff !important;
     }
-    body.dark-mode-disabled input::placeholder,
-    body.dark-mode-disabled textarea::placeholder {
+    body:not(.light-theme) input::placeholder,
+    body:not(.light-theme) textarea::placeholder {
       color: #94a3b8 !important;
       opacity: 1 !important;
       font-weight: 600 !important;
     }
 
     /* ترويسة الجداول في الوضع الليلي */
-    body.dark-mode-disabled thead th,
-    body.dark-mode-disabled table th {
+    body:not(.light-theme) thead th,
+    body:not(.light-theme) table th {
       background-color: #1e293b !important;
       color: #ffffff !important;
       -webkit-text-fill-color: #ffffff !important;
@@ -185,41 +185,41 @@
     }
 
     /* خلايا الجداول في الوضع الليلي */
-    body.dark-mode-disabled tbody td {
+    body:not(.light-theme) tbody td {
       color: #f8fafc !important;
       border-bottom: 1px solid #1e293b !important;
     }
 
     /* التبويبات غير النشطة وأزرار الشريط العلوي في الوضع الليلي */
-    body.dark-mode-disabled .tab-btn-inactive,
-    body.dark-mode-disabled #themeToggleBtn,
-    body.dark-mode-disabled button.bg-slate-800 {
+    body:not(.light-theme) .tab-btn-inactive,
+    body:not(.light-theme) #themeToggleBtn,
+    body:not(.light-theme) button.bg-slate-800 {
       background-color: #1e293b !important;
       color: #ffffff !important;
       -webkit-text-fill-color: #ffffff !important;
       border: 1.5px solid #475569 !important;
       font-weight: 800 !important;
     }
-    body.dark-mode-disabled .tab-btn-inactive *,
-    body.dark-mode-disabled #themeToggleBtn *,
-    body.dark-mode-disabled button.bg-slate-800 * {
+    body:not(.light-theme) .tab-btn-inactive *,
+    body:not(.light-theme) #themeToggleBtn *,
+    body:not(.light-theme) button.bg-slate-800 * {
       color: #ffffff !important;
       -webkit-text-fill-color: #ffffff !important;
     }
-    body.dark-mode-disabled #themeToggleBtn i,
-    body.dark-mode-disabled #themeToggleBtn span#themeToggleIcon * {
+    body:not(.light-theme) #themeToggleBtn i,
+    body:not(.light-theme) #themeToggleBtn span#themeToggleIcon * {
       color: #fbbf24 !important;
       -webkit-text-fill-color: #fbbf24 !important;
     }
-    body.dark-mode-disabled .tab-btn-inactive .badge-counter {
+    body:not(.light-theme) .tab-btn-inactive .badge-counter {
       background-color: #334155 !important;
       color: #ffffff !important;
       -webkit-text-fill-color: #ffffff !important;
     }
 
     /* شارات التصنيف والمرفقات في الوضع الليلي */
-    body.dark-mode-disabled .category-pill,
-    body.dark-mode-disabled span.bg-slate-800 {
+    body:not(.light-theme) .category-pill,
+    body:not(.light-theme) span.bg-slate-800 {
       background-color: #1e293b !important;
       color: #ffffff !important;
       -webkit-text-fill-color: #ffffff !important;
@@ -228,87 +228,87 @@
     }
 
     /* شارات الملفات في الوضع الليلي (PDF, Word, Excel, Images) */
-    body.dark-mode-disabled [class*="bg-rose-500"] {
+    body:not(.light-theme) [class*="bg-rose-500"] {
       background-color: rgba(225, 29, 72, 0.25) !important;
       border-color: rgba(225, 29, 72, 0.6) !important;
       color: #fca5a5 !important;
     }
-    body.dark-mode-disabled [class*="bg-rose-500"] * {
+    body:not(.light-theme) [class*="bg-rose-500"] * {
       color: #fca5a5 !important;
     }
-    body.dark-mode-disabled [class*="bg-blue-500"],
-    body.dark-mode-disabled [class*="bg-blue-600"] {
+    body:not(.light-theme) [class*="bg-blue-500"],
+    body:not(.light-theme) [class*="bg-blue-600"] {
       background-color: rgba(37, 99, 235, 0.25) !important;
       border-color: rgba(37, 99, 235, 0.6) !important;
       color: #93c5fd !important;
     }
-    body.dark-mode-disabled [class*="bg-blue-500"] *,
-    body.dark-mode-disabled [class*="bg-blue-600"] * {
+    body:not(.light-theme) [class*="bg-blue-500"] *,
+    body:not(.light-theme) [class*="bg-blue-600"] * {
       color: #93c5fd !important;
     }
-    body.dark-mode-disabled [class*="bg-emerald-500"] {
+    body:not(.light-theme) [class*="bg-emerald-500"] {
       background-color: rgba(16, 185, 129, 0.25) !important;
       border-color: rgba(16, 185, 129, 0.6) !important;
       color: #6ee7b7 !important;
     }
-    body.dark-mode-disabled [class*="bg-emerald-500"] * {
+    body:not(.light-theme) [class*="bg-emerald-500"] * {
       color: #6ee7b7 !important;
     }
-    body.dark-mode-disabled [class*="bg-amber-500"] {
+    body:not(.light-theme) [class*="bg-amber-500"] {
       background-color: rgba(245, 158, 11, 0.25) !important;
       border-color: rgba(245, 158, 11, 0.6) !important;
       color: #fcd34d !important;
     }
-    body.dark-mode-disabled [class*="bg-amber-500"] * {
+    body:not(.light-theme) [class*="bg-amber-500"] * {
       color: #fcd34d !important;
     }
 
     /* الصفوف المخفية في الوضع الليلي */
-    body.dark-mode-disabled tr.row-hidden-content {
+    body:not(.light-theme) tr.row-hidden-content {
       background-color: rgba(225, 29, 72, 0.22) !important;
       border-color: rgba(225, 29, 72, 0.5) !important;
     }
-    body.dark-mode-disabled tr.row-hidden-content td {
+    body:not(.light-theme) tr.row-hidden-content td {
       color: #fecdd3 !important;
     }
-    body.dark-mode-disabled tr.row-hidden-content .table-title {
+    body:not(.light-theme) tr.row-hidden-content .table-title {
       color: #fca5a5 !important;
       -webkit-text-fill-color: #fca5a5 !important;
     }
 
     /* البطاقات في الوضع الليلي (index_v2) */
-    body.dark-mode-disabled .content-card {
+    body:not(.light-theme) .content-card {
       background-color: #0f172a !important;
       border: 2px solid #334155 !important;
       box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5) !important;
     }
-    body.dark-mode-disabled .card-body-text {
+    body:not(.light-theme) .card-body-text {
       background-color: #020617 !important;
       border-color: #1e293b !important;
       color: #f8fafc !important;
     }
-    body.dark-mode-disabled .card-meta {
+    body:not(.light-theme) .card-meta {
       border-top-color: #1e293b !important;
       color: #cbd5e1 !important;
     }
-    body.dark-mode-disabled .card-meta span {
+    body:not(.light-theme) .card-meta span {
       color: #cbd5e1 !important;
     }
-    body.dark-mode-disabled .card-meta i {
+    body:not(.light-theme) .card-meta i {
       color: #94a3b8 !important;
     }
-    body.dark-mode-disabled .gmail-attachment-card {
+    body:not(.light-theme) .gmail-attachment-card {
       background-color: #020617 !important;
       border-color: #334155 !important;
     }
-    body.dark-mode-disabled .gmail-bottom-strip {
+    body:not(.light-theme) .gmail-bottom-strip {
       background-color: #0f172a !important;
       border-top-color: #1e293b !important;
     }
-    body.dark-mode-disabled .gmail-filename {
+    body:not(.light-theme) .gmail-filename {
       color: #ffffff !important;
     }
-    body.dark-mode-disabled .gmail-filesize {
+    body:not(.light-theme) .gmail-filesize {
       background-color: #1e293b !important;
       color: #cbd5e1 !important;
       border-color: #334155 !important;
@@ -582,14 +582,14 @@
     }
 
     /* Modals in both themes */
-    body.dark-mode-disabled #contentModal > div,
-    body.dark-mode-disabled #deptModal > div,
-    body.dark-mode-disabled #unifiedPreviewModal > div,
-    body.dark-mode-disabled #userModal > div,
-    body.dark-mode-disabled #confirmModal > div,
-    body.dark-mode-disabled #resetPassModal > div,
-    body.dark-mode-disabled #loginModal > div,
-    body.dark-mode-disabled #changePasswordModal > div {
+    body:not(.light-theme) #contentModal > div,
+    body:not(.light-theme) #deptModal > div,
+    body:not(.light-theme) #unifiedPreviewModal > div,
+    body:not(.light-theme) #userModal > div,
+    body:not(.light-theme) #confirmModal > div,
+    body:not(.light-theme) #resetPassModal > div,
+    body:not(.light-theme) #loginModal > div,
+    body:not(.light-theme) #changePasswordModal > div {
       background-color: #0f172a !important;
       border: 2px solid #334155 !important;
       box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6) !important;
@@ -873,20 +873,20 @@
 
 
     /* Content Card High-Contrast Support (Dark & Light Mode) */
-    body.dark-mode-disabled .content-card {
+    body:not(.light-theme) .content-card {
       background: #0f172a !important;
       border-color: #1e293b !important;
     }
-    body.dark-mode-disabled .content-card .card-title {
+    body:not(.light-theme) .content-card .card-title {
       color: #ffffff !important;
     }
-    body.dark-mode-disabled .content-card .card-desc {
+    body:not(.light-theme) .content-card .card-desc {
       color: #94a3b8 !important;
     }
-    body.dark-mode-disabled .content-card .card-size {
+    body:not(.light-theme) .content-card .card-size {
       color: #64748b !important;
     }
-    body.dark-mode-disabled .content-card div.border-slate-100 {
+    body:not(.light-theme) .content-card div.border-slate-100 {
       border-color: #1e293b !important;
     }
     body.light-theme .content-card {
@@ -915,9 +915,9 @@
     .drag-box.has-text,
     textarea.drag-textarea,
     .drag-box textarea,
-    body.dark-mode-disabled textarea.drag-textarea,
+    body:not(.light-theme) textarea.drag-textarea,
     body.light-theme textarea.drag-textarea,
-    body.dark-mode-disabled .drag-box,
+    body:not(.light-theme) .drag-box,
     body.light-theme .drag-box,
     #sheetScrollArea .drag-box,
     #sheetScrollArea textarea.drag-textarea {
@@ -928,27 +928,27 @@
 
 
     /* Content Card High-Contrast Support (Dark & Light Mode) */
-    body.dark-mode-disabled .content-card {
+    body:not(.light-theme) .content-card {
       background: #0f172a !important;
       border-color: #334155 !important;
     }
-    body.dark-mode-disabled .content-card .card-title {
+    body:not(.light-theme) .content-card .card-title {
       color: #ffffff !important;
       font-weight: 800 !important;
     }
-    body.dark-mode-disabled .content-card .card-desc {
+    body:not(.light-theme) .content-card .card-desc {
       color: #cbd5e1 !important;
       font-weight: 600 !important;
     }
-    body.dark-mode-disabled .content-card .card-dept,
-    body.dark-mode-disabled .content-card .card-dept * {
+    body:not(.light-theme) .content-card .card-dept,
+    body:not(.light-theme) .content-card .card-dept * {
       color: #fbbf24 !important;
       font-weight: 800 !important;
     }
-    body.dark-mode-disabled .content-card .card-size {
+    body:not(.light-theme) .content-card .card-size {
       color: #94a3b8 !important;
     }
-    body.dark-mode-disabled .content-card div.border-slate-100 {
+    body:not(.light-theme) .content-card div.border-slate-100 {
       border-color: #1e293b !important;
     }
 
@@ -982,7 +982,7 @@
        نظام تبديل نمط العرض (بطاقات / جدول) فائق التباين للوضعين الليلي والنهاري
        ========================================================================= */
     /* حاوية شريط التبديل في الوضع الليلي */
-    body.dark-mode-disabled .view-mode-toggle {
+    body:not(.light-theme) .view-mode-toggle {
       background-color: #0f172a !important;
       border: 1.5px solid #334155 !important;
     }
@@ -994,7 +994,7 @@
     }
 
     /* الزر النشط في كلا الوضعين - أزرق ساطع صلب مع نص وأيقونة بيضاء ناصعة */
-    body.dark-mode-disabled .view-toggle-btn.view-toggle-active,
+    body:not(.light-theme) .view-toggle-btn.view-toggle-active,
     body.light-theme .view-toggle-btn.view-toggle-active,
     .view-toggle-btn.view-toggle-active {
       background-color: #2563eb !important;
@@ -1003,7 +1003,7 @@
       font-weight: 900 !important;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25) !important;
     }
-    body.dark-mode-disabled .view-toggle-btn.view-toggle-active *,
+    body:not(.light-theme) .view-toggle-btn.view-toggle-active *,
     body.light-theme .view-toggle-btn.view-toggle-active *,
     .view-toggle-btn.view-toggle-active * {
       color: #ffffff !important;
@@ -1011,22 +1011,22 @@
     }
 
     /* الزر غير النشط في الوضع الليلي - نص رمادي فاتح مقروء جداً */
-    body.dark-mode-disabled .view-toggle-btn.view-toggle-inactive {
+    body:not(.light-theme) .view-toggle-btn.view-toggle-inactive {
       background-color: transparent !important;
       color: #cbd5e1 !important;
       -webkit-text-fill-color: #cbd5e1 !important;
       font-weight: 800 !important;
     }
-    body.dark-mode-disabled .view-toggle-btn.view-toggle-inactive:hover {
+    body:not(.light-theme) .view-toggle-btn.view-toggle-inactive:hover {
       background-color: #1e293b !important;
       color: #ffffff !important;
       -webkit-text-fill-color: #ffffff !important;
     }
-    body.dark-mode-disabled .view-toggle-btn.view-toggle-inactive * {
+    body:not(.light-theme) .view-toggle-btn.view-toggle-inactive * {
       color: #cbd5e1 !important;
       -webkit-text-fill-color: #cbd5e1 !important;
     }
-    body.dark-mode-disabled .view-toggle-btn.view-toggle-inactive:hover * {
+    body:not(.light-theme) .view-toggle-btn.view-toggle-inactive:hover * {
       color: #ffffff !important;
       -webkit-text-fill-color: #ffffff !important;
     }
@@ -1059,81 +1059,81 @@
        ========================================================================= */
 
     /* --- Dark Mode High Contrast --- */
-    body.dark-mode-disabled #adminContentsTableBody tr,
-    body.dark-mode-disabled #contentTableBody tr {
+    body:not(.light-theme) #adminContentsTableBody tr,
+    body:not(.light-theme) #contentTableBody tr {
       background-color: #0d1527 !important;
       border-bottom: 1.5px solid #1e293b !important;
       transition: background-color 0.15s ease;
     }
-    body.dark-mode-disabled #adminContentsTableBody tr:nth-child(even),
-    body.dark-mode-disabled #contentTableBody tr:nth-child(even) {
+    body:not(.light-theme) #adminContentsTableBody tr:nth-child(even),
+    body:not(.light-theme) #contentTableBody tr:nth-child(even) {
       background-color: #111c33 !important;
     }
-    body.dark-mode-disabled #adminContentsTableBody tr:hover,
-    body.dark-mode-disabled #contentTableBody tr:hover {
+    body:not(.light-theme) #adminContentsTableBody tr:hover,
+    body:not(.light-theme) #contentTableBody tr:hover {
       background-color: #1e2e4f !important;
     }
 
-    body.dark-mode-disabled .table-title,
-    body.dark-mode-disabled .card-title {
+    body:not(.light-theme) .table-title,
+    body:not(.light-theme) .card-title {
       color: #ffffff !important;
       -webkit-text-fill-color: #ffffff !important;
       font-weight: 900 !important;
       text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
     }
 
-    body.dark-mode-disabled .table-desc,
-    body.dark-mode-disabled .card-desc {
+    body:not(.light-theme) .table-desc,
+    body:not(.light-theme) .card-desc {
       color: #f1f5f9 !important;
       -webkit-text-fill-color: #f1f5f9 !important;
       font-weight: 700 !important;
     }
 
-    body.dark-mode-disabled .instruction-box-table {
+    body:not(.light-theme) .instruction-box-table {
       background-color: rgba(15, 23, 42, 0.8) !important;
       border: 1px solid #334155 !important;
       color: #f8fafc !important;
     }
 
-    body.dark-mode-disabled .instruction-box-card {
+    body:not(.light-theme) .instruction-box-card {
       background-color: rgba(15, 23, 42, 0.85) !important;
       border: 1.5px solid #334155 !important;
       color: #f8fafc !important;
     }
 
-    body.dark-mode-disabled .table-dept-cell {
+    body:not(.light-theme) .table-dept-cell {
       color: #fbbf24 !important;
       -webkit-text-fill-color: #fbbf24 !important;
       font-weight: 900 !important;
     }
 
-    body.dark-mode-disabled .table-publisher-badge {
+    body:not(.light-theme) .table-publisher-badge {
       background-color: rgba(99, 102, 241, 0.22) !important;
       border: 1px solid rgba(99, 102, 241, 0.5) !important;
       color: #c7d2fe !important;
       font-weight: 800 !important;
     }
 
-    body.dark-mode-disabled .table-date-cell {
+    body:not(.light-theme) .table-date-cell {
       color: #e2e8f0 !important;
       font-weight: 800 !important;
     }
 
-    body.dark-mode-disabled .table-status-visible {
+    body:not(.light-theme) .table-status-visible {
       background-color: rgba(16, 185, 129, 0.22) !important;
       border: 1px solid rgba(16, 185, 129, 0.5) !important;
       color: #6ee7b7 !important;
       font-weight: 900 !important;
     }
 
-    body.dark-mode-disabled .table-status-hidden {
+    body:not(.light-theme) .table-status-hidden {
       background-color: rgba(244, 63, 94, 0.22) !important;
       border: 1px solid rgba(244, 63, 94, 0.5) !important;
       color: #fca5a5 !important;
       font-weight: 900 !important;
     }
 
-    body.dark-mode-disabled .table-badge-textonly {
+    body:not(.light-theme) .table-badge-textonly {
       background-color: rgba(245, 158, 11, 0.2) !important;
       border: 1px solid rgba(245, 158, 11, 0.5) !important;
       color: #fde047 !important;
@@ -1222,298 +1222,6 @@
     }
 
   
-    /* =========================================================================
-       UNIFIED HIGH-CONTRAST CLEAN THEME (PERFECT OPPOSITE CONTRAST)
-       ========================================================================= */
-    :root {
-      --theme-bg-body: #f1f5f9;
-      --theme-bg-surface: #ffffff;
-      --theme-bg-subsurface: #f8fafc;
-      --theme-bg-card: #ffffff;
-      --theme-bg-hover: #e2e8f0;
-      --theme-bg-input: #ffffff;
-      --theme-bg-modal: #ffffff;
-
-      --theme-border: #cbd5e1;
-      --theme-border-subtle: #e2e8f0;
-      --theme-border-focus: #2563eb;
-
-      --theme-text-title: #0f172a;
-      --theme-text-body: #0f172a;
-      --theme-text-secondary: #1e293b;
-      --theme-text-muted: #334155;
-
-      --theme-table-header-bg: #e2e8f0;
-      --theme-table-header-text: #0f172a;
-      --theme-table-row-hover: #f1f5f9;
-      --theme-table-border: #cbd5e1;
-
-      --theme-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
-    }
-
-    body {
-      font-family: 'Cairo', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background-color: #f1f5f9 !important;
-      color: #0f172a !important;
-    }
-
-    /* All Light Surfaces */
-    header,
-    nav,
-    .bg-slate-900,
-    .bg-slate-950,
-    .content-card,
-    #adminContentTableWrapper,
-    #contentTableWrapper {
-      background-color: #ffffff !important;
-      color: #0f172a !important;
-      border-color: #cbd5e1 !important;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05) !important;
-    }
-
-    /* Headings, Titles and Text: Pure Deep Slate / Black */
-    h1, h2, h3, h4, h5, h6,
-    .card-title,
-    .modal-title,
-    .table-title,
-    #headerUserName {
-      color: #0f172a !important;
-      -webkit-text-fill-color: #0f172a !important;
-      font-weight: 900 !important;
-    }
-
-    p, label, td, .table-desc, .card-desc {
-      color: #0f172a !important;
-      -webkit-text-fill-color: #0f172a !important;
-      font-weight: 700 !important;
-    }
-
-    /* Table Specific Rules */
-    thead th,
-    table th {
-      background-color: #e2e8f0 !important;
-      color: #0f172a !important;
-      -webkit-text-fill-color: #0f172a !important;
-      border-bottom: 2px solid #cbd5e1 !important;
-      font-weight: 900 !important;
-    }
-
-    #adminContentsTableBody tr,
-    #contentTableBody tr {
-      background-color: #ffffff !important;
-      border-bottom: 1.5px solid #e2e8f0 !important;
-    }
-    #adminContentsTableBody tr:nth-child(even),
-    #contentTableBody tr:nth-child(even) {
-      background-color: #f8fafc !important;
-    }
-    #adminContentsTableBody tr:hover,
-    #contentTableBody tr:hover {
-      background-color: #f1f5f9 !important;
-    }
-
-    /* Dedicated Instructions Box */
-    .instruction-box-table,
-    .instruction-box-card {
-      background-color: #f8fafc !important;
-      border: 1.5px solid #cbd5e1 !important;
-      color: #0f172a !important;
-      -webkit-text-fill-color: #0f172a !important;
-    }
-    .instruction-box-table *,
-    .instruction-box-card * {
-      color: #0f172a !important;
-      -webkit-text-fill-color: #0f172a !important;
-    }
-    .instruction-box-table .text-blue-400,
-    .instruction-box-table .text-blue-600,
-    .instruction-box-table span.underline,
-    .instruction-box-card button.text-blue-400,
-    .instruction-box-card button.text-blue-600 {
-      color: #1d4ed8 !important;
-      -webkit-text-fill-color: #1d4ed8 !important;
-      font-weight: 900 !important;
-    }
-    .instruction-box-table i.text-amber-300,
-    .instruction-box-card i.text-amber-300 {
-      color: #d97706 !important;
-      -webkit-text-fill-color: #d97706 !important;
-    }
-
-    /* Badges */
-    .table-publisher-badge {
-      background-color: #e0e7ff !important;
-      border: 1px solid #a5b4fc !important;
-      color: #312e81 !important;
-      -webkit-text-fill-color: #312e81 !important;
-      font-weight: 900 !important;
-    }
-    .table-publisher-badge * {
-      color: #312e81 !important;
-      -webkit-text-fill-color: #312e81 !important;
-    }
-
-    .table-dept-cell {
-      color: #9a3412 !important;
-      -webkit-text-fill-color: #9a3412 !important;
-      font-weight: 900 !important;
-    }
-    .table-dept-cell * {
-      color: #9a3412 !important;
-      -webkit-text-fill-color: #9a3412 !important;
-    }
-
-    .table-date-cell {
-      color: #0f172a !important;
-      -webkit-text-fill-color: #0f172a !important;
-      font-weight: 800 !important;
-    }
-    .table-date-cell * {
-      color: #0f172a !important;
-      -webkit-text-fill-color: #0f172a !important;
-    }
-
-    .table-status-visible {
-      background-color: #d1fae5 !important;
-      border: 1px solid #10b981 !important;
-      color: #065f46 !important;
-      -webkit-text-fill-color: #065f46 !important;
-      font-weight: 900 !important;
-    }
-    .table-status-visible * {
-      color: #065f46 !important;
-      -webkit-text-fill-color: #065f46 !important;
-    }
-
-    .table-status-hidden {
-      background-color: #ffe4e6 !important;
-      border: 1px solid #f43f5e !important;
-      color: #9f1239 !important;
-      -webkit-text-fill-color: #9f1239 !important;
-      font-weight: 900 !important;
-    }
-    .table-status-hidden * {
-      color: #9f1239 !important;
-      -webkit-text-fill-color: #9f1239 !important;
-    }
-
-    .table-badge-textonly {
-      background-color: #fef3c7 !important;
-      border: 1px solid #f59e0b !important;
-      color: #78350f !important;
-      -webkit-text-fill-color: #78350f !important;
-      font-weight: 900 !important;
-    }
-    .table-badge-textonly * {
-      color: #78350f !important;
-      -webkit-text-fill-color: #78350f !important;
-    }
-
-    /* Inputs and Selects */
-    input, select, textarea:not(.drag-textarea) {
-      background-color: #ffffff !important;
-      color: #0f172a !important;
-      -webkit-text-fill-color: #0f172a !important;
-      border: 1.5px solid #cbd5e1 !important;
-      font-weight: 700 !important;
-    }
-    input::placeholder, textarea::placeholder {
-      color: #64748b !important;
-      -webkit-text-fill-color: #64748b !important;
-      font-weight: 600 !important;
-    }
-
-    /* =========================================================================
-       CRITICAL BUTTON CONTRAST RULES:
-       DARK BUTTONS MUST ALWAYS HAVE 100% PURE WHITE TEXT!
-       ========================================================================= */
-    button.bg-blue-600,
-    button.bg-blue-700,
-    button.bg-indigo-600,
-    button.bg-indigo-700,
-    button.bg-slate-800,
-    button.bg-slate-900,
-    button.bg-emerald-600,
-    button.bg-rose-600,
-    button[class*="from-blue-"],
-    button[class*="to-indigo-"],
-    .btn-read-instructions {
-      background-color: #1d4ed8 !important;
-      color: #ffffff !important;
-      -webkit-text-fill-color: #ffffff !important;
-      font-weight: 900 !important;
-    }
-
-    button.bg-blue-600 *,
-    button.bg-blue-700 *,
-    button.bg-indigo-600 *,
-    button.bg-indigo-700 *,
-    button.bg-slate-800 *,
-    button.bg-slate-900 *,
-    button.bg-emerald-600 *,
-    button.bg-rose-600 *,
-    button[class*="from-blue-"] *,
-    button[class*="to-indigo-"] *,
-    .btn-read-instructions * {
-      color: #ffffff !important;
-      -webkit-text-fill-color: #ffffff !important;
-    }
-
-    button[class*="from-blue-"] i.text-amber-300,
-    button.bg-indigo-600 i.text-amber-300,
-    .btn-read-instructions i.text-amber-300 {
-      color: #fde047 !important;
-      -webkit-text-fill-color: #fde047 !important;
-    }
-
-    /* Light buttons (e.g. Download, Cancel) have dark text */
-    button.bg-slate-100,
-    button.bg-slate-200,
-    button.btn-secondary {
-      background-color: #f1f5f9 !important;
-      border: 1.5px solid #cbd5e1 !important;
-      color: #0f172a !important;
-      -webkit-text-fill-color: #0f172a !important;
-      font-weight: 900 !important;
-    }
-    button.bg-slate-100 *,
-    button.bg-slate-200 *,
-    button.btn-secondary * {
-      color: #0f172a !important;
-      -webkit-text-fill-color: #0f172a !important;
-    }
-    button.bg-slate-100 i.text-amber-600,
-    button.bg-slate-200 i.text-amber-600 {
-      color: #d97706 !important;
-      -webkit-text-fill-color: #d97706 !important;
-    }
-
-    /* View mode switcher */
-    .view-mode-toggle {
-      background-color: #e2e8f0 !important;
-      border: 1.5px solid #cbd5e1 !important;
-    }
-    .view-toggle-btn.view-toggle-active {
-      background-color: #2563eb !important;
-      color: #ffffff !important;
-      -webkit-text-fill-color: #ffffff !important;
-    }
-    .view-toggle-btn.view-toggle-active * {
-      color: #ffffff !important;
-      -webkit-text-fill-color: #ffffff !important;
-    }
-    .view-toggle-btn.view-toggle-inactive {
-      background-color: transparent !important;
-      color: #0f172a !important;
-      -webkit-text-fill-color: #0f172a !important;
-      font-weight: 800 !important;
-    }
-    .view-toggle-btn.view-toggle-inactive * {
-      color: #0f172a !important;
-      -webkit-text-fill-color: #0f172a !important;
-    }
-
-  
     /* ========================================================================== */
     /* MASTER HIGH-CONTRAST PALETTE (100% Crisp, Light BG with Pure Opposite Text)*/
     /* ========================================================================== */
@@ -1576,7 +1284,7 @@
     }
 
     /* Cards & Containers */
-    .card-item, .content-card, #adminContentsTableContainer {
+    .card-item, .content-card, #adminContentsTableContainer, #contentTableWrapper {
       background-color: #ffffff !important;
       border: 2px solid #e2e8f0 !important;
       color: #0f172a !important;
@@ -1617,7 +1325,7 @@
   </script>
 
 </head>
-<body class="min-h-screen flex flex-col bg-slate-100 text-slate-900 font-sans" style="background-color: #f1f5f9 !important; color: #0f172a !important;">
+<body class="min-h-screen flex flex-col bg-slate-100 text-slate-900 font-sans light-theme" style="background-color: #f1f5f9 !important; color: #0f172a !important;">
 
   <!-- Header -->
   <header class="sticky top-0 z-40 bg-slate-900/95 backdrop-blur-md border-b border-slate-800 shadow-lg">
@@ -1649,15 +1357,27 @@
       </div>
 
       <!-- Sync Status & Instant Refresh -->
-              <!-- شريط حالة المزامنة التلقائية اللحظية (High-Contrast White Card) -->
-        <div class="flex items-center gap-2.5 bg-white border-2 border-slate-300 px-3.5 py-1.5 rounded-2xl shadow-sm">
-          <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-          <span class="text-slate-900 text-xs font-black" style="color: #0f172a !important;">مزامنة تلقائية:</span>
-          <span id="syncTimerVal" class="text-amber-950 font-mono font-black text-base px-2.5 py-0.5 rounded-lg bg-amber-100 border-2 border-amber-400 shadow-sm inline-flex items-center justify-center min-w-[36px]" style="color: #451a03 !important; background-color: #fef3c7 !important;">60</span>
-          <span class="text-slate-700 text-xs font-black" style="color: #334155 !important;">ث</span>
-          <button onclick="fetchLatestData(true)" class="bg-blue-600 hover:bg-blue-700 text-white px-3.5 py-1.5 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 shadow active:scale-95 cursor-pointer" style="background-color: #2563eb !important; color: #ffffff !important;" title="تحديث فوري لقائمة الاستمارات الآن">
-            <i class="fa-solid fa-arrows-rotate text-xs" style="color: #ffffff !important;"></i>
-            <span style="color: #ffffff !important;">تحديث فوري للاستمارات</span>
+      <div class="flex items-center gap-2.5 text-xs">
+        <!-- Dark / Light Theme Toggle (خيار عرض ليلي / نهاري) -->
+        
+        <!-- PWA Install Button -->
+        <button id="installAppBtn" onclick="triggerPwaInstall()" class="hidden bg-emerald-600/90 hover:bg-emerald-500 text-white border border-emerald-400/50 px-3 py-1.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm active:scale-95" title="تثبيت كبرنامج على سطح المكتب">
+          <i class="fa-solid fa-circle-down text-emerald-200"></i>
+          <span>تثبيت البرنامج</span>
+        </button>
+        <button id="themeToggleBtn" style="display: none !important;" type="button" onclick="toggleTheme()" class="bg-slate-800 hover:bg-slate-700 text-amber-400 border border-slate-700 px-3 py-1.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm active:scale-95" title="التبديل بين الوضع الليلي والنهاري">
+          <span id="themeToggleIcon"><i class="fa-solid fa-moon text-indigo-500"></i></span>
+          <span id="themeToggleText">ليلي</span>
+        </button>
+
+        <div id="syncPill" class="flex items-center gap-2.5 bg-slate-800/90 border border-slate-700 px-3.5 py-1.5 rounded-2xl shadow-inner">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span class="text-slate-300 text-xs font-bold">مزامنة تلقائية:</span>
+          <span id="syncTimerVal" class="text-amber-300 font-mono font-black text-base px-2.5 py-0.5 rounded-lg bg-amber-950/80 border border-amber-400/60 shadow-inner inline-flex items-center justify-center min-w-[36px]">60</span>
+          <span class="text-slate-400 text-xs font-bold">ث</span>
+          <button onclick="fetchLatestData(true)" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-md active:scale-95" title="مزامنة وجلب التحديثات فوراً">
+            <i id="syncIcon" class="fa-solid fa-rotate"></i>
+            <span>تحديث فوري للاستمارات</span>
           </button>
         </div>
       </div>
@@ -2724,7 +2444,7 @@
       }
     }
 
-            function renderTableView(items) {
+        function renderTableView(items) {
       const tbody = document.getElementById('contentTableBody');
       if (!tbody) return;
 
@@ -2879,6 +2599,241 @@
       `;
       }).join('');
     }
+
+    function renderGrid(items) {
+      const grid = document.getElementById('contentGrid');
+      const empty = document.getElementById('emptyState');
+      if (!grid) return;
+
+      if (items.length === 0) {
+        if (networkErrorOccurred && allContents.length === 0) {
+          grid.innerHTML = `
+            <div class="col-span-full py-12 px-6 text-center bg-slate-900 border-2 border-amber-500/30 rounded-3xl shadow-xl">
+              <div class="w-16 h-16 rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center text-3xl mx-auto mb-4">
+                <i class="fa-solid fa-cloud-arrow-down"></i>
+              </div>
+              <h3 class="card-title text-base sm:text-lg font-black text-white mb-2">تعذر مزامنة النماذج والتعليمات</h3>
+              <p class="text-xs text-slate-200 max-w-md mx-auto mb-5 leading-relaxed font-bold">
+                يرجى التحقق من اتصال الإنترنت أو النقر لإعادة المحاولة.
+              </p>
+              <button onclick="fetchLatestData(true)" class="bg-blue-600 hover:bg-blue-500 text-white font-black text-xs px-6 py-2.5 rounded-xl transition-all shadow-md active:scale-95 inline-flex items-center gap-2 cursor-pointer">
+                <i class="fa-solid fa-rotate"></i>
+                <span>إعادة المحاولة الآن</span>
+              </button>
+            </div>
+          `;
+          if (empty) empty.classList.add('hidden');
+          setTimeout(syncAllContrasts, 30);
+          return;
+        }
+
+        grid.innerHTML = '';
+        if (empty) empty.classList.remove('hidden');
+        setTimeout(syncAllContrasts, 30);
+        return;
+      }
+
+      if (empty) empty.classList.add('hidden');
+
+      grid.innerHTML = items.map(f => {
+        const ext = (f.file_name || f.file_type || '').split('.').pop().toLowerCase();
+        const isWord = (ext === 'doc' || ext === 'docx' || f.file_type === 'doc' || f.file_type === 'docx');
+        const isExcel = (ext === 'xls' || ext === 'xlsx' || f.file_type === 'xls' || f.file_type === 'xlsx');
+        const isPdf = (ext === 'pdf' || f.file_type === 'pdf');
+        const isImage = (['png', 'jpg', 'jpeg', 'webp', 'gif', 'svg'].includes(ext) || f.file_type === 'image');
+
+        const hasFile = Boolean(f.file_url && f.file_url.trim() && f.file_type !== 'text_only');
+        const hasBodyText = Boolean(f.body_text && f.body_text.trim());
+        const publisherName = (f.updated_by_name && f.updated_by_name.trim()) ? f.updated_by_name.trim() : 'إدارة المنظومة';
+
+        let typeBadge = '';
+        let fileIcon = '';
+
+        if (!hasFile) {
+          typeBadge = '<span class="table-badge-textonly text-xs font-black px-3 py-1 rounded-xl border flex items-center gap-1.5"><i class="fa-solid fa-align-right text-[11px]"></i> تعليمات نصية فقط</span>';
+          fileIcon = 'fa-file-lines text-amber-500';
+        } else if (isWord) {
+          typeBadge = '<span class="bg-blue-600/20 text-blue-300 border border-blue-500/40 text-xs font-black px-3 py-1 rounded-xl">مستند Word</span>';
+          fileIcon = 'fa-file-word text-blue-500';
+        } else if (isExcel) {
+          typeBadge = '<span class="bg-emerald-600/20 text-emerald-300 border border-emerald-500/40 text-xs font-black px-3 py-1 rounded-xl">جدول Excel</span>';
+          fileIcon = 'fa-file-excel text-emerald-500';
+        } else if (isImage) {
+          typeBadge = '<span class="bg-purple-600/20 text-purple-300 border border-purple-500/40 text-xs font-black px-3 py-1 rounded-xl">صورة مرفقة</span>';
+          fileIcon = 'fa-file-image text-purple-500';
+        } else if (isPdf) {
+          typeBadge = '<span class="bg-rose-600/20 text-rose-300 border border-rose-500/40 text-xs font-black px-3 py-1 rounded-xl">مستند PDF</span>';
+          fileIcon = 'fa-file-pdf text-rose-500';
+        } else {
+          typeBadge = '<span class="bg-blue-600/20 text-blue-300 border border-blue-500/40 text-xs font-black px-3 py-1 rounded-xl">مستند رسمي</span>';
+          fileIcon = 'fa-file-lines text-blue-500';
+        }
+
+        const fileSizeFormatted = hasFile
+          ? (f.file_size ? (String(f.file_size).toUpperCase().includes('B') ? f.file_size : `KB ${f.file_size}`) : '')
+          : '';
+
+        // Media Thumbnail Banner
+        let mediaBannerHtml = '';
+        if (hasFile && isImage && f.file_url) {
+          mediaBannerHtml = `
+            <div onclick="openSheetModal('${f.id}')" class="relative group cursor-pointer overflow-hidden rounded-xl border border-slate-700/70 mb-3 bg-slate-900 h-32 flex items-center justify-center shadow-inner" title="اضغط لتكبير الصورة">
+              <img src="${f.file_url}" alt="${escapeHtml(f.title)}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
+              <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 text-white text-xs font-black backdrop-blur-[2px]">
+                <i class="fa-solid fa-magnifying-glass-plus text-base text-amber-300"></i>
+                <span>تكبير وعرض الصورة</span>
+              </div>
+            </div>
+          `;
+        } else if (hasFile) {
+          mediaBannerHtml = `
+            <div onclick="openSheetModal('${f.id}')" class="cursor-pointer rounded-xl border border-slate-700/70 bg-slate-800/40 p-2.5 mb-3 flex items-center gap-3 hover:border-blue-500 transition-all shadow-sm" title="اضغط لمعاينة المستند">
+              <div class="w-10 h-10 rounded-lg bg-blue-600/20 text-blue-400 border border-blue-500/30 flex items-center justify-center text-lg font-black shrink-0 shadow-sm">
+                <i class="fa-solid ${fileIcon}"></i>
+              </div>
+              <div class="min-w-0 flex-1">
+                <div class="text-xs font-black text-slate-100 truncate">${escapeHtml(f.file_name || 'ملف مرفق')}</div>
+                <div class="text-[10px] text-slate-400 font-bold">${fileSizeFormatted || 'مرفق رسمي'} • اضغط للعرض والمعاينة</div>
+              </div>
+              <i class="fa-regular fa-eye text-blue-400 text-sm"></i>
+            </div>
+          `;
+        }
+
+        let actionButtonsHtml = '';
+        if (!hasFile) {
+          actionButtonsHtml = `
+            <button type="button" onclick="openUnifiedModal('${f.id}')" class="flex-1 w-full bg-gradient-to-r from-blue-700 to-indigo-600 hover:from-blue-600 hover:to-indigo-500 text-white font-black text-sm py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md active:scale-95 cursor-pointer">
+              <i class="fa-solid fa-book-open text-base text-amber-300"></i>
+              <span>قراءة وطباعة التعليمات كاملة</span>
+            </button>
+          `;
+        } else {
+          actionButtonsHtml = `
+            <button type="button" onclick="openSheetModal('${f.id}')" class="flex-1 w-1/2 bg-blue-600 hover:bg-blue-500 text-white font-black text-sm py-3 px-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md active:scale-95 cursor-pointer" title="عرض النموذج">
+              <i class="fa-regular fa-eye text-base text-white"></i>
+              <span class="text-white font-black">عرض النموذج</span>
+            </button>
+            <button type="button" onclick="downloadFormFile('${f.id}')" class="flex-1 w-1/2 bg-slate-800 hover:bg-slate-700 text-slate-100 font-black text-sm py-3 px-3 rounded-xl flex items-center justify-center gap-2 transition-colors border border-slate-700 shadow-sm active:scale-95 cursor-pointer" title="تنزيل الملف">
+              <i class="fa-solid fa-download text-amber-400 text-sm"></i>
+              <span>تنزيل الملف</span>
+            </button>
+          `;
+        }
+
+        return `
+          <div class="content-card bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg flex flex-col justify-between transition-all hover:border-slate-700">
+            <div>
+              <div class="flex items-center justify-between gap-2 mb-3">
+                ${typeBadge}
+                ${fileSizeFormatted ? `<span class="text-[11px] font-mono font-bold text-slate-400 select-none">${fileSizeFormatted}</span>` : ''}
+              </div>
+
+              ${mediaBannerHtml}
+
+              <div class="flex items-start gap-3">
+                <i class="fa-solid ${fileIcon} text-2xl mt-1 shrink-0"></i>
+                <div class="min-w-0 flex-1">
+                  <h3 class="card-title text-base font-black text-slate-100 leading-snug cursor-pointer hover:text-blue-400 transition-colors" onclick="openUnifiedModal('${f.id}')" title="${escapeHtml(f.title || f.file_name || 'بدون عنوان')}">
+                    ${escapeHtml(f.title || f.file_name || 'بدون عنوان')}
+                  </h3>
+
+                  <div class="mt-2.5">
+                    <div class="instruction-box-card p-3.5 rounded-xl border leading-relaxed shadow-sm">
+                      <div id="cardDesc_${f.id}" class="card-desc text-xs font-bold leading-relaxed line-clamp-4 transition-all select-text">
+                        ${formatBodyTextWithClickableLinks(f.body_text || f.title || '')}
+                      </div>
+                      ${(hasBodyText && f.body_text.trim().length > 90) ? `
+                        <div class="mt-2 pt-2 border-t border-slate-700/50 flex items-center justify-between">
+                          <button type="button" onclick="toggleCardText('${f.id}', event)" class="text-blue-400 hover:text-blue-300 font-black text-xs inline-flex items-center gap-1.5 select-none cursor-pointer py-0.5">
+                            <span id="cardToggleText_${f.id}">... قراءة المزيد</span>
+                            <i id="cardToggleIcon_${f.id}" class="fa-solid fa-chevron-down text-[10px]"></i>
+                          </button>
+                          <button type="button" onclick="openUnifiedModal('${f.id}'); event.stopPropagation();" class="text-amber-300 hover:text-amber-200 font-bold text-xs inline-flex items-center gap-1.5 select-none cursor-pointer py-0.5" title="قراءة وطباعة التعليمات كاملة">
+                            <i class="fa-solid fa-book-open text-xs"></i>
+                            <span>قراءة كاملة</span>
+                          </button>
+                        </div>
+                      ` : ''}
+                    </div>
+                  </div>
+
+                  <div class="mt-3 flex items-center justify-between text-xs font-bold gap-2 flex-wrap">
+                    <div class="card-dept flex items-center gap-1.5 text-amber-400 font-black">
+                      <i class="fa-solid fa-building-columns text-[11px]"></i>
+                      <span>${escapeHtml(f.department_name || '—')}</span>
+                    </div>
+                    <div class="table-publisher-badge px-2.5 py-1 rounded-lg border text-[11px] font-bold flex items-center gap-1" title="المسؤول الناشر">
+                      <i class="fa-solid fa-user-shield text-[10px]"></i>
+                      <span class="truncate max-w-[120px]">${escapeHtml(publisherName)}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="pt-4 mt-3 border-t border-slate-800 flex items-center gap-2">
+              ${actionButtonsHtml}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      setTimeout(syncAllContrasts, 30);
+    }
+
+
+    
+    // =========================================================================
+    // OPTION 3: EXPANDABLE TEXT & RICH INSTRUCTION VIEWER
+    // =========================================================================
+    function formatBodyTextWithClickableLinks(text) {
+      if (!text) return '';
+      const escaped = escapeHtml(text);
+      const urlRegex = /(https?:\/\/[^\s<]+[^<.,:;"')\]\s])/g;
+      return escaped.replace(urlRegex, (url) => {
+        return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-blue-500 dark:text-blue-400 underline font-bold hover:text-blue-700 transition-colors" onclick="event.stopPropagation()">${url} <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i></a>`;
+      });
+    }
+
+    function toggleCardText(id, event) {
+      if (event) event.stopPropagation();
+      const descEl = document.getElementById(`cardDesc_${id}`);
+      const toggleText = document.getElementById(`cardToggleText_${id}`);
+      const toggleIcon = document.getElementById(`cardToggleIcon_${id}`);
+      if (!descEl) return;
+
+      const isClamped = descEl.classList.contains('line-clamp-2');
+      if (isClamped) {
+        descEl.classList.remove('line-clamp-2');
+        if (toggleText) toggleText.innerText = 'عرض أقل';
+        if (toggleIcon) toggleIcon.className = 'fa-solid fa-chevron-up text-[9px]';
+      } else {
+        descEl.classList.add('line-clamp-2');
+        if (toggleText) toggleText.innerText = '... قراءة المزيد';
+        if (toggleIcon) toggleIcon.className = 'fa-solid fa-chevron-down text-[9px]';
+      }
+    }
+
+    function copyUnifiedBodyText() {
+      if (!currentUnifiedItem || !currentUnifiedItem.body_text) {
+        if (typeof showToast === 'function') showToast('لا يوجد نص لنسخه.', 'warning', 'تنبيه');
+        return;
+      }
+      navigator.clipboard.writeText(currentUnifiedItem.body_text).then(() => {
+        const btnLabel = document.getElementById('btnCopyBodyTextLabel');
+        if (btnLabel) {
+          const old = btnLabel.innerText;
+          btnLabel.innerText = 'تم النسخ ✓';
+          setTimeout(() => { btnLabel.innerText = old; }, 2000);
+        }
+        if (typeof showToast === 'function') showToast('تم نسخ نص التعليمات إلى الحافظة بنجاح.', 'success', 'نسخ النص');
+        if (typeof AudioEngine !== 'undefined' && AudioEngine.success) AudioEngine.success();
+      }).catch(() => {
+        if (typeof showToast === 'function') showToast('تعذر نسخ النص تلقائياً.', 'error', 'خطأ');
+      });
+    }
+
     function openUnifiedModal(itemId) {
       const item = allContents.find(c => c.id === itemId);
       if (!item) return;
@@ -3297,22 +3252,376 @@
     /**
      * حساب الإضاءة النسبية (Relative Luminance) للون sRGB وفق مواصفات W3C WCAG 2.1
      */
-    // Unified Clean Theme - Contrast Stubs
-    function calculateRelativeLuminance() { return 1; }
-    function getContrastRatio() { return 21; }
-    function parseRgbColor() { return { r: 255, g: 255, b: 255, a: 1 }; }
-    function getEffectiveBackgroundColor() { return '#ffffff'; }
-    function getContrastingTextColor() { return '#0f172a'; }
-    function applyHighContrastText() {}
-    function syncAllContrasts() {}
-    function initDynamicContrastObserver() {}
-    function initGlobalTooltipEngine() {}
-    function applyTheme() {}
-    function toggleTheme() {}
+    function calculateRelativeLuminance(r, g, b) {
+      const normalize = (c) => {
+        const s = c / 255;
+        return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
+      };
+      return 0.2126 * normalize(r) + 0.7152 * normalize(g) + 0.0722 * normalize(b);
+    }
+
+    /**
+     * حساب نسبة التباين الصريحة (Contrast Ratio) بين قيمتي إضاءة نسبية
+     * تعيد قيمة بين 1.0 و 21.0
+     */
+    function getContrastRatio(lum1, lum2) {
+      const l1 = Math.max(lum1, lum2);
+      const l2 = Math.min(lum1, lum2);
+      return (l1 + 0.05) / (l2 + 0.05);
+    }
+
+    /**
+     * استخراج مكونات RGB وقيمة الشفافية من أي تعبير لوني (Hex, RGB, RGBA, Named Color)
+     */
+    function parseRgbColor(colorStr) {
+      if (!colorStr) return null;
+      const str = String(colorStr).trim().toLowerCase();
+
+      // تحليل صيغ RGB / RGBA
+      const rgbMatch = str.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
+      if (rgbMatch) {
+        return {
+          r: parseInt(rgbMatch[1], 10),
+          g: parseInt(rgbMatch[2], 10),
+          b: parseInt(rgbMatch[3], 10),
+          a: rgbMatch[4] !== undefined ? parseFloat(rgbMatch[4]) : 1
+        };
+      }
+
+      // تحليل صيغ Hex (#RGB, #RGBA, #RRGGBB, #RRGGBBAA)
+      if (str.startsWith('#')) {
+        let hex = str.slice(1);
+        if (hex.length === 3 || hex.length === 4) {
+          hex = hex.split('').map(c => c + c).join('');
+        }
+        if (hex.length >= 6) {
+          return {
+            r: parseInt(hex.substring(0, 2), 16) || 0,
+            g: parseInt(hex.substring(2, 4), 16) || 0,
+            b: parseInt(hex.substring(4, 6), 16) || 0,
+            a: hex.length >= 8 ? (parseInt(hex.substring(6, 8), 16) / 255) : 1
+          };
+        }
+      }
+
+      // التحليل عبر عنصر DOM مؤقت لأسماء الألوان القياسية
+      try {
+        const dummy = document.createElement('div');
+        dummy.style.color = str;
+        document.body.appendChild(dummy);
+        const cs = window.getComputedStyle(dummy).color;
+        document.body.removeChild(dummy);
+        const m = cs.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
+        if (m) {
+          return {
+            r: parseInt(m[1], 10),
+            g: parseInt(m[2], 10),
+            b: parseInt(m[3], 10),
+            a: m[4] !== undefined ? parseFloat(m[4]) : 1
+          };
+        }
+      } catch (e) {}
+
+      return null;
+    }
+
+    /**
+     * استخراج لون الخلفية الفعلي والمؤثر للعنصر بالصعود في شجرة الـ DOM
+     */
+    function getEffectiveBackgroundColor(el) {
+      const isLight = document.body && document.body.classList.contains('light-theme');
+      const defaultBg = isLight ? '#f1f5f9' : '#020617';
+
+      if (!el || !(el instanceof HTMLElement)) {
+        return defaultBg;
+      }
+
+      let current = el;
+      while (current && current !== document && current.nodeType === Node.ELEMENT_NODE) {
+        const style = window.getComputedStyle(current);
+        const bg = style.backgroundColor;
+        if (bg && bg !== 'transparent' && bg !== 'rgba(0, 0, 0, 0)') {
+          const parsed = parseRgbColor(bg);
+          if (parsed && parsed.a >= 0.35) {
+            return bg;
+          }
+        }
+        current = current.parentElement;
+      }
+
+      return defaultBg;
+    }
+
+    /**
+     * الدالة المتقدمة لتحديد اللون المغاير عالي التباين بناءً على درجة التباين المحسوبة
+     * تضمن تباين يتجاوز 7:1 للمستويات القياسية ويصل إلى 16:1 في الحالات الصريحة
+     */
+    function getContrastingTextColor(bg, options = {}) {
+      const isLight = document.body && document.body.classList.contains('light-theme');
+      
+      let effectiveBg = bg;
+      if (bg instanceof HTMLElement) {
+        effectiveBg = getEffectiveBackgroundColor(bg);
+      } else if (!bg) {
+        effectiveBg = isLight ? '#f1f5f9' : '#020617';
+      }
+
+      const rgb = parseRgbColor(effectiveBg);
+      if (!rgb || rgb.a < 0.25) {
+        return isLight ? '#0f172a' : '#ffffff';
+      }
+
+      const bgLuminance = calculateRelativeLuminance(rgb.r, rgb.g, rgb.b);
+
+      // حساب نسبة التباين مع الأبيض النقي (#ffffff, L = 1.0)
+      const contrastWithWhite = getContrastRatio(1.0, bgLuminance);
+
+      // حساب نسبة التباين مع الكحلي الداكن الصريح (#0f172a, L = ~0.012)
+      const darkLuminance = calculateRelativeLuminance(15, 23, 42);
+      const contrastWithDark = getContrastRatio(bgLuminance, darkLuminance);
+
+      const role = options.role || 'primary'; // 'primary' | 'secondary' | 'muted'
+
+      if (contrastWithWhite >= contrastWithDark) {
+        // الخلفية داكنة وتحتاج نصاً فاتحاً عالي التباين
+        if (role === 'secondary') return '#f8fafc';
+        if (role === 'muted') return '#cbd5e1';
+        return '#ffffff';
+      } else {
+        // الخلفية فاتحة وتحتاج نصاً داكناً عالي التباين
+        if (role === 'secondary') return '#1e293b';
+        if (role === 'muted') return '#334155';
+        return '#0f172a';
+      }
+    }
+
+    /**
+     * الدالة الشاملة لتطبيق اللون المغاير عالي التباين على أي نص أو رسالة في واجهات المنظومة
+     * تفحص العناصر وتطبق اللون الأمثل المغاير للون الخلفية لضمان تباين فوري عالي الوضوح
+     * @param {HTMLElement|string} target - العنصر أو الحاوية المستهدفة (الافتراضي: كامل الواجهة)
+     * @param {Object} options - خيارات التخصيص والفرض
+     */
+    function applyHighContrastText(target = document.body, options = {}) {
+      try {
+        let root = target;
+        if (typeof target === 'string') {
+          root = document.querySelector(target);
+        }
+        if (!root || !(root instanceof HTMLElement)) return;
+
+        // العناصر النصية المستهدفة في الواجهة والرسائل والنوافذ المنبثقة
+        const selector = 'p, h1, h2, h3, h4, h5, h6, label, span, td, th, li, a, button, input, textarea, select, [data-contrast-target]';
+        const textElements = root.matches(selector)
+          ? [root]
+          : Array.from(root.querySelectorAll(selector));
+
+        textElements.forEach(el => {
+          // استثناء الأيقونات الرسومية الصرفة لتجنب كسر تلوينها
+          if (el.tagName === 'I' || el.classList.contains('fa') || el.classList.contains('fa-solid') || el.classList.contains('fa-regular')) {
+            return;
+          }
+          if (el.closest('.content-card') || el.closest('.drag-box') || el.classList.contains('drag-textarea') || el.classList.contains('drag-bar') || el.closest('.view-mode-toggle') || el.classList.contains('view-toggle-btn')) {
+            return;
+          }
+          if (el.tagName === 'svg' || el.closest('svg')) {
+            return;
+          }
+
+          // التحقق من احتواء العنصر على محتوى نصي ظاهر
+          const text = el.innerText || el.textContent;
+          if (!text || !text.trim()) return;
+
+          const bg = getEffectiveBackgroundColor(el);
+          const computedStyle = window.getComputedStyle(el);
+          const currentTextColor = computedStyle.color;
+          const parsedCurrent = parseRgbColor(currentTextColor);
+          const parsedBg = parseRgbColor(bg);
+
+          if (parsedCurrent && parsedBg) {
+            const currentLum = calculateRelativeLuminance(parsedCurrent.r, parsedCurrent.g, parsedCurrent.b);
+            const bgLum = calculateRelativeLuminance(parsedBg.r, parsedBg.g, parsedBg.b);
+            const currentRatio = getContrastRatio(currentLum, bgLum);
+
+            // معيار WCAG AA الصارم: 4.5:1 للنصوص العادية و 3.0:1 للعناوين والأزرار
+            const minAllowedRatio = (el.matches('h1, h2, h3, h4, h5, h6, button, th') ? 3.0 : 4.5);
+
+            if (currentRatio < minAllowedRatio || options.forceAll) {
+              const role = el.matches('h1, h2, h3, h4, h5, h6, button, th') ? 'primary' : 'secondary';
+              const optimalColor = getContrastingTextColor(bg, { role });
+              el.style.setProperty('color', optimalColor, 'important');
+            }
+          } else {
+            const optimalColor = getContrastingTextColor(bg);
+            el.style.setProperty('color', optimalColor, 'important');
+          }
+        });
+      } catch (err) {
+        console.warn('تنبيه محرك التباين العالي:', err);
+      }
+    }
+
+    // إتاحة الدوال على نطاق Window العام لتكون متاحة للنظام بأكمله
+    window.calculateRelativeLuminance = calculateRelativeLuminance;
+    window.getContrastRatio = getContrastRatio;
+    window.getEffectiveBackgroundColor = getEffectiveBackgroundColor;
+    window.getContrastingTextColor = getContrastingTextColor;
     window.applyHighContrastText = applyHighContrastText;
-    window.syncAllContrasts = syncAllContrasts;
     window.ensureHighContrast = applyHighContrastText;
     window.applyHighContrastToElement = applyHighContrastText;
+
+    /**
+     * مزامنة التباين العالي الشاملة لكافة مكونات ورسائل الواجهة
+     */
+    function syncAllContrasts(scope = document.body) {
+      const tooltip = document.getElementById('agyGlobalTooltip');
+      if (tooltip) {
+        const isLight = document.body.classList.contains('light-theme');
+        tooltip.style.backgroundColor = isLight ? '#0f172a' : '#020617';
+        tooltip.style.color = '#ffffff';
+        tooltip.style.border = `1.5px solid ${isLight ? '#334155' : '#475569'}`;
+      }
+
+      // تطبيق التباين العالي على الحاوية المستهدفة ورسائل التنبيه
+      applyHighContrastText(scope);
+
+      const toastContainer = document.getElementById('toastContainer');
+      if (toastContainer) {
+        applyHighContrastText(toastContainer, { forceAll: true });
+      }
+    }
+
+    /**
+     * مراقب التغييرات الفوري (MutationObserver) لضمان تطبيق التباين العالي على أي رسالة أو نافذة جديدة فور ظهورها
+     */
+    function initDynamicContrastObserver() {
+      try {
+        const toastContainer = document.getElementById('toastContainer');
+        if (toastContainer && window.MutationObserver) {
+          const toastObserver = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+              mutation.addedNodes.forEach((node) => {
+                if (node instanceof HTMLElement) {
+                  applyHighContrastText(node, { forceAll: true });
+                }
+              });
+            });
+          });
+          toastObserver.observe(toastContainer, { childList: true, subtree: true });
+        }
+      } catch (e) {}
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initDynamicContrastObserver);
+    } else {
+      initDynamicContrastObserver();
+    }
+
+    /**
+     * محرك التلميحات عالي التباين لكافة الأماكن في الواجهة
+     */
+    function initGlobalTooltipEngine() {
+      let tooltipEl = document.getElementById('agyGlobalTooltip');
+      if (!tooltipEl) {
+        tooltipEl = document.createElement('div');
+        tooltipEl.id = 'agyGlobalTooltip';
+        document.body.appendChild(tooltipEl);
+      }
+
+      function updateTooltipTheme(customBg = null) {
+        const isLight = document.body.classList.contains('light-theme');
+        const bg = customBg || (isLight ? '#0f172a' : '#1e293b');
+        const textColor = getContrastingTextColor(bg);
+        tooltipEl.style.backgroundColor = bg;
+        tooltipEl.style.color = textColor;
+        tooltipEl.style.border = `1.5px solid ${isLight ? '#334155' : '#475569'}`;
+      }
+
+      document.addEventListener('mouseover', (e) => {
+        const target = e.target.closest('[title], [data-tooltip]');
+        if (!target) return;
+
+        const text = target.getAttribute('data-tooltip') || target.getAttribute('title');
+        if (!text || !text.trim()) return;
+
+        if (target.hasAttribute('title')) {
+          target.setAttribute('data-tooltip', text);
+          target.removeAttribute('title');
+        }
+
+        tooltipEl.innerText = text;
+        updateTooltipTheme();
+        tooltipEl.classList.add('visible');
+
+        const rect = target.getBoundingClientRect();
+        const tooltipRect = tooltipEl.getBoundingClientRect();
+
+        let top = rect.top - tooltipRect.height - 8;
+        let left = rect.left + (rect.width / 2) - (tooltipRect.width / 2);
+
+        if (top < 10) {
+          top = rect.bottom + 8;
+        }
+        if (left < 10) left = 10;
+        if (left + tooltipRect.width > window.innerWidth - 10) {
+          left = window.innerWidth - tooltipRect.width - 10;
+        }
+
+        tooltipEl.style.top = `${top}px`;
+        tooltipEl.style.left = `${left}px`;
+      }, true);
+
+      document.addEventListener('mouseout', (e) => {
+        const target = e.target.closest('[data-tooltip]');
+        if (target) {
+          tooltipEl.classList.remove('visible');
+        }
+      }, true);
+    }
+
+    // تفعيل محرك التلميحات عالي التباين
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initGlobalTooltipEngine);
+    } else {
+      initGlobalTooltipEngine();
+    }
+
+    // Day / Night Theme Engine (الوضع الليلي والنهاري)
+    function applyTheme(mode) {
+      const icon = document.getElementById('themeToggleIcon');
+      const text = document.getElementById('themeToggleText');
+      if (mode === 'light') {
+        document.body.classList.add('light-theme');
+        if (icon) icon.innerHTML = '<i class="fa-solid fa-moon text-indigo-500"></i>';
+        if (text) text.innerText = 'ليلي';
+      } else {
+        document.body.classList.remove('light-theme');
+        if (icon) icon.innerHTML = '<i class="fa-solid fa-sun text-amber-400"></i>';
+        if (text) text.innerText = 'نهاري';
+      }
+      try {
+        document.querySelectorAll('.content-card, .content-card *').forEach(el => el.style.removeProperty('color'));
+      } catch (e) {}
+      syncAllContrasts();
+    }
+
+    function toggleTheme() {
+      const isLight = document.body.classList.contains('light-theme');
+      const newMode = isLight ? 'dark' : 'light';
+      applyTheme(newMode);
+      try {
+        localStorage.setItem('basra_theme_mode_v2', newMode);
+        localStorage.setItem('basra_theme_mode', newMode);
+      } catch (e) {}
+    }
+
+    // Initialize saved theme on start (الوضعية الافتراضية عند التشغيل هي الوضعية النهارية)
+    try {
+      const savedTheme = localStorage.getItem('basra_theme_mode_v2') || 'light';
+      applyTheme(savedTheme);
+    } catch (e) {
+      applyTheme('light');
+    }
 
     function escapeHtml(str) {
       if (!str) return '';
@@ -4747,7 +5056,7 @@
     }
 
     /* Cards & Containers */
-    .card-item, .content-card, #adminContentsTableContainer {
+    .card-item, .content-card, #adminContentsTableContainer, #contentTableWrapper {
       background-color: #ffffff !important;
       border: 2px solid #e2e8f0 !important;
       color: #0f172a !important;
