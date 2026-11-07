@@ -1637,19 +1637,141 @@
     }
 
     /* Modal Cards: Other modals */
-    body.light-theme #loginModal > div,
     body.light-theme #sheetModal > div,
     body.light-theme #contentModal > div {
       background-color: #ffffff !important;
       color: #0f172a !important;
       border: 2px solid #cbd5e1 !important;
     }
-    body:not(.light-theme) #loginModal > div,
     body:not(.light-theme) #sheetModal > div,
     body:not(.light-theme) #contentModal > div {
       background-color: #0f172a !important;
       color: #f8fafc !important;
       border: 2px solid #334155 !important;
+    }
+
+    /* Login Modal & Form Inputs: Dark Mode High Contrast */
+    body:not(.light-theme) #loginModal > div {
+      background-color: #0f172a !important;
+      border: 2px solid #334155 !important;
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.85) !important;
+      color: #f8fafc !important;
+    }
+    body:not(.light-theme) #loginModal h2 {
+      color: #ffffff !important;
+      font-weight: 900 !important;
+    }
+    body:not(.light-theme) #loginModal p {
+      color: #94a3b8 !important;
+      font-weight: 700 !important;
+    }
+    body:not(.light-theme) #loginModal label,
+    body:not(.light-theme) #changePasswordModal label,
+    body:not(.light-theme) #resetPassModal label {
+      color: #f1f5f9 !important;
+      font-weight: 800 !important;
+      font-size: 13px !important;
+    }
+    body:not(.light-theme) #loginModal input,
+    body:not(.light-theme) #changePasswordModal input,
+    body:not(.light-theme) #resetPassModal input {
+      background-color: #1e293b !important;
+      color: #ffffff !important;
+      -webkit-text-fill-color: #ffffff !important;
+      border: 1.5px solid #475569 !important;
+      border-radius: 12px !important;
+      font-weight: 700 !important;
+      font-size: 15px !important;
+      letter-spacing: 0.5px !important;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4) !important;
+    }
+    body:not(.light-theme) #loginModal input:focus,
+    body:not(.light-theme) #changePasswordModal input:focus,
+    body:not(.light-theme) #resetPassModal input:focus {
+      background-color: #0f172a !important;
+      border-color: #3b82f6 !important;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.35), inset 0 2px 4px rgba(0, 0, 0, 0.4) !important;
+      color: #ffffff !important;
+      -webkit-text-fill-color: #ffffff !important;
+      outline: none !important;
+    }
+    body:not(.light-theme) #loginModal input::placeholder,
+    body:not(.light-theme) #changePasswordModal input::placeholder,
+    body:not(.light-theme) #resetPassModal input::placeholder {
+      color: #64748b !important;
+      -webkit-text-fill-color: #64748b !important;
+      font-weight: 600 !important;
+    }
+    body:not(.light-theme) #loginModal input:-webkit-autofill,
+    body:not(.light-theme) #loginModal input:-webkit-autofill:hover, 
+    body:not(.light-theme) #loginModal input:-webkit-autofill:focus {
+      -webkit-text-fill-color: #ffffff !important;
+      -webkit-box-shadow: 0 0 0px 1000px #1e293b inset !important;
+      box-shadow: 0 0 0px 1000px #1e293b inset !important;
+      border: 1.5px solid #3b82f6 !important;
+      transition: background-color 5000s ease-in-out 0s;
+    }
+    body:not(.light-theme) #loginEyeIcon svg,
+    body:not(.light-theme) #loginEyeIcon i {
+      color: #94a3b8 !important;
+    }
+    body:not(.light-theme) #loginEyeIcon:hover svg,
+    body:not(.light-theme) #loginEyeIcon:hover i {
+      color: #38bdf8 !important;
+    }
+
+    /* Light Theme Form Controls */
+    body.light-theme #loginModal > div {
+      background-color: #ffffff !important;
+      border: 2px solid #cbd5e1 !important;
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.25) !important;
+      color: #0f172a !important;
+    }
+    body.light-theme #loginModal h2 {
+      color: #0f172a !important;
+      font-weight: 900 !important;
+    }
+    body.light-theme #loginModal p {
+      color: #475569 !important;
+      font-weight: 700 !important;
+    }
+    body.light-theme #loginModal label,
+    body.light-theme #changePasswordModal label,
+    body.light-theme #resetPassModal label {
+      color: #0f172a !important;
+      font-weight: 800 !important;
+      font-size: 13px !important;
+    }
+    body.light-theme #loginModal input,
+    body.light-theme #changePasswordModal input,
+    body.light-theme #resetPassModal input {
+      background-color: #f8fafc !important;
+      color: #0f172a !important;
+      -webkit-text-fill-color: #0f172a !important;
+      border: 1.5px solid #cbd5e1 !important;
+      border-radius: 12px !important;
+      font-weight: 700 !important;
+      font-size: 15px !important;
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+    }
+    body.light-theme #loginModal input:focus,
+    body.light-theme #changePasswordModal input:focus,
+    body.light-theme #resetPassModal input:focus {
+      background-color: #ffffff !important;
+      border-color: #2563eb !important;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2) !important;
+      color: #0f172a !important;
+      -webkit-text-fill-color: #0f172a !important;
+      outline: none !important;
+    }
+    body.light-theme #loginModal input:-webkit-autofill,
+    body.light-theme #loginModal input:-webkit-autofill:hover, 
+    body.light-theme #loginModal input:-webkit-autofill:focus {
+      -webkit-text-fill-color: #0f172a !important;
+      -webkit-box-shadow: 0 0 0px 1000px #f8fafc inset !important;
+      box-shadow: 0 0 0px 1000px #f8fafc inset !important;
+      border: 1.5px solid #2563eb !important;
+      transition: background-color 5000s ease-in-out 0s;
     }
 
     /* Solid Action Buttons */
@@ -1797,7 +1919,7 @@
     <!-- TAB 1: Content Management -->
     <section id="sectionContents" class="space-y-5">
       <!-- Storage Quota & Health Monitor Widget (الخطة المجانية - سحابة Supabase) -->
-      <div id="storageQuotaWidget" class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex flex-wrap items-center justify-between gap-4 shadow-sm mb-5">
+      <div id="storageQuotaWidget" class="hidden bg-slate-900 border border-slate-800 p-4 rounded-2xl flex flex-wrap items-center justify-between gap-4 shadow-sm mb-5">
         <div class="flex items-center gap-3.5">
           <div class="w-11 h-11 rounded-2xl bg-blue-500/10 text-blue-400 border border-blue-500/20 flex items-center justify-center text-xl shadow-inner">
             <i class="fa-solid fa-hard-drive"></i>
@@ -2895,6 +3017,14 @@
 
     function updateUserHeader() {
       if (!currentUser) return;
+      const storageWidget = document.getElementById('storageQuotaWidget');
+      if (storageWidget) {
+        if (currentUser.role === 'super_admin') {
+          storageWidget.classList.remove('hidden');
+        } else {
+          storageWidget.classList.add('hidden');
+        }
+      }
       document.getElementById('headerUserName').innerText = currentUser.full_name;
       document.getElementById('headerUserRole').innerText = currentUser.role === 'super_admin' ? 'المسؤول الأعلى (استعراض المحتوى والمنظومة)' : currentUser.department_name;
 
@@ -3033,6 +3163,8 @@
 
     function logoutAdmin() {
       stopSessionMonitoring();
+      const storageWidget = document.getElementById('storageQuotaWidget');
+      if (storageWidget) storageWidget.classList.add('hidden');
       try {
         sessionStorage.removeItem('basra_admin_session_v2');
         localStorage.removeItem('basra_admin_session_v2');
@@ -3839,6 +3971,16 @@
 
     // Storage Quota Display Calculator
     function updateStorageQuotaDisplay() {
+      const storageWidget = document.getElementById('storageQuotaWidget');
+      const isSuperAdmin = currentUser && currentUser.role === 'super_admin';
+      if (storageWidget) {
+        if (isSuperAdmin) {
+          storageWidget.classList.remove('hidden');
+        } else {
+          storageWidget.classList.add('hidden');
+          return;
+        }
+      }
       const textLabel = document.getElementById('storageQuotaText');
       const countLabel = document.getElementById('storageFileCountText');
       const fillBar = document.getElementById('storageQuotaBar');
@@ -5722,7 +5864,7 @@
 
         textElements.forEach(el => {
           // استثناء الأيقونات الرسومية الصرفة لتجنب كسر تلوينها
-          if (el.classList.contains('table-title') || el.closest('.table-title') || el.closest('#unifiedPreviewModal')) return;
+          if (el.classList.contains('table-title') || el.closest('.table-title') || el.closest('#unifiedPreviewModal') || el.closest('#loginModal') || el.closest('#changePasswordModal') || el.closest('#resetPassModal')) return;
           if (el.tagName === 'I' || el.classList.contains('fa') || el.classList.contains('fa-solid') || el.classList.contains('fa-regular')) {
             return;
           }
