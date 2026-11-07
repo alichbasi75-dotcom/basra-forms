@@ -1509,10 +1509,9 @@
       border: 2px solid #cbd5e1 !important;
       box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
     }
-    body.light-theme #unifiedPreviewModal .px-5.py-3\.5,
-    body.light-theme #unifiedPreviewModal .px-5.py-3 {
-      background-color: #f8fafc !important;
-      border-color: #cbd5e1 !important;
+    body.light-theme #unifiedModalHeader {
+      background-color: #f1f5f9 !important;
+      border-bottom: 2px solid #cbd5e1 !important;
     }
     body.light-theme #unifiedModalTitle {
       color: #0f172a !important;
@@ -1527,14 +1526,19 @@
       font-weight: 900 !important;
     }
     body.light-theme #unifiedModalMetaPills .modal-pill-cat {
-      background-color: #e0e7ff !important;
-      color: #3730a3 !important;
-      border: 1.5px solid #6366f1 !important;
+      background-color: #dbeafe !important;
+      color: #1e40af !important;
+      border: 1.5px solid #3b82f6 !important;
       font-weight: 900 !important;
     }
     body.light-theme #unifiedModalMetaPills .modal-pill-date {
-      color: #475569 !important;
-      font-weight: 800 !important;
+      color: #0f172a !important;
+      background-color: #e2e8f0 !important;
+      border: 1.5px solid #cbd5e1 !important;
+      font-weight: 900 !important;
+    }
+    body.light-theme #unifiedModalMetaPills .modal-pill-date i {
+      color: #d97706 !important;
     }
     body.light-theme #btnCopyBodyText {
       background-color: #0f172a !important;
@@ -1576,32 +1580,37 @@
       border: 2px solid #334155 !important;
       box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6) !important;
     }
-    body:not(.light-theme) #unifiedPreviewModal .px-5.py-3\.5,
-    body:not(.light-theme) #unifiedPreviewModal .px-5.py-3 {
-      background-color: #1e293b !important;
-      border-color: #334155 !important;
+    body:not(.light-theme) #unifiedModalHeader {
+      background-color: #0f172a !important;
+      border-bottom: 2px solid #334155 !important;
     }
     body:not(.light-theme) #unifiedModalTitle {
       color: #ffffff !important;
       -webkit-text-fill-color: #ffffff !important;
       font-weight: 900 !important;
       font-size: 16px !important;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.8);
     }
     body:not(.light-theme) #unifiedModalMetaPills .modal-pill-dept {
       background-color: rgba(245, 158, 11, 0.25) !important;
-      color: #fbbf24 !important;
+      color: #fde68a !important;
       border: 1.5px solid #f59e0b !important;
       font-weight: 900 !important;
     }
     body:not(.light-theme) #unifiedModalMetaPills .modal-pill-cat {
-      background-color: rgba(99, 102, 241, 0.25) !important;
-      color: #c7d2fe !important;
-      border: 1.5px solid #6366f1 !important;
+      background-color: rgba(99, 102, 241, 0.35) !important;
+      color: #ffffff !important;
+      border: 1.5px solid #818cf8 !important;
       font-weight: 900 !important;
     }
     body:not(.light-theme) #unifiedModalMetaPills .modal-pill-date {
-      color: #cbd5e1 !important;
-      font-weight: 800 !important;
+      color: #ffffff !important;
+      background-color: rgba(30, 41, 59, 0.9) !important;
+      border: 1.5px solid #475569 !important;
+      font-weight: 900 !important;
+    }
+    body:not(.light-theme) #unifiedModalMetaPills .modal-pill-date i {
+      color: #38bdf8 !important;
     }
     body:not(.light-theme) #btnCopyBodyText {
       background-color: #334155 !important;
@@ -1611,7 +1620,7 @@
     }
     body:not(.light-theme) #btnPrintFullReport {
       background-color: #f59e0b !important;
-      color: #000000 !important;
+      color: #ffffff !important;
       font-weight: 900 !important;
       border: 1px solid #d97706 !important;
     }
@@ -1621,13 +1630,13 @@
     }
     body:not(.light-theme) #unifiedBodyText {
       background-color: #1e293b !important;
-      color: #ffffff !important;
-      -webkit-text-fill-color: #ffffff !important;
+      color: #f8fafc !important;
+      -webkit-text-fill-color: #f8fafc !important;
       border: 1.5px solid #334155 !important;
       font-weight: 700 !important;
     }
     body:not(.light-theme) #unifiedModalFooterInfo {
-      color: #f8fafc !important;
+      color: #94a3b8 !important;
       font-weight: 800 !important;
     }
     body:not(.light-theme) #unifiedPreviewModal .modal-close-btn {
@@ -2344,7 +2353,7 @@
   <div id="unifiedPreviewModal" class="hidden fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4">
     <div class="bg-slate-900 border-2 border-slate-700 w-full max-w-4xl max-h-[92vh] rounded-3xl shadow-2xl overflow-hidden flex flex-col">
       <!-- Modal Header -->
-      <div class="px-4 py-3 bg-slate-800/90 border-b border-slate-700 flex flex-col gap-2.5">
+      <div id="unifiedModalHeader" class="px-4 py-3 border-b flex flex-col gap-2.5 transition-colors">
         <!-- Top Row: Icon, Title & Close Button -->
         <div class="flex items-center justify-between gap-2 w-full min-w-0">
           <div class="flex items-center gap-2.5 min-w-0 flex-1">
@@ -2405,8 +2414,44 @@
           </div>
 
           <!-- PDF Viewer Iframe -->
-          <div id="unifiedPdfWrapper" class="hidden w-full h-[450px] rounded-2xl overflow-hidden border border-slate-700 bg-white shadow-inner">
-            <iframe id="unifiedPdfIframe" class="w-full h-full border-0"></iframe>
+          <!-- Multi-Engine Mobile & Desktop PDF Viewer -->
+          <div id="unifiedPdfWrapper" class="hidden w-full rounded-2xl overflow-hidden border border-slate-700 bg-slate-950 shadow-inner flex flex-col">
+            <!-- PDF Toolbar -->
+            <div class="px-3 py-2 bg-slate-900 border-b border-slate-800 flex items-center justify-between gap-2 flex-wrap">
+              <div class="flex items-center gap-2 text-xs font-bold text-slate-200">
+                <i class="fa-solid fa-file-pdf text-red-500 text-sm"></i>
+                <span id="unifiedPdfPageBadge">معاينة مستند PDF</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <a id="unifiedPdfDirectOpenBtn" href="#" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-[11px] font-bold flex items-center gap-1 shadow-sm transition-all whitespace-nowrap">
+                  <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                  <span>فتح في نافذة مستقلة</span>
+                </a>
+                <button type="button" onclick="triggerSaveAsDialog(currentUnifiedItem ? currentUnifiedItem.id : null)" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-bold flex items-center gap-1 shadow-sm transition-all whitespace-nowrap">
+                  <i class="fa-solid fa-download text-[10px]"></i>
+                  <span>تنزيل الملف</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- PDF Canvas Container (Renders smoothly on Mobile Edge/Chrome/Safari & Desktop) -->
+            <div id="unifiedPdfCanvasContainer" class="w-full max-h-[550px] overflow-y-auto p-2 sm:p-3 flex flex-col items-center gap-3 bg-slate-950">
+              <div id="unifiedPdfLoadingSpinner" class="py-10 flex flex-col items-center gap-2 text-slate-300">
+                <i class="fa-solid fa-circle-notch fa-spin text-2xl text-blue-500"></i>
+                <span class="text-xs font-bold">جاري معالجة وعرض صفحات الـ PDF...</span>
+              </div>
+            </div>
+
+            <!-- PDF Fallback Link if canvas fails -->
+            <div id="unifiedPdfFallbackBox" class="hidden p-4 text-center bg-slate-900 border-t border-slate-800">
+              <p class="text-xs font-bold text-slate-300 mb-2">إذا لم يظهر المستند تلقائياً على هاتفك:</p>
+              <a id="unifiedPdfFallbackLink" href="#" target="_blank" class="inline-flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-black shadow-md">
+                <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                <span>اضغط هنا لفتح أو تنزيل ملف الـ PDF</span>
+              </a>
+            </div>
+
+            <iframe id="unifiedPdfIframe" class="w-full h-[450px] border-0 hidden"></iframe>
           </div>
 
           <!-- Image Viewer -->
@@ -5330,34 +5375,152 @@
       });
     }
 
+    
+    // ==========================================================================
+    // Multi-Engine Mobile & Desktop PDF Viewer (No Plugins Required)
+    // ==========================================================================
+    async function renderUnifiedPdfDocument(pdfUrl) {
+      const container = document.getElementById('unifiedPdfCanvasContainer');
+      const fallbackBox = document.getElementById('unifiedPdfFallbackBox');
+      const pageBadge = document.getElementById('unifiedPdfPageBadge');
+      const directBtn = document.getElementById('unifiedPdfDirectOpenBtn');
+      const fallbackLink = document.getElementById('unifiedPdfFallbackLink');
+      const pdfIframe = document.getElementById('unifiedPdfIframe');
+
+      if (directBtn) directBtn.href = pdfUrl;
+      if (fallbackLink) fallbackLink.href = pdfUrl;
+      if (pdfIframe) { pdfIframe.src = ''; pdfIframe.classList.add('hidden'); }
+      if (fallbackBox) fallbackBox.classList.add('hidden');
+
+      if (container) {
+        container.classList.remove('hidden');
+        container.innerHTML = `
+          <div class="py-10 flex flex-col items-center gap-2 text-slate-300">
+            <i class="fa-solid fa-circle-notch fa-spin text-2xl text-blue-500"></i>
+            <span class="text-xs font-bold">جاري معالجة وعرض صفحات الـ PDF بدقة عالية...</span>
+          </div>
+        `;
+      }
+
+      if (typeof pdfjsLib === 'undefined') {
+        console.warn('PDF.js not available, using fallback');
+        if (container) container.classList.add('hidden');
+        if (fallbackBox) fallbackBox.classList.remove('hidden');
+        if (window.innerWidth > 768 && pdfIframe) {
+          pdfIframe.src = pdfUrl;
+          pdfIframe.classList.remove('hidden');
+        }
+        return;
+      }
+
+      try {
+        try {
+          pdfjsLib.GlobalWorkerOptions.workerSrc = './libs/pdf.worker.min.js';
+        } catch (e) {}
+
+        let loadingTask;
+        try {
+          const resp = await fetch(pdfUrl);
+          if (resp.ok) {
+            const buf = await resp.arrayBuffer();
+            loadingTask = pdfjsLib.getDocument({
+              data: buf,
+              cMapUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/cmaps/',
+              cMapPacked: true
+            });
+          } else {
+            loadingTask = pdfjsLib.getDocument({ url: pdfUrl });
+          }
+        } catch (fetchErr) {
+          loadingTask = pdfjsLib.getDocument({ url: pdfUrl });
+        }
+
+        const pdf = await loadingTask.promise;
+        if (!pdf || pdf.numPages === 0) throw new Error('Empty PDF');
+
+        if (pageBadge) {
+          pageBadge.innerText = `مستند PDF (${pdf.numPages} ${pdf.numPages === 1 ? 'صفحة' : 'صفحات'})`;
+        }
+
+        if (container) container.innerHTML = '';
+
+        for (let pNum = 1; pNum <= pdf.numPages; pNum++) {
+          const page = await pdf.getPage(pNum);
+          const cWidth = (container && container.clientWidth) ? container.clientWidth : (window.innerWidth > 640 ? 640 : window.innerWidth - 30);
+          const unscaledVp = page.getViewport({ scale: 1.0 });
+          const scale = Math.min(2.0, Math.max(1.0, (cWidth / unscaledVp.width) * (window.devicePixelRatio || 1.5)));
+          const vp = page.getViewport({ scale: scale });
+
+          const wrapper = document.createElement('div');
+          wrapper.className = 'w-full flex flex-col items-center shadow-lg rounded-xl overflow-hidden bg-white';
+          wrapper.style.maxWidth = `${Math.min(unscaledVp.width * 1.5, cWidth)}px`;
+
+          const canvas = document.createElement('canvas');
+          canvas.width = vp.width;
+          canvas.height = vp.height;
+          canvas.style.width = '100%';
+          canvas.style.height = 'auto';
+          canvas.style.display = 'block';
+
+          const ctx = canvas.getContext('2d');
+          await page.render({ canvasContext: ctx, viewport: vp }).promise;
+          wrapper.appendChild(canvas);
+
+          if (pdf.numPages > 1) {
+            const footer = document.createElement('div');
+            footer.className = 'w-full py-1 text-center text-[10px] font-bold bg-slate-100 text-slate-600 border-t border-slate-200';
+            footer.innerText = `صفحة ${pNum} من ${pdf.numPages}`;
+            wrapper.appendChild(footer);
+          }
+          if (container) container.appendChild(wrapper);
+        }
+      } catch (err) {
+        console.error('PDF Canvas Render Error:', err);
+        if (container) container.classList.add('hidden');
+        if (fallbackBox) fallbackBox.classList.remove('hidden');
+        if (window.innerWidth > 768 && pdfIframe) {
+          pdfIframe.src = pdfUrl;
+          pdfIframe.classList.remove('hidden');
+        }
+      }
+    }
+    
     function openUnifiedModal(itemId) {
       const item = adminContents.find(c => c.id === itemId);
       if (!item) return;
       currentUnifiedItem = item;
 
       // Title
-      document.getElementById('unifiedModalTitle').innerText = item.title || item.file_name || 'معاينة واستعراض المحتوى';
+      const isLight = document.body.classList.contains('light-theme');
+      const modalTitleEl = document.getElementById('unifiedModalTitle');
+      if (modalTitleEl) {
+        modalTitleEl.innerText = item.title || item.file_name || 'معاينة التعليمات والنموذج';
+        modalTitleEl.style.color = isLight ? '#0f172a' : '#ffffff';
+      }
 
-      // Meta Pills
+      // Meta Pills (Ultra High Contrast in Both Themes)
       const dateStr = item.created_at ? new Date(item.created_at).toLocaleDateString('ar-IQ', { year: 'numeric', month: 'long', day: 'numeric' }) : '';
       const metaContainer = document.getElementById('unifiedModalMetaPills');
-      metaContainer.innerHTML = `
-        <span class="modal-pill-dept px-2.5 py-0.5 rounded-lg text-[11px] font-black flex items-center gap-1">
-          <i class="fa-solid fa-building-columns text-[10px]"></i>
-          <span>${escapeHtml(item.department_name || 'عام')}</span>
-        </span>
-        <span class="modal-pill-cat px-2.5 py-0.5 rounded-lg text-[11px] font-bold">
-          ${escapeHtml(item.category_name || 'عام')}
-        </span>
-        <span class="modal-pill-date text-[11px] font-bold">
-          <i class="fa-regular fa-clock ml-1"></i> ${dateStr}
-        </span>
-      `;
+      if (metaContainer) {
+        metaContainer.innerHTML = `
+          <span class="modal-pill-dept px-2.5 py-1 rounded-xl text-[11px] font-black flex items-center gap-1.5 shrink-0 ${isLight ? 'bg-amber-100 text-amber-900 border border-amber-400' : 'bg-amber-500/20 text-amber-300 border border-amber-500/40'}">
+            <i class="fa-solid fa-building-columns text-[10px]"></i>
+            <span>${escapeHtml(item.department_name || 'شؤون المراكز')}</span>
+          </span>
+          <span class="modal-pill-cat px-2.5 py-1 rounded-xl text-[11px] font-black shrink-0 ${isLight ? 'bg-blue-100 text-blue-900 border border-blue-400' : 'bg-indigo-500/30 text-indigo-200 border border-indigo-400/50'}">
+            ${escapeHtml(item.category_name || 'التعليمات')}
+          </span>
+          <span class="modal-pill-date px-2.5 py-1 rounded-xl text-[11px] font-black flex items-center gap-1.5 shrink-0 ${isLight ? 'bg-slate-200 text-slate-900 border border-slate-300' : 'bg-slate-800 text-white border border-slate-600'}">
+            <i class="fa-regular fa-clock ${isLight ? 'text-amber-600' : 'text-amber-400'}"></i>
+            <span>${dateStr}</span>
+          </span>
+        `;
+      }
 
       // Text Section
       const textSection = document.getElementById('unifiedTextSection');
       const bodyTextEl = document.getElementById('unifiedBodyText');
-      const isLight = document.body.classList.contains('light-theme');
+      /* isLight */ document.body.classList.contains('light-theme');
 
       if (item.body_text && item.body_text.trim()) {
         textSection.classList.remove('hidden');
@@ -5441,8 +5604,8 @@
 
         if (ext === 'pdf' || (url && url.match(/\.pdf$/i))) {
           if (url) {
-            pdfIframe.src = url;
-            pdfWrapper.classList.remove('hidden');
+            pdfWrapper.classList.remove("hidden");
+            renderUnifiedPdfDocument(url);
           } else {
             officeWrapper.classList.remove('hidden');
             setupOfficeBox(item, 'fa-file-pdf text-rose-500', 'bg-rose-500/20 text-rose-400 border-rose-500/30', 'مستند PDF');
@@ -5508,6 +5671,8 @@
     function closeUnifiedPreviewModal() {
       const pdfIframe = document.getElementById('unifiedPdfIframe');
       if (pdfIframe) pdfIframe.src = '';
+      const container = document.getElementById('unifiedPdfCanvasContainer');
+      if (container) container.innerHTML = '';
       document.getElementById('unifiedPreviewModal').classList.add('hidden');
     }
 
