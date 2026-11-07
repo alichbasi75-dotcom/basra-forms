@@ -2077,7 +2077,7 @@
   <div id="unifiedPreviewModal" class="hidden fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4">
     <div class="bg-slate-900 border-2 border-slate-700 w-full max-w-4xl max-h-[92vh] rounded-3xl shadow-2xl overflow-hidden flex flex-col">
       <!-- Modal Header -->
-      <div class="px-4 py-3 bg-slate-800/90 border-b border-slate-700 flex flex-col gap-2.5">
+      <div id="unifiedModalHeader" class="px-4 py-3 border-b flex flex-col gap-2.5 transition-colors">
         <!-- Top Row: Icon, Title & Close Button -->
         <div class="flex items-center justify-between gap-2 w-full min-w-0">
           <div class="flex items-center gap-2.5 min-w-0 flex-1">
@@ -2162,22 +2162,20 @@
             <div id="unifiedPdfCanvasContainer" class="w-full max-h-[550px] overflow-y-auto p-2 sm:p-3 flex flex-col items-center gap-3 bg-slate-950">
               <div id="unifiedPdfLoadingSpinner" class="py-10 flex flex-col items-center gap-2 text-slate-300">
                 <i class="fa-solid fa-circle-notch fa-spin text-2xl text-blue-500"></i>
-                <span class="text-xs font-bold">جاري تحميل وعرض صفحات PDF...</span>
+                <span class="text-xs font-bold">جاري معالجة وعرض صفحات الـ PDF...</span>
               </div>
             </div>
 
             <!-- PDF Fallback Link if canvas fails -->
             <div id="unifiedPdfFallbackBox" class="hidden p-4 text-center bg-slate-900 border-t border-slate-800">
-              <p class="text-xs font-bold text-slate-300 mb-2">تعذر عرض المستند تلقائياً في المتصفح:</p>
+              <p class="text-xs font-bold text-slate-300 mb-2">إذا لم يظهر المستند تلقائياً على هاتفك:</p>
               <a id="unifiedPdfFallbackLink" href="#" target="_blank" class="inline-flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-black shadow-md">
                 <i class="fa-solid fa-arrow-up-right-from-square"></i>
-                <span>فتح أو تنزيل ملف PDF مباشرة</span>
+                <span>اضغط هنا لفتح أو تنزيل ملف الـ PDF</span>
               </a>
             </div>
 
             <iframe id="unifiedPdfIframe" class="w-full h-[450px] border-0 hidden"></iframe>
-          </div>
-            <iframe id="unifiedPdfIframe" class="w-full h-full border-0"></iframe>
           </div>
 
           <!-- Image Viewer -->
@@ -2478,6 +2476,7 @@
     // Default pre-seeded contents for instant 0ms offline rendering
     const DEFAULT_CONTENTS = [{"id": "b70947fe-adff-48ec-9ea6-0ce684ab9c28", "department_id": "c056bd23-59d7-4f9c-890b-27bcd0647ae0", "department_name": "وحدة شؤون المراكز", "category_name": "ملف Word", "title": "مباشرة", "body_text": "مباشرة موظف بعد التمتع باجازة 4 ايام فاكثر", "file_url": "https://mytqatjayrwjjpljrckn.supabase.co/storage/v1/object/public/basra-files-new/c056bd23-59d7-4f9c-890b-27bcd0647ae0/doc_1793562632035_qir1am.doc", "file_name": "نموذج المباشرة.doc", "file_type": "doc", "file_size": "304.0 KB", "is_hidden": false, "downloads_count": 0, "created_at": "2026-11-01T19:50:38.946+00:00", "updated_at": "2026-11-01T19:50:38.946+00:00", "updated_by_user_id": "3a14147b-c3c0-4b35-84c1-80816be68c0d", "updated_by_name": "مسؤول المراكز"}, {"id": "04f4d965-9670-4b47-a07a-3a28842b0766", "department_id": "dc5b0141-db04-4be4-9480-91ad1ff991ff", "department_name": "الشعبة المالية", "category_name": "ملف صورة", "title": "براءة ذمة", "body_text": "براءة ذمة", "file_url": "https://mytqatjayrwjjpljrckn.supabase.co/storage/v1/object/public/basra-files-new/dc5b0141-db04-4be4-9480-91ad1ff991ff/doc_1793552610594_8t4cz9.png", "file_name": "form_09_sheet.png", "file_type": "png", "file_size": "319.8 KB", "is_hidden": false, "downloads_count": 0, "created_at": "2026-11-01T17:03:32.182+00:00", "updated_at": "2026-11-02T04:59:40.254+00:00", "updated_by_user_id": "3a5a9645-e1b5-4676-91eb-94c2c5d96879", "updated_by_name": "مسؤول المالية"}, {"id": "7194d968-2999-42e7-b415-81e1419827fa", "department_id": "c056bd23-59d7-4f9c-890b-27bcd0647ae0", "department_name": "وحدة شؤون المراكز", "category_name": "استمارة", "title": "زمنية", "body_text": "زمنية", "file_url": "https://mytqatjayrwjjpljrckn.supabase.co/storage/v1/object/public/basra-files-new/c056bd23-59d7-4f9c-890b-27bcd0647ae0/doc_1793448799324_qn421h.doc", "file_name": "زمنية لسنة 2023.doc", "file_type": "doc", "file_size": "357.0 KB", "is_hidden": false, "downloads_count": 0, "created_at": "2026-10-31T12:13:20.658+00:00", "updated_at": "2026-10-31T12:13:20.658+00:00", "updated_by_user_id": "3a14147b-c3c0-4b35-84c1-80816be68c0d", "updated_by_name": "مسؤول المراكز"}, {"id": "e6130337-cbac-4077-bc5a-932ecc2916ca", "department_id": "c056bd23-59d7-4f9c-890b-27bcd0647ae0", "department_name": "وحدة شؤون المراكز", "category_name": "ملف Word", "title": "نموذج  الانفكاك2", "body_text": "نموذج انفكاك موظف", "file_url": "https://mytqatjayrwjjpljrckn.supabase.co/storage/v1/object/public/basra-files-new/c056bd23-59d7-4f9c-890b-27bcd0647ae0/doc_1793595481018_abkq2d.docx", "file_name": "نموذج انفكاك.docx", "file_type": "docx", "file_size": "16.5 KB", "is_hidden": false, "downloads_count": 0, "created_at": "2026-10-30T21:21:26.876+00:00", "updated_at": "2026-11-02T04:58:02.488+00:00", "updated_by_user_id": "3a14147b-c3c0-4b35-84c1-80816be68c0d", "updated_by_name": "مسؤول المراكز"}];
     let allContents = [...DEFAULT_CONTENTS];
+    window.allContents = allContents;
 
     let allDepartments = [];
     let selectedCategory = 'all';
@@ -3530,6 +3529,7 @@
     }
 
     function openUnifiedModal(itemId) {
+    window.openUnifiedModal = openUnifiedModal;
       const item = allContents.find(c => c.id === itemId);
       if (!item) return;
       currentUnifiedItem = item;
@@ -3713,6 +3713,7 @@
     }
 
     function closeUnifiedPreviewModal() {
+    window.closeUnifiedPreviewModal = closeUnifiedPreviewModal;
       const container = document.getElementById('unifiedPdfCanvasContainer');
       if (container) container.innerHTML = '';
       const pdfIframe = document.getElementById('unifiedPdfIframe');
