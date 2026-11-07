@@ -1,6 +1,40 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
+
+<script>
+// ROBUST STORAGE POLYFILL FOR LOCAL APPS (file:// & WebView2)
+(function() {
+  function makeStorage() {
+    var s = {};
+    return {
+      getItem: function(k) { return Object.prototype.hasOwnProperty.call(s, k) ? s[k] : null; },
+      setItem: function(k, v) { s[k] = String(v); },
+      removeItem: function(k) { delete s[k]; },
+      clear: function() { s = {}; },
+      key: function(i) { return Object.keys(s)[i] || null; },
+      get length() { return Object.keys(s).length; }
+    };
+  }
+  try {
+    window.localStorage.setItem('__probe__', '1');
+    window.localStorage.removeItem('__probe__');
+  } catch(e) {
+    var ml = makeStorage();
+    try { Object.defineProperty(window, 'localStorage', { value: ml, configurable: true, writable: true }); }
+    catch(err) { window.localStorage = ml; }
+  }
+  try {
+    window.sessionStorage.setItem('__probe__', '1');
+    window.sessionStorage.removeItem('__probe__');
+  } catch(e) {
+    var ms = makeStorage();
+    try { Object.defineProperty(window, 'sessionStorage', { value: ms, configurable: true, writable: true }); }
+    catch(err) { window.sessionStorage = ms; }
+  }
+})();
+</script>
+
   <link rel="manifest" href="/manifest-admin.json">
   <meta name="theme-color" content="#0f172a">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2559,7 +2593,8 @@
 
     function checkAuthSession() {
       // Check session strictly within current active window
-      const sessionStr = sessionStorage.getItem('basra_admin_session_v2');
+      let sessionStr = null;
+      try { sessionStr = sessionStorage.getItem('basra_admin_session_v2'); } catch(e) {}
       if (sessionStr) {
         try {
           currentUser = JSON.parse(sessionStr);
