@@ -1268,20 +1268,119 @@
   </script>
 
 <style>
-    /* MASTER HIGH-CONTRAST PALETTE */
-    body {
+    /* =========================================================================
+       DYNAMIC HIGH-CONTRAST DUAL-THEME ENGINE (100% VISIBILITY IN LIGHT & DARK)
+       ========================================================================= */
+
+    /* --- Day Mode (Light Theme) --- */
+    body.light-theme {
       background-color: #f1f5f9 !important;
       color: #0f172a !important;
     }
-    #loginModal > div,
-    #unifiedPreviewModal > div,
-    #sheetModal > div,
-    #contentModal > div {
+    body.light-theme .table-thead-custom {
+      background-color: #e2e8f0 !important;
+      color: #0f172a !important;
+      border-bottom: 2px solid #cbd5e1 !important;
+    }
+    body.light-theme #contentTableBody tr,
+    body.light-theme #adminContentsTableBody tr {
+      background-color: #ffffff !important;
+      border-bottom: 2px solid #e2e8f0 !important;
+    }
+    body.light-theme .table-title,
+    body.light-theme .table-title span,
+    body.light-theme .card-title {
+      color: #0f172a !important;
+      -webkit-text-fill-color: #0f172a !important;
+      font-weight: 900 !important;
+    }
+    body.light-theme .table-desc,
+    body.light-theme .card-desc {
+      color: #1e293b !important;
+      -webkit-text-fill-color: #1e293b !important;
+      font-weight: 700 !important;
+    }
+    body.light-theme .instruction-box-table {
+      background-color: #f8fafc !important;
+      border: 2px solid #cbd5e1 !important;
+      color: #0f172a !important;
+    }
+    body.light-theme .attachment-box-table {
+      background-color: #ffffff !important;
+      border: 2px solid #cbd5e1 !important;
+      color: #0f172a !important;
+    }
+    body.light-theme .table-side-card {
+      background-color: #f8fafc !important;
+      border: 2px solid #cbd5e1 !important;
+      color: #0f172a !important;
+    }
+
+    /* --- Night Mode (Dark Theme) --- */
+    body:not(.light-theme) {
+      background-color: #020617 !important;
+      color: #f8fafc !important;
+    }
+    body:not(.light-theme) .table-thead-custom {
+      background-color: #0f172a !important;
+      color: #f8fafc !important;
+      border-bottom: 2px solid #1e293b !important;
+    }
+    body:not(.light-theme) #contentTableBody tr,
+    body:not(.light-theme) #adminContentsTableBody tr {
+      background-color: #0b1329 !important;
+      border-bottom: 2px solid #1e293b !important;
+    }
+    body:not(.light-theme) .table-title,
+    body:not(.light-theme) .table-title span,
+    body:not(.light-theme) .card-title {
+      color: #ffffff !important;
+      -webkit-text-fill-color: #ffffff !important;
+      font-weight: 900 !important;
+    }
+    body:not(.light-theme) .table-desc,
+    body:not(.light-theme) .card-desc {
+      color: #f1f5f9 !important;
+      -webkit-text-fill-color: #f1f5f9 !important;
+      font-weight: 700 !important;
+    }
+    body:not(.light-theme) .instruction-box-table {
+      background-color: #0f172a !important;
+      border: 2px solid #1e293b !important;
+      color: #f8fafc !important;
+    }
+    body:not(.light-theme) .attachment-box-table {
+      background-color: #1e293b !important;
+      border: 2px solid #334155 !important;
+      color: #ffffff !important;
+    }
+    body:not(.light-theme) .table-side-card {
+      background-color: #0f172a !important;
+      border: 2px solid #1e293b !important;
+      color: #f8fafc !important;
+    }
+
+    /* Modal Cards: Clean Background with Pure Opposite Text */
+    body.light-theme #loginModal > div,
+    body.light-theme #unifiedPreviewModal > div,
+    body.light-theme #sheetModal > div,
+    body.light-theme #contentModal > div {
       background-color: #ffffff !important;
       color: #0f172a !important;
       border: 2px solid #cbd5e1 !important;
       box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
     }
+    body:not(.light-theme) #loginModal > div,
+    body:not(.light-theme) #unifiedPreviewModal > div,
+    body:not(.light-theme) #sheetModal > div,
+    body:not(.light-theme) #contentModal > div {
+      background-color: #0f172a !important;
+      color: #f8fafc !important;
+      border: 2px solid #334155 !important;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6) !important;
+    }
+
+    /* Solid Action Buttons */
     #loginSubmitBtn,
     #btnCopyBodyText,
     #btnPrintFullReport,
@@ -1434,13 +1533,13 @@
     <div id="contentTableWrapper" class="hidden bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl mb-6">
       <div class="overflow-x-auto">
         <table class="w-full text-right text-xs">
-          <thead class="bg-slate-100 text-slate-900 border-b-2 border-slate-300 font-black" style="background-color: #f1f5f9 !important; color: #0f172a !important;">
+          <thead class="table-thead-custom font-black">
             <tr>
-              <th class="p-4 text-right text-sm font-black text-slate-900" style="color: #0f172a !important;">
-                <i class="fa-solid fa-file-lines text-blue-600 ml-1.5"></i> نص التعليمات والتوجيهات ومصغر المرفق (المساحة المتبقية كاملة)
+              <th class="p-4 text-right text-sm font-black">
+                <i class="fa-solid fa-file-lines text-blue-500 ml-1.5"></i> نص التعليمات والتوجيهات ومصغر المرفق (المساحة المتبقية كاملة)
               </th>
-              <th class="p-4 text-center text-sm font-black text-slate-900 w-80 min-w-[280px] max-w-[320px] whitespace-nowrap" style="color: #0f172a !important;">
-                <i class="fa-solid fa-sliders text-indigo-600 ml-1.5"></i> بيانات المنشور والخيارات
+              <th class="p-4 text-center text-sm font-black w-80 min-w-[280px] max-w-[320px] whitespace-nowrap">
+                <i class="fa-solid fa-sliders text-indigo-500 ml-1.5"></i> بيانات المنشور والخيارات
               </th>
             </tr>
           </thead>
@@ -2415,7 +2514,7 @@
       if (!tbody) return;
 
       if (items.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="2" class="p-8 text-center text-slate-600 font-bold bg-white">لا توجد نماذج أو تعليمات مطابقة لخيارات البحث.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="2" class="p-8 text-center text-slate-400 font-bold">لا توجد نماذج أو تعليمات مطابقة لخيارات البحث.</td></tr>`;
         return;
       }
 
@@ -2454,64 +2553,64 @@
         }
 
         return `
-        <tr class="transition-colors border-b-2 border-slate-200 hover:bg-slate-50/80 bg-white">
+        <tr class="transition-colors border-b-2">
           <!-- 1. نص التعليمات والتفاصيل وبجانبها مصغر المرفق (المساحة المتبقية كاملة) -->
           <td class="p-4 align-top">
             <div class="flex flex-col gap-2.5">
-              <!-- عنوان المنشور الرئيسي -->
-              <div onclick="openUnifiedModal('${c.id}')" class="font-black text-base text-slate-900 cursor-pointer hover:underline hover:text-blue-700 transition-colors flex items-center gap-2" style="color: #0f172a !important;" title="اضغط لقراءة وطباعة التعليمات كاملة">
-                <i class="fa-solid fa-file-signature text-blue-600 text-base shrink-0"></i>
+              <!-- عنوان المنشور الرئيسي (عالي التباين في الوضعين الليلي والنهاري) -->
+              <div onclick="openUnifiedModal('${c.id}')" class="table-title font-black text-base cursor-pointer hover:underline hover:text-blue-500 transition-colors flex items-center gap-2 select-text" title="اضغط لقراءة وطباعة التعليمات كاملة">
+                <i class="fa-solid fa-file-signature text-blue-500 text-base shrink-0"></i>
                 <span class="text-base font-black">${escapeHtml(c.title || 'بدون عنوان')}</span>
               </div>
 
               <!-- صندوق التعليمات وبجانبه مصغر المرفق -->
-              <div class="bg-slate-50/90 border-2 border-slate-200 rounded-2xl p-4 font-bold text-xs text-slate-900 transition-all shadow-xs leading-relaxed" style="background-color: #f8fafc !important; color: #0f172a !important; border-color: #e2e8f0 !important;">
+              <div class="instruction-box-table rounded-2xl p-4 font-bold text-xs transition-all shadow-xs leading-relaxed">
                 <div class="flex flex-col lg:flex-row items-start justify-between gap-4">
                   <!-- النص المكتوب (يأخذ المساحة المرنة كلها) -->
                   <div class="flex-1 min-w-0">
                     ${hasBodyText ? `
-                      <div class="whitespace-pre-wrap select-text text-sm leading-relaxed text-slate-900 font-bold">${formatBodyTextWithClickableLinks(c.body_text)}</div>
+                      <div class="table-desc whitespace-pre-wrap select-text text-sm leading-relaxed font-bold">${formatBodyTextWithClickableLinks(c.body_text)}</div>
                     ` : `
-                      <div class="text-xs text-slate-500 font-bold py-2">لا توجد توجيهات نصية إضافية - يرجى استعراض الملف المرفق بجانب النص.</div>
+                      <div class="text-xs text-slate-400 font-bold py-2">لا توجد توجيهات نصية إضافية - يرجى استعراض الملف المرفق بجانب النص.</div>
                     `}
                   </div>
 
                   <!-- مصغر المرفق بجانب التعليمات النصية -->
                   ${hasFile ? `
-                    <div class="shrink-0 w-full sm:w-64 bg-white border-2 border-slate-300 rounded-xl p-3 shadow-sm hover:border-blue-500 transition-all flex flex-col gap-2">
+                    <div class="attachment-box-table shrink-0 w-full sm:w-64 rounded-xl p-3 shadow-sm hover:border-blue-500 transition-all flex flex-col gap-2">
                       <div class="flex items-center gap-2.5">
                         ${isImage && c.file_url ? `
-                          <div onclick="openSheetModal('${c.id}')" class="w-14 h-14 rounded-lg overflow-hidden border border-slate-300 shrink-0 cursor-pointer shadow-xs hover:scale-105 transition-transform bg-slate-100 relative group" title="اضغط لتكبير الصورة">
+                          <div onclick="openSheetModal('${c.id}')" class="w-14 h-14 rounded-lg overflow-hidden border border-slate-400/50 shrink-0 cursor-pointer shadow-xs hover:scale-105 transition-transform bg-slate-800 relative group" title="اضغط لتكبير الصورة">
                             <img src="${c.file_url}" alt="${escapeHtml(c.title)}" class="w-full h-full object-cover" />
                             <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs">
                               <i class="fa-solid fa-magnifying-glass-plus"></i>
                             </div>
                           </div>
                         ` : `
-                          <div onclick="openSheetModal('${c.id}')" class="w-14 h-14 rounded-lg ${fTileBg} border-2 border-slate-300 flex flex-col items-center justify-center shrink-0 cursor-pointer shadow-xs hover:scale-105 transition-transform" title="اضغط لاستعراض الملف">
+                          <div onclick="openSheetModal('${c.id}')" class="w-14 h-14 rounded-lg ${fTileBg} border border-slate-400/50 flex flex-col items-center justify-center shrink-0 cursor-pointer shadow-xs hover:scale-105 transition-transform" title="اضغط لاستعراض الملف">
                             <i class="fa-solid ${fIcon} text-xl"></i>
                             <span class="text-[9px] font-black uppercase mt-0.5">${ext || 'FILE'}</span>
                           </div>
                         `}
                         <div class="min-w-0 flex-1 text-right">
-                          <div class="text-[10px] font-black text-slate-500">الملف المرفق:</div>
-                          <div onclick="openSheetModal('${c.id}')" class="truncate text-xs font-black text-slate-900 cursor-pointer hover:text-blue-600 hover:underline" title="${escapeHtml(c.file_name || fLabel)}" style="color: #0f172a !important;">
+                          <div class="text-[10px] font-black opacity-75">الملف المرفق:</div>
+                          <div onclick="openSheetModal('${c.id}')" class="truncate text-xs font-black cursor-pointer hover:text-blue-500 hover:underline" title="${escapeHtml(c.file_name || fLabel)}">
                             ${escapeHtml(c.file_name || fLabel)}
                           </div>
-                          <div class="text-[10px] font-mono font-bold text-slate-600 mt-0.5">
+                          <div class="text-[10px] font-mono font-bold opacity-80 mt-0.5">
                             ${c.file_size ? (String(c.file_size).toUpperCase().includes('B') ? c.file_size : `KB ${c.file_size}`) : fLabel}
                           </div>
                         </div>
                       </div>
 
                       <!-- أزرار تفاعلية سريعة للمرفق -->
-                      <div class="flex items-center gap-1.5 pt-2 border-t border-slate-100">
+                      <div class="flex items-center gap-1.5 pt-2 border-t border-slate-500/20">
                         <button type="button" onclick="openSheetModal('${c.id}')" class="flex-1 py-1.5 px-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-black text-xs flex items-center justify-center gap-1 shadow-xs transition-all cursor-pointer" style="background-color: #2563eb !important; color: #ffffff !important;">
                           <i class="fa-solid fa-eye text-xs"></i>
                           <span>استعراض المرفق</span>
                         </button>
-                        <a href="${c.file_url}" download="${escapeHtml(c.file_name || 'attachment')}" target="_blank" class="py-1.5 px-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg font-bold text-xs flex items-center justify-center gap-1 border border-slate-200 transition-all shadow-xs" title="تنزيل الملف" onclick="event.stopPropagation()">
-                          <i class="fa-solid fa-download text-slate-600"></i>
+                        <a href="${c.file_url}" download="${escapeHtml(c.file_name || 'attachment')}" target="_blank" class="py-1.5 px-2.5 bg-slate-200/40 hover:bg-slate-300/60 rounded-lg font-bold text-xs flex items-center justify-center gap-1 border border-slate-400/30 transition-all shadow-xs" title="تنزيل الملف" onclick="event.stopPropagation()">
+                          <i class="fa-solid fa-download"></i>
                           <span>تنزيل</span>
                         </a>
                       </div>
@@ -2520,9 +2619,9 @@
                 </div>
 
                 <!-- الرابط السفلي للمطالعة والطباعة كاملة -->
-                <div onclick="openUnifiedModal('${c.id}')" class="mt-3 pt-2.5 border-t border-slate-200 flex items-center justify-between text-xs text-blue-700 hover:text-blue-900 font-black cursor-pointer select-none">
-                  <span class="inline-flex items-center gap-1.5"><i class="fa-solid fa-book-open text-amber-600 text-sm"></i> قراءة وطباعة التعليمات والتوجيهات كاملة</span>
-                  <span class="text-slate-500 font-bold">عرض مكبر وتنسيق طباعة 🖨️</span>
+                <div onclick="openUnifiedModal('${c.id}')" class="mt-3 pt-2.5 border-t border-slate-500/20 flex items-center justify-between text-xs text-blue-500 hover:text-blue-400 font-black cursor-pointer select-none">
+                  <span class="inline-flex items-center gap-1.5"><i class="fa-solid fa-book-open text-amber-500 text-sm"></i> قراءة وطباعة التعليمات والتوجيهات كاملة</span>
+                  <span class="opacity-75 font-bold">عرض مكبر وتنسيق طباعة 🖨️</span>
                 </div>
               </div>
             </div>
@@ -2530,27 +2629,27 @@
 
           <!-- 2. بطاقة موحدة تجمع بيانات المنشور والخيارات -->
           <td class="p-4 align-top w-80 min-w-[280px] max-w-[320px]">
-            <div class="flex flex-col gap-2.5 p-3 rounded-2xl bg-slate-50 border-2 border-slate-200 shadow-sm text-right">
+            <div class="table-side-card flex flex-col gap-2.5 p-3 rounded-2xl shadow-sm text-right">
               <!-- الشعبة والناشر -->
               <div class="flex flex-col gap-1.5">
-                <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-black bg-blue-100 text-blue-950 border border-blue-300" title="الشعبة المصدرة" style="color: #0f172a !important; background-color: #dbeafe !important;">
-                  <i class="fa-solid fa-building-columns text-[11px] text-blue-700 shrink-0"></i>
+                <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-black bg-blue-500/20 text-blue-400 border border-blue-500/30" title="الشعبة المصدرة">
+                  <i class="fa-solid fa-building-columns text-[11px] text-blue-500 shrink-0"></i>
                   <span class="truncate font-black">${escapeHtml(c.department_name || 'عامة')}</span>
                 </div>
-                <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-black bg-indigo-100 text-indigo-950 border border-indigo-300" title="المسؤول الناشر" style="color: #0f172a !important; background-color: #e0e7ff !important;">
-                  <i class="fa-solid fa-user-shield text-[11px] text-indigo-700 shrink-0"></i>
+                <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-black bg-indigo-500/20 text-indigo-400 border border-indigo-500/30" title="المسؤول الناشر">
+                  <i class="fa-solid fa-user-shield text-[11px] text-indigo-500 shrink-0"></i>
                   <span class="truncate font-black">${escapeHtml(publisherName)}</span>
                 </div>
               </div>
 
               <!-- التصنيف وحالة المرفق -->
               <div class="flex items-center gap-1.5 flex-wrap">
-                <span class="px-2.5 py-1 rounded-xl text-xs font-black bg-amber-100 text-amber-950 border border-amber-300 shadow-xs" style="color: #451a03 !important; background-color: #fef3c7 !important;">
+                <span class="px-2.5 py-1 rounded-xl text-xs font-black bg-amber-500/20 text-amber-400 border border-amber-500/30 shadow-xs">
                   ${escapeHtml(c.category_name || 'التعليمات')}
                 </span>
                 ${!hasFile ? `
-                  <span class="px-2.5 py-1 rounded-xl text-xs font-black bg-slate-200 text-slate-800 border border-slate-300 flex items-center gap-1 shadow-xs">
-                    <i class="fa-solid fa-align-right text-[10px] text-amber-600"></i> نص تعليمات فقط
+                  <span class="px-2.5 py-1 rounded-xl text-xs font-black bg-slate-500/20 text-slate-300 border border-slate-500/30 flex items-center gap-1 shadow-xs">
+                    <i class="fa-solid fa-align-right text-[10px] text-amber-500"></i> نص تعليمات فقط
                   </span>
                 ` : `
                   <span class="px-2.5 py-1 rounded-xl text-xs font-black ${fTileBg} flex items-center gap-1 shadow-xs border">
@@ -2560,20 +2659,20 @@
               </div>
 
               <!-- تاريخ النشر -->
-              <div class="flex items-center gap-1.5 text-xs font-black text-slate-700 px-1 font-mono" style="color: #334155 !important;">
-                <i class="fa-regular fa-calendar-days text-slate-500 text-xs"></i>
+              <div class="flex items-center gap-1.5 text-xs font-black px-1 font-mono opacity-85">
+                <i class="fa-regular fa-calendar-days text-slate-400 text-xs"></i>
                 <span>تاريخ النشر: ${dateStr}</span>
               </div>
 
               <!-- أزرار الخيارات والعمليات الأساسية -->
-              <div class="pt-2 border-t border-slate-200 flex flex-col gap-1.5">
+              <div class="pt-2 border-t border-slate-500/20 flex flex-col gap-1.5">
                 <button type="button" onclick="openUnifiedModal('${c.id}')" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black text-xs py-2 px-3 rounded-xl flex items-center justify-center gap-1.5 shadow-md active:scale-95 cursor-pointer transition-all" style="background-color: #2563eb !important; color: #ffffff !important;">
                   <i class="fa-solid fa-book-open text-xs text-white" style="color: #ffffff !important;"></i>
                   <span style="color: #ffffff !important; font-weight: 900 !important;">قراءة وطباعة التعليمات</span>
                 </button>
                 ${hasFile ? `
-                  <button type="button" onclick="openSheetModal('${c.id}')" class="w-full bg-slate-100 hover:bg-blue-50 text-blue-900 border border-blue-200 font-black text-xs py-1.5 px-2.5 rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer">
-                    <i class="fa-solid fa-eye text-xs text-blue-700"></i>
+                  <button type="button" onclick="openSheetModal('${c.id}')" class="w-full bg-slate-200/50 hover:bg-blue-500/20 border border-slate-400/40 font-black text-xs py-1.5 px-2.5 rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer">
+                    <i class="fa-solid fa-eye text-xs text-blue-500"></i>
                     <span>عرض النموذج المرفق</span>
                   </button>
                 ` : ''}
@@ -3432,6 +3531,7 @@
 
         textElements.forEach(el => {
           // استثناء الأيقونات الرسومية الصرفة لتجنب كسر تلوينها
+          if (el.classList.contains('table-title') || el.closest('.table-title')) return;
           if (el.tagName === 'I' || el.classList.contains('fa') || el.classList.contains('fa-solid') || el.classList.contains('fa-regular')) {
             return;
           }
