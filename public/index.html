@@ -1255,97 +1255,6 @@
       font-weight: 900 !important;
     }
 
-  
-    /* ========================================================================== */
-    /* MASTER HIGH-CONTRAST PALETTE (100% Crisp, Light BG with Pure Opposite Text)*/
-    /* ========================================================================== */
-    body {
-      background-color: #f1f5f9 !important;
-      color: #0f172a !important;
-    }
-
-    /* Modal Cards: Always Clean White with Dark Text & Solid Borders */
-    #loginModal > div,
-    #contentModal > div,
-    #deptModal > div,
-    #unifiedPreviewModal > div,
-    #userModal > div,
-    #confirmModal > div,
-    #resetPassModal > div,
-    #changePasswordModal > div {
-      background-color: #ffffff !important;
-      border: 2px solid #cbd5e1 !important;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
-      color: #0f172a !important;
-    }
-
-    /* Modal Headers */
-    #unifiedPreviewModal .bg-slate-800\/90,
-    #unifiedPreviewModal .bg-slate-800,
-    #contentModal .bg-slate-800,
-    #deptModal .bg-slate-800,
-    #userModal .bg-slate-800 {
-      background-color: #f8fafc !important;
-      border-bottom: 2px solid #e2e8f0 !important;
-    }
-
-    /* Form Inputs */
-    input[type="text"], input[type="password"], input[type="search"], select, textarea {
-      background-color: #ffffff !important;
-      color: #0f172a !important;
-      border-color: #cbd5e1 !important;
-    }
-    input::placeholder, textarea::placeholder {
-      color: #94a3b8 !important;
-    }
-
-    /* Solid Color Buttons: ALWAYS 100% Pure White Text */
-    button.bg-blue-600, button.bg-blue-700, a.bg-blue-600, a.bg-blue-700,
-    button.bg-indigo-600, button.bg-indigo-700, a.bg-indigo-600,
-    button.bg-emerald-600, button.bg-emerald-700, a.bg-emerald-600,
-    button.bg-amber-600, button.bg-amber-700, a.bg-amber-600,
-    button.bg-rose-600, button.bg-rose-700, a.bg-rose-600,
-    #loginSubmitBtn, #btnCopyBodyText, #btnPrintFullReport, #btnPrintDocumentOnly {
-      color: #ffffff !important;
-    }
-    button.bg-blue-600 *, button.bg-blue-700 *, a.bg-blue-600 *, a.bg-blue-700 *,
-    button.bg-indigo-600 *, button.bg-indigo-700 *, a.bg-indigo-600 *,
-    button.bg-emerald-600 *, button.bg-emerald-700 *, a.bg-emerald-600 *,
-    button.bg-amber-600 *, button.bg-amber-700 *, a.bg-amber-600 *,
-    button.bg-rose-600 *, button.bg-rose-700 *, a.bg-rose-600 *,
-    #loginSubmitBtn *, #btnCopyBodyText *, #btnPrintFullReport *, #btnPrintDocumentOnly * {
-      color: #ffffff !important;
-    }
-
-    /* Cards & Containers */
-    .card-item, .content-card, #adminContentsTableContainer, #contentTableWrapper {
-      background-color: #ffffff !important;
-      border: 2px solid #e2e8f0 !important;
-      color: #0f172a !important;
-    }
-
-    /* Table High Contrast */
-    table thead tr th {
-      background-color: #f1f5f9 !important;
-      color: #0f172a !important;
-      border-bottom: 2px solid #cbd5e1 !important;
-      font-weight: 900 !important;
-    }
-    table tbody tr {
-      background-color: #ffffff !important;
-      border-bottom: 1px solid #e2e8f0 !important;
-    }
-    table tbody tr:hover {
-      background-color: #f8fafc !important;
-    }
-
-    /* Instruction Text Boxes */
-    .instruction-box-table, .instruction-box-card {
-      background-color: #f8fafc !important;
-      border: 1.5px solid #cbd5e1 !important;
-      color: #0f172a !important;
-    }
-
   </style>
 
   <!-- PDF.js, Mammoth.js & XLSX.js for in-browser sheet rendering -->
@@ -1358,8 +1267,31 @@
     }
   </script>
 
+<style>
+    /* MASTER HIGH-CONTRAST PALETTE */
+    body {
+      background-color: #f1f5f9 !important;
+      color: #0f172a !important;
+    }
+    #loginModal > div,
+    #unifiedPreviewModal > div,
+    #sheetModal > div,
+    #contentModal > div {
+      background-color: #ffffff !important;
+      color: #0f172a !important;
+      border: 2px solid #cbd5e1 !important;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+    }
+    #loginSubmitBtn,
+    #btnCopyBodyText,
+    #btnPrintFullReport,
+    #btnPrintDocumentOnly {
+      color: #ffffff !important;
+      font-weight: 900 !important;
+    }
+</style>
 </head>
-<body class="min-h-screen flex flex-col bg-slate-100 text-slate-900 font-sans light-theme" style="background-color: #f1f5f9 !important; color: #0f172a !important;">
+<body class="min-h-screen flex flex-col bg-slate-950 text-slate-100 light-theme">
 
   <!-- Header -->
   <header class="sticky top-0 z-40 bg-slate-900/95 backdrop-blur-md border-b border-slate-800 shadow-lg">
@@ -1399,7 +1331,7 @@
           <i class="fa-solid fa-circle-down text-emerald-200"></i>
           <span>تثبيت البرنامج</span>
         </button>
-        <button id="themeToggleBtn" style="display: none !important;" type="button" onclick="toggleTheme()" class="bg-slate-800 hover:bg-slate-700 text-amber-400 border border-slate-700 px-3 py-1.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm active:scale-95" title="التبديل بين الوضع الليلي والنهاري">
+        <button id="themeToggleBtn" type="button" onclick="toggleTheme()" class="bg-slate-800 hover:bg-slate-700 text-amber-400 border border-slate-700 px-3 py-1.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm active:scale-95" title="التبديل بين الوضع الليلي والنهاري">
           <span id="themeToggleIcon"><i class="fa-solid fa-moon text-indigo-500"></i></span>
           <span id="themeToggleText">ليلي</span>
         </button>
@@ -1502,14 +1434,14 @@
     <div id="contentTableWrapper" class="hidden bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl mb-6">
       <div class="overflow-x-auto">
         <table class="w-full text-right text-xs">
-          <thead class="bg-slate-100 text-slate-900 uppercase text-xs border-b-2 border-slate-300 font-black">
+          <thead class="bg-slate-100 text-slate-900 border-b-2 border-slate-300 font-black" style="background-color: #f1f5f9 !important; color: #0f172a !important;">
             <tr>
-              <th class="p-3.5 w-5/12 text-right">العنوان ونصوص التعليمات والتوجيهات</th>
-              <th class="p-3.5 w-2/12 text-right whitespace-nowrap">الشعبة والمسؤول الناشر</th>
-              <th class="p-3.5 text-center whitespace-nowrap">التصنيف</th>
-              <th class="p-3.5 text-center whitespace-nowrap">استعراض المرفق</th>
-              <th class="p-3.5 text-center whitespace-nowrap">تاريخ النشر</th>
-              <th class="p-3.5 text-center whitespace-nowrap">خيارات ومطالعة</th>
+              <th class="p-4 text-right text-sm font-black text-slate-900" style="color: #0f172a !important;">
+                <i class="fa-solid fa-file-lines text-blue-600 ml-1.5"></i> نص التعليمات والتوجيهات والشرح (المساحة المتبقية كاملة)
+              </th>
+              <th class="p-4 text-center text-sm font-black text-slate-900 w-80 min-w-[280px] max-w-[320px] whitespace-nowrap" style="color: #0f172a !important;">
+                <i class="fa-solid fa-sliders text-indigo-600 ml-1.5"></i> بيانات المنشور والخيارات
+              </th>
             </tr>
           </thead>
           <tbody id="contentTableBody" class="divide-y divide-slate-800 text-slate-200">
@@ -1538,13 +1470,13 @@
   <div id="unifiedPreviewModal" class="hidden fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4">
     <div class="bg-slate-900 border-2 border-slate-700 w-full max-w-4xl max-h-[92vh] rounded-3xl shadow-2xl overflow-hidden flex flex-col">
       <!-- Modal Header -->
-      <div class="px-5 py-3.5 bg-slate-100 border-b-2 border-slate-200 flex items-center justify-between gap-3">
+      <div class="px-5 py-3.5 bg-slate-800/90 border-b border-slate-700 flex items-center justify-between gap-3">
         <div class="flex items-center gap-3 min-w-0">
           <div id="unifiedModalIcon" class="w-10 h-10 rounded-2xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 flex items-center justify-center text-lg shrink-0">
             <i class="fa-solid fa-eye"></i>
           </div>
           <div class="min-w-0">
-            <h3 id="unifiedModalTitle" class="text-sm sm:text-base font-black text-slate-900 truncate" style="color: #0f172a !important;">عنوان المحتوى</h3>
+            <h3 id="unifiedModalTitle" class="text-sm sm:text-base font-black text-white truncate">عنوان المحتوى</h3>
             <div id="unifiedModalMetaPills" class="flex items-center gap-2 flex-wrap mt-1">
               <!-- Department, Category, Date pills injected dynamically -->
             </div>
@@ -1561,11 +1493,11 @@
             <span>طباعة المستند فقط</span>
           </button>
           <!-- الخيار 2: طباعة التوجيهات فقط مع بيانات الشعبة والمسؤول -->
-                    <button id="btnCopyBodyText" type="button" onclick="copyUnifiedBodyText()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3.5 py-1.5 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 shadow-md active:scale-95 cursor-pointer" title="نسخ نص التعليمات إلى الحافظة">
+                    <button id="btnCopyBodyText" type="button" onclick="copyUnifiedBodyText()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 px-3.5 py-1.5 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 shadow-md active:scale-95 cursor-pointer" title="نسخ نص التعليمات إلى الحافظة">
             <i class="fa-solid fa-copy text-amber-400"></i>
             <span id="btnCopyBodyTextLabel">نسخ النص</span>
           </button>
-          <button id="btnPrintFullReport" onclick="printUnifiedFullReport()" class="bg-amber-600 hover:bg-amber-700 text-white px-3.5 py-1.5 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 shadow-md active:scale-95" title="طباعة التوجيهات والنص المكتوب فقط مع اسم المسؤول والشعبة">
+          <button id="btnPrintFullReport" onclick="printUnifiedFullReport()" class="bg-amber-600 hover:bg-amber-500 text-white px-3.5 py-1.5 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 shadow-md active:scale-95" title="طباعة التوجيهات والنص المكتوب فقط مع اسم المسؤول والشعبة">
             <i class="fa-solid fa-print"></i>
             <span id="btnPrintFullReportLabel">طباعة التوجيهات فقط</span>
           </button>
@@ -2066,7 +1998,7 @@
       }
 
       let html = `
-        <button onclick="setDeptFilter('all')" class="dept-btn px-3 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer ${selectedDeptId === 'all' ? 'bg-blue-700 text-white shadow-md border-2 border-blue-800' : 'bg-white text-slate-800 hover:bg-slate-100 border-2 border-slate-300'}" style="${selectedDeptId === 'all' ? 'color: #ffffff !important; background-color: #1d4ed8 !important;' : 'color: #0f172a !important; background-color: #ffffff !important;'}">
+        <button onclick="setDeptFilter('all')" class="dept-btn px-2.5 py-1 rounded-lg text-[11px] font-bold ${selectedDeptId === 'all' ? 'bg-amber-400/20 text-amber-300 border border-amber-400/40' : 'bg-slate-800 text-slate-400 hover:text-slate-200 border border-slate-700/60'} transition-all">
           كافة الشعب
         </button>
       `;
@@ -2074,7 +2006,7 @@
       allDepartments.forEach(dept => {
         const isActive = selectedDeptId === dept.id;
         html += `
-          <button onclick="setDeptFilter('${dept.id}')" class="dept-btn px-3 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer ${isActive ? 'bg-blue-700 text-white shadow-md border-2 border-blue-800' : 'bg-white text-slate-800 hover:bg-slate-100 border-2 border-slate-300'}" style="${isActive ? 'color: #ffffff !important; background-color: #1d4ed8 !important;' : 'color: #0f172a !important; background-color: #ffffff !important;'}">
+          <button onclick="setDeptFilter('${dept.id}')" class="dept-btn px-2.5 py-1 rounded-lg text-[11px] font-bold ${isActive ? 'bg-amber-400/20 text-amber-300 border border-amber-400/40' : 'bg-slate-800 text-slate-400 hover:text-slate-200 border border-slate-700/60'} transition-all">
             ${escapeHtml(dept.name)}
           </button>
         `;
@@ -2483,15 +2415,15 @@
       if (!tbody) return;
 
       if (items.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-600 font-bold">لا توجد نماذج أو تعليمات مطابقة.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="2" class="p-8 text-center text-slate-600 font-bold bg-white">لا توجد نماذج أو تعليمات مطابقة لخيارات البحث.</td></tr>`;
         return;
       }
 
       tbody.innerHTML = items.map(c => {
-        const dateStr = c.created_at ? new Date(c.created_at).toLocaleDateString('ar-IQ') : '';
+        const dateStr = c.created_at ? new Date(c.created_at).toLocaleDateString('ar-IQ', { year: 'numeric', month: '2-digit', day: '2-digit' }) : '';
         const hasFile = Boolean(c.file_url && c.file_url.trim() && c.file_type !== 'text_only');
         const hasBodyText = Boolean(c.body_text && c.body_text.trim());
-        const publisherName = (c.updated_by_name && c.updated_by_name.trim()) ? c.updated_by_name.trim() : 'إدارة المنظومة';
+        const publisherName = (c.updated_by_name && c.updated_by_name.trim()) ? c.updated_by_name.trim() : 'مسؤول الشعبة';
 
         const ext = (c.file_name || c.file_type || '').split('.').pop().toLowerCase();
         const isImage = (['png', 'jpg', 'jpeg', 'webp', 'gif', 'svg'].includes(ext) || c.file_type === 'image');
@@ -2500,137 +2432,142 @@
         const isExcel = (ext === 'xls' || ext === 'xlsx' || c.file_type === 'xls' || c.file_type === 'xlsx');
 
         let fIcon = 'fa-file-lines';
-        let fTileBg = 'bg-blue-100 text-blue-700 border-blue-300';
+        let fTileBg = 'bg-blue-100 text-blue-900 border-blue-300';
         let fLabel = 'ملف مرفق';
 
         if (isPdf) {
           fIcon = 'fa-file-pdf text-rose-600';
-          fTileBg = 'bg-rose-100 text-rose-700 border-rose-300';
-          fLabel = 'مستند PDF';
+          fTileBg = 'bg-rose-100 text-rose-900 border-rose-300';
+          fLabel = 'ملف PDF';
         } else if (isWord) {
           fIcon = 'fa-file-word text-blue-600';
-          fTileBg = 'bg-blue-100 text-blue-700 border-blue-300';
-          fLabel = 'مستند Word';
+          fTileBg = 'bg-blue-100 text-blue-900 border-blue-300';
+          fLabel = 'ملف Word';
         } else if (isExcel) {
           fIcon = 'fa-file-excel text-emerald-600';
-          fTileBg = 'bg-emerald-100 text-emerald-700 border-emerald-300';
-          fLabel = 'جدول Excel';
+          fTileBg = 'bg-emerald-100 text-emerald-900 border-emerald-300';
+          fLabel = 'ملف Excel';
         } else if (isImage) {
           fIcon = 'fa-file-image text-purple-600';
-          fTileBg = 'bg-purple-100 text-purple-700 border-purple-300';
+          fTileBg = 'bg-purple-100 text-purple-900 border-purple-300';
           fLabel = 'صورة';
         }
 
-        let thumbnailHtml = '';
-        if (!hasFile) {
-          thumbnailHtml = `
-            <div onclick="openUnifiedModal('${c.id}')" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border-2 border-slate-300 bg-white text-slate-800 text-xs font-black shadow-sm select-none cursor-pointer hover:border-blue-500 hover:scale-105 transition-all" style="color: #0f172a !important; background-color: #ffffff !important;" title="نص تعليمات فقط - اضغط للقراءة والطباعة">
-              <i class="fa-solid fa-align-right text-amber-600"></i>
-              <span style="color: #0f172a !important;">نص تعليمات فقط</span>
-            </div>
-          `;
-        } else if (isImage && c.file_url) {
-          thumbnailHtml = `
-            <div class="flex items-center justify-center gap-2">
-              <div onclick="openSheetModal('${c.id}')" class="relative group cursor-pointer w-12 h-12 rounded-xl overflow-hidden border-2 border-slate-300 shadow hover:scale-110 transition-transform shrink-0 bg-white" title="اضغط لتكبير الصورة">
-                <img src="${c.file_url}" alt="${escapeHtml(c.title)}" class="w-full h-full object-cover" loading="lazy" />
-                <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs">
-                  <i class="fa-solid fa-magnifying-glass-plus"></i>
-                </div>
-              </div>
-              <div class="min-w-0 text-right">
-                <div onclick="openSheetModal('${c.id}')" class="truncate max-w-[110px] text-xs font-black text-slate-900 cursor-pointer hover:text-blue-600" title="${escapeHtml(c.file_name || fLabel)}" style="color: #0f172a !important;">${escapeHtml(c.file_name || fLabel)}</div>
-                <div class="text-[10px] text-purple-700 font-black">${c.file_size ? (String(c.file_size).toUpperCase().includes('B') ? c.file_size : `KB ${c.file_size}`) : 'صورة'}</div>
-              </div>
-            </div>
-          `;
-        } else {
-          thumbnailHtml = `
-            <div class="flex items-center justify-center gap-2">
-              <div onclick="openSheetModal('${c.id}')" class="w-12 h-12 rounded-xl ${fTileBg} border-2 border-slate-300 flex flex-col items-center justify-center cursor-pointer hover:scale-110 transition-transform shrink-0 shadow-sm" title="اضغط لمعاينة المستند">
-                <i class="fa-solid ${fIcon} text-lg"></i>
-              </div>
-              <div class="min-w-0 text-right">
-                <div onclick="openSheetModal('${c.id}')" class="truncate max-w-[110px] text-xs font-black text-slate-900 cursor-pointer hover:text-blue-600" title="${escapeHtml(c.file_name || fLabel)}" style="color: #0f172a !important;">${escapeHtml(c.file_name || fLabel)}</div>
-                <div class="text-[10px] text-slate-600 font-bold">${c.file_size ? (String(c.file_size).toUpperCase().includes('B') ? c.file_size : `KB ${c.file_size}`) : fLabel}</div>
-              </div>
-            </div>
-          `;
-        }
-
         return `
-        <tr class="transition-colors border-b hover:bg-slate-50">
-          <!-- 1. عنوان النموذج والتعليمات (مساحة واسعة جداً مخصصة للنص) -->
-          <td class="p-3.5 align-top min-w-[320px] max-w-xl">
-            <div onclick="openUnifiedModal('${c.id}')" class="font-black text-sm text-slate-900 cursor-pointer hover:underline hover:text-blue-700 transition-colors leading-snug" style="color: #0f172a !important;" title="اضغط لقراءة وطباعة التعليمات كاملة">
-              ${escapeHtml(c.title || 'بدون عنوان')}
-            </div>
-            ${hasBodyText ? `
-              <div onclick="openUnifiedModal('${c.id}')" class="bg-slate-50 border-2 border-slate-300 rounded-xl p-3 mt-2 font-bold text-xs text-slate-900 cursor-pointer hover:border-blue-500 hover:bg-white transition-all shadow-sm leading-relaxed" style="background-color: #f8fafc !important; color: #0f172a !important; border-color: #cbd5e1 !important;" title="اضغط لعرض وقراءة التعليمات كاملة">
-                <div class="line-clamp-4 select-text whitespace-pre-wrap">${escapeHtml(c.body_text)}</div>
-                <div class="mt-2 flex items-center gap-1.5 text-xs text-blue-700 hover:text-blue-900 font-black">
-                  <i class="fa-solid fa-book-open text-amber-600"></i>
-                  <span class="underline">قراءة وطباعة التعليمات والتوجيهات كاملة 🖨️</span>
+        <tr class="transition-colors border-b-2 border-slate-200 hover:bg-slate-50/80 bg-white">
+          <!-- 1. نص التعليمات والتفاصيل (يأخذ المساحة المتبقية كلها) -->
+          <td class="p-4 align-top">
+            <div class="flex flex-col gap-2.5">
+              <!-- عنوان المنشور الرئيسي -->
+              <div onclick="openUnifiedModal('${c.id}')" class="font-black text-base text-slate-900 cursor-pointer hover:underline hover:text-blue-700 transition-colors flex items-center gap-2" style="color: #0f172a !important;" title="اضغط لقراءة وطباعة التعليمات كاملة">
+                <i class="fa-solid fa-file-signature text-blue-600 text-base shrink-0"></i>
+                <span class="text-base font-black">${escapeHtml(c.title || 'بدون عنوان')}</span>
+              </div>
+
+              <!-- صندوق التعليمات الممتد والواضح جداً -->
+              ${hasBodyText ? `
+                <div class="bg-slate-50/90 border-2 border-slate-200 rounded-2xl p-4 font-bold text-xs text-slate-900 transition-all shadow-xs leading-relaxed" style="background-color: #f8fafc !important; color: #0f172a !important; border-color: #e2e8f0 !important;">
+                  <div class="whitespace-pre-wrap select-text text-sm leading-relaxed text-slate-900 font-bold">${formatBodyTextWithClickableLinks(c.body_text)}</div>
+                  <div onclick="openUnifiedModal('${c.id}')" class="mt-3 pt-2.5 border-t border-slate-200 flex items-center justify-between text-xs text-blue-700 hover:text-blue-900 font-black cursor-pointer select-none">
+                    <span class="inline-flex items-center gap-1.5"><i class="fa-solid fa-book-open text-amber-600 text-sm"></i> قراءة وطباعة التعليمات والتوجيهات كاملة</span>
+                    <span class="text-slate-500 font-bold">عرض مكبر وتنسيق طباعة 🖨️</span>
+                  </div>
                 </div>
-              </div>
-            ` : ''}
-          </td>
-
-          <!-- 2. الشعبة المصدرة والمسؤول الناشر (مدمجة رأسياً باحترافية لتوفير المساحة) -->
-          <td class="p-3.5 align-top whitespace-nowrap">
-            <div class="flex flex-col gap-1.5">
-              <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-black bg-blue-100 text-blue-900 border border-blue-200" title="الشعبة المصدرة" style="color: #1e3a8a !important; background-color: #dbeafe !important;">
-                <i class="fa-solid fa-building-columns text-[10px]"></i>
-                <span class="truncate max-w-[140px]">${escapeHtml(c.department_name || 'عامة')}</span>
-              </div>
-              <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-indigo-50 text-indigo-900 border border-indigo-200" title="المسؤول الناشر" style="color: #312e81 !important; background-color: #e0e7ff !important;">
-                <i class="fa-solid fa-user-shield text-[10px]"></i>
-                <span class="truncate max-w-[140px]">${escapeHtml(publisherName)}</span>
-              </div>
-            </div>
-          </td>
-
-          <!-- 3. التصنيف (واضح جداً وعالي التباين) -->
-          <td class="p-3.5 align-top text-center whitespace-nowrap">
-            <span class="inline-block px-3 py-1 rounded-xl text-xs font-black bg-amber-100 text-amber-950 border-2 border-amber-300 shadow-sm" style="color: #451a03 !important; background-color: #fef3c7 !important;">
-              ${escapeHtml(c.category_name || 'التعليمات')}
-            </span>
-          </td>
-
-          <!-- 4. استعراض الملف المرفق -->
-          <td class="p-3.5 align-top text-center">
-            ${thumbnailHtml}
-          </td>
-
-          <!-- 5. تاريخ النشر -->
-          <td class="p-3.5 align-top text-center whitespace-nowrap font-mono text-xs font-black text-slate-700" style="color: #334155 !important;">
-            <div class="flex items-center justify-center gap-1.5">
-              <i class="fa-regular fa-calendar-days text-xs text-slate-500"></i>
-              <span>${dateStr}</span>
-            </div>
-          </td>
-
-          <!-- 6. خيارات ومطالعة -->
-          <td class="p-3.5 align-top text-center whitespace-nowrap">
-            <div class="flex items-center justify-center gap-2">
-              ${!hasFile ? `
-                <button type="button" onclick="openUnifiedModal('${c.id}')" class="bg-blue-600 hover:bg-blue-700 text-white font-black text-xs py-2 px-3.5 rounded-xl flex items-center justify-center gap-1.5 shadow-md active:scale-95 cursor-pointer whitespace-nowrap transition-all" style="background-color: #2563eb !important; color: #ffffff !important;" title="قراءة التعليمات كاملة مع خيارات الطباعة والنسخ">
-                  <i class="fa-solid fa-book-open text-xs text-white" style="color: #ffffff !important;"></i>
-                  <span style="color: #ffffff !important; font-weight: 900 !important;">قراءة التعليمات</span>
-                </button>
               ` : `
-                <button type="button" onclick="openSheetModal('${c.id}')" class="bg-blue-600 hover:bg-blue-700 text-white font-black text-xs py-2 px-3 rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-md active:scale-95 cursor-pointer whitespace-nowrap" style="background-color: #2563eb !important; color: #ffffff !important;" title="عرض النموذج">
-                  <i class="fa-regular fa-eye text-xs text-white" style="color: #ffffff !important;"></i>
-                  <span style="color: #ffffff !important; font-weight: 900 !important;">عرض النموذج</span>
-                </button>
-                <button type="button" onclick="downloadFormFile('${c.id}')" class="bg-slate-700 hover:bg-slate-800 text-white font-black text-xs py-2 px-2.5 rounded-xl flex items-center justify-center gap-1 transition-colors shadow-sm active:scale-95 cursor-pointer" style="background-color: #334155 !important; color: #ffffff !important;" title="تنزيل الملف">
-                  <i class="fa-solid fa-download text-xs text-white" style="color: #ffffff !important;"></i>
-                </button>
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-600 font-bold flex items-center gap-2">
+                  <i class="fa-solid fa-circle-info text-blue-500"></i>
+                  <span>مرفق رسمي متوفر للاستعراض والتحميل في بطاقة الخيارات المجاورة.</span>
+                </div>
               `}
             </div>
           </td>
+
+          <!-- 2. بطاقة موحدة تجمع كافة الأعمدة الأخرى والخيارات -->
+          <td class="p-4 align-top w-80 min-w-[280px] max-w-[320px]">
+            <div class="flex flex-col gap-2.5 p-3 rounded-2xl bg-slate-50 border-2 border-slate-200 shadow-sm text-right">
+              <!-- الشعبة والناشر -->
+              <div class="flex flex-col gap-1.5">
+                <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-black bg-blue-100 text-blue-950 border border-blue-300" title="الشعبة المصدرة" style="color: #0f172a !important; background-color: #dbeafe !important;">
+                  <i class="fa-solid fa-building-columns text-[11px] text-blue-700 shrink-0"></i>
+                  <span class="truncate font-black">${escapeHtml(c.department_name || 'عامة')}</span>
+                </div>
+                <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-black bg-indigo-100 text-indigo-950 border border-indigo-300" title="المسؤول الناشر" style="color: #0f172a !important; background-color: #e0e7ff !important;">
+                  <i class="fa-solid fa-user-shield text-[11px] text-indigo-700 shrink-0"></i>
+                  <span class="truncate font-black">${escapeHtml(publisherName)}</span>
+                </div>
+              </div>
+
+              <!-- التصنيف وحالة المرفق -->
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <span class="px-2.5 py-1 rounded-xl text-xs font-black bg-amber-100 text-amber-950 border border-amber-300 shadow-xs" style="color: #451a03 !important; background-color: #fef3c7 !important;">
+                  ${escapeHtml(c.category_name || 'التعليمات')}
+                </span>
+                ${!hasFile ? `
+                  <span class="px-2.5 py-1 rounded-xl text-xs font-black bg-slate-200 text-slate-800 border border-slate-300 flex items-center gap-1 shadow-xs">
+                    <i class="fa-solid fa-align-right text-[10px] text-amber-600"></i> نص تعليمات فقط
+                  </span>
+                ` : `
+                  <span class="px-2.5 py-1 rounded-xl text-xs font-black ${fTileBg} flex items-center gap-1 shadow-xs border">
+                    <i class="fa-solid ${fIcon} text-[10px]"></i> ${fLabel}
+                  </span>
+                `}
+              </div>
+
+              <!-- مصغرة المرفق إن وجد -->
+              ${hasFile ? `
+                <div class="p-2 rounded-xl bg-white border border-slate-200 flex items-center gap-2.5 shadow-xs">
+                  ${isImage && c.file_url ? `
+                    <div onclick="openSheetModal('${c.id}')" class="w-11 h-11 rounded-lg overflow-hidden border border-slate-300 shrink-0 cursor-pointer shadow-xs hover:scale-105 transition-transform bg-slate-100">
+                      <img src="${c.file_url}" alt="${escapeHtml(c.title)}" class="w-full h-full object-cover" />
+                    </div>
+                  ` : `
+                    <div onclick="openSheetModal('${c.id}')" class="w-11 h-11 rounded-lg ${fTileBg} border border-slate-300 flex items-center justify-center shrink-0 cursor-pointer shadow-xs hover:scale-105 transition-transform">
+                      <i class="fa-solid ${fIcon} text-base"></i>
+                    </div>
+                  `}
+                  <div class="min-w-0 flex-1 text-right">
+                    <div onclick="openSheetModal('${c.id}')" class="truncate text-xs font-black text-slate-900 cursor-pointer hover:text-blue-600" title="${escapeHtml(c.file_name || fLabel)}">${escapeHtml(c.file_name || fLabel)}</div>
+                    <div class="text-[10px] text-slate-500 font-bold">${c.file_size ? (String(c.file_size).toUpperCase().includes('B') ? c.file_size : `KB ${c.file_size}`) : fLabel}</div>
+                  </div>
+                </div>
+              ` : ''}
+
+              <!-- تاريخ النشر -->
+              <div class="flex items-center gap-1.5 text-xs font-black text-slate-700 px-1 font-mono" style="color: #334155 !important;">
+                <i class="fa-regular fa-calendar-days text-slate-500 text-xs"></i>
+                <span>تاريخ النشر: ${dateStr}</span>
+              </div>
+
+              <!-- أزرار الخيارات والعمليات -->
+              <div class="pt-2 border-t border-slate-200 flex flex-col gap-1.5">
+                ${!hasFile ? `
+                  <button type="button" onclick="openUnifiedModal('${c.id}')" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black text-xs py-2 px-3 rounded-xl flex items-center justify-center gap-1.5 shadow-md active:scale-95 cursor-pointer transition-all" style="background-color: #2563eb !important; color: #ffffff !important;">
+                    <i class="fa-solid fa-book-open text-xs text-white" style="color: #ffffff !important;"></i>
+                    <span style="color: #ffffff !important; font-weight: 900 !important;">قراءة وطباعة التعليمات</span>
+                  </button>
+                ` : `
+                  <div class="flex items-center gap-1.5">
+                    <button type="button" onclick="openSheetModal('${c.id}')" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-black text-xs py-2 px-2.5 rounded-xl flex items-center justify-center gap-1 shadow-md active:scale-95 cursor-pointer transition-all" style="background-color: #2563eb !important; color: #ffffff !important;">
+                      <i class="fa-solid fa-eye text-xs text-white" style="color: #ffffff !important;"></i>
+                      <span style="color: #ffffff !important; font-weight: 900 !important;">عرض النموذج</span>
+                    </button>
+                    <a href="${c.file_url}" download="${escapeHtml(c.file_name || 'form')}" target="_blank" class="px-3 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-900 border border-slate-300 font-black text-xs flex items-center justify-center gap-1 transition-all shadow-sm" style="color: #0f172a !important;" title="تنزيل الملف المرفق">
+                      <i class="fa-solid fa-download text-amber-700"></i>
+                      <span>تنزيل</span>
+                    </a>
+                  </div>
+                  ${hasBodyText ? `
+                    <button type="button" onclick="openUnifiedModal('${c.id}')" class="w-full bg-slate-100 hover:bg-blue-50 text-blue-900 border border-blue-200 font-black text-xs py-1.5 px-2.5 rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer">
+                      <i class="fa-solid fa-book-open text-xs text-blue-700"></i>
+                      <span>قراءة التعليمات والطباعة</span>
+                    </button>
+                  ` : ''}
+                `}
+              </div>
+            </div>
+          </td>
         </tr>
-      `;
+        `;
       }).join('');
     }
 
@@ -2777,18 +2714,7 @@
                       <div id="cardDesc_${f.id}" class="card-desc text-xs font-bold leading-relaxed line-clamp-4 transition-all select-text">
                         ${formatBodyTextWithClickableLinks(f.body_text || f.title || '')}
                       </div>
-                      ${(hasBodyText && f.body_text.trim().length > 90) ? `
-                        <div class="mt-2 pt-2 border-t border-slate-700/50 flex items-center justify-between">
-                          <button type="button" onclick="toggleCardText('${f.id}', event)" class="text-blue-400 hover:text-blue-300 font-black text-xs inline-flex items-center gap-1.5 select-none cursor-pointer py-0.5">
-                            <span id="cardToggleText_${f.id}">... قراءة المزيد</span>
-                            <i id="cardToggleIcon_${f.id}" class="fa-solid fa-chevron-down text-[10px]"></i>
-                          </button>
-                          <button type="button" onclick="openUnifiedModal('${f.id}'); event.stopPropagation();" class="text-amber-300 hover:text-amber-200 font-bold text-xs inline-flex items-center gap-1.5 select-none cursor-pointer py-0.5" title="قراءة وطباعة التعليمات كاملة">
-                            <i class="fa-solid fa-book-open text-xs"></i>
-                            <span>قراءة كاملة</span>
-                          </button>
-                        </div>
-                      ` : ''}
+                      
                     </div>
                   </div>
 
@@ -2880,11 +2806,11 @@
       const dateStr = item.created_at ? new Date(item.created_at).toLocaleDateString('ar-IQ', { year: 'numeric', month: 'long', day: 'numeric' }) : '';
       const metaContainer = document.getElementById('unifiedModalMetaPills');
       metaContainer.innerHTML = `
-        <span class="px-3 py-1 rounded-xl bg-blue-100 text-blue-900 border border-blue-200 text-xs font-black flex items-center gap-1" style="color: #1e3a8a !important; background-color: #dbeafe !important;">
-          <i class="fa-solid fa-building-columns text-xs"></i>
+        <span class="px-2.5 py-0.5 rounded-lg bg-amber-500/20 text-amber-400 border border-amber-500/30 text-[11px] font-black flex items-center gap-1">
+          <i class="fa-solid fa-building-columns text-[10px]"></i>
           <span>${escapeHtml(item.department_name || 'الشعبة العامة')}</span>
         </span>
-        <span class="px-3 py-1 rounded-xl bg-amber-100 text-amber-900 border border-amber-300 text-xs font-black" style="color: #78350f !important; background-color: #fef3c7 !important;">
+        <span class="px-2.5 py-0.5 rounded-lg bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-[11px] font-bold">
           ${escapeHtml(item.category_name || 'عام')}
         </span>
         <span class="text-slate-400 text-[11px] font-bold">
@@ -2900,10 +2826,9 @@
       if (item.body_text && item.body_text.trim()) {
         textSection.classList.remove('hidden');
         bodyTextEl.className = "p-4 rounded-2xl border text-xs sm:text-sm leading-relaxed font-sans whitespace-pre-wrap select-text shadow-inner";
-        bodyTextEl.style.backgroundColor = '#f8fafc';
-        bodyTextEl.style.color = '#0f172a';
-        bodyTextEl.style.borderColor = '#cbd5e1';
-        bodyTextEl.style.fontWeight = '700';
+        bodyTextEl.style.backgroundColor = isLight ? '#f8fafc' : '#1e293b';
+        bodyTextEl.style.color = isLight ? '#0f172a' : '#f8fafc';
+        bodyTextEl.style.borderColor = isLight ? '#cbd5e1' : '#334155';
         bodyTextEl.innerHTML = formatBodyTextWithClickableLinks(item.body_text.trim());
         const fileSec = document.getElementById('unifiedFileSection');
         const hasActualFile = Boolean(item.file_url && item.file_url.trim() && item.file_type !== 'text_only');
@@ -3210,7 +3135,6 @@
 
       const { deptName, officerName } = getOfficerAndDeptName(item);
       const hasBodyText = Boolean(item.body_text && item.body_text.trim());
-      const hasFile = Boolean(item.file_url);
 
       // التنبيه بعدم وجود نص وإلغاء أمر الطباعة في حال خلو المنشور من المحتوى النصي
       if (!hasBodyText) {
@@ -3218,18 +3142,61 @@
         showToast('تعذر إجراء الطباعة: لا يوجد محتوى نصي أو توجيهات مكتوبة لهذا المنشور.', 'warning', 'تنبيه عدم وجود نص');
         return;
       }
-      // طباعة مقتصرة تماماً على: الشعبة + المسؤول + التوجيهات والنص المكتوب فقط لا غير
+
+      const pubDateStr = item.created_at ? new Date(item.created_at).toLocaleDateString('ar-IQ', { year: 'numeric', month: '2-digit', day: '2-digit' }) : 'غير محدد';
+      const printDateStr = new Date().toLocaleDateString('ar-IQ', { year: 'numeric', month: '2-digit', day: '2-digit' });
+
       printDiv.innerHTML = `
-        <div style="font-family: 'Cairo', sans-serif; direction: rtl; text-align: right; color: #000000; padding: 12px 16px; background: #ffffff;">
-          <!-- شريط الشعبة والمسؤول فقط لا غير -->
-          <div style="border-bottom: 2px solid #000000; padding-bottom: 8px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; font-size: 14px;">
-            <div><span style="font-weight: 700; color: #334155;">الشعبة: </span><strong style="font-weight: 900; color: #000000; font-size: 15px;">${escapeHtml(deptName)}</strong></div>
-            <div><span style="font-weight: 700; color: #334155;">المسؤول: </span><strong style="font-weight: 900; color: #000000; font-size: 15px;">${escapeHtml(officerName)}</strong></div>
+        <div style="font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif; direction: rtl; text-align: right; color: #000000; padding: 24px; background: #ffffff;">
+          <!-- ترويسة رسمية للمفوضية ومكتب انتخابات البصرة -->
+          <div style="border-bottom: 2px solid #0f172a; padding-bottom: 12px; margin-bottom: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+              <div>
+                <h2 style="font-size: 16px; font-weight: 900; margin: 0 0 4px 0; color: #0f172a;">المفوضية العليا المستقلة للانتخابات</h2>
+                <h3 style="font-size: 13px; font-weight: 700; margin: 0; color: #475569;">مكتب انتخابات محافظة البصرة - البوابة الإلكترونية للمراكز</h3>
+              </div>
+              <div style="text-align: left; font-size: 12px; color: #475569; font-family: monospace;">
+                <div><strong>تاريخ الطباعة:</strong> ${printDateStr}</div>
+              </div>
+            </div>
+
+            <!-- عنوان المنشور الرئيسي -->
+            <div style="background: #f8fafc; border-right: 5px solid #2563eb; border: 1px solid #cbd5e1; border-right-width: 5px; padding: 10px 14px; border-radius: 6px; margin: 12px 0;">
+              <h1 style="font-size: 16px; font-weight: 900; margin: 0; color: #0f172a;">${escapeHtml(item.title || 'تعليمات وتوجيهات رسمية')}</h1>
+            </div>
+
+            <!-- شريط بيانات المنشور المطلوبة: تاريخ المنشور + اسم المجموعة / الشعبة + اسم الناشر -->
+            <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 14px; padding: 10px 14px; background: #f1f5f9; border-radius: 8px; font-size: 13px; border: 1px solid #e2e8f0;">
+              <div>
+                <span style="font-weight: 700; color: #475569;">المجموعة / الشعبة المصدرة: </span>
+                <strong style="font-weight: 900; color: #0f172a; font-size: 14px;">${escapeHtml(deptName)}</strong>
+              </div>
+              <div>
+                <span style="font-weight: 700; color: #475569;">اسم الناشر المسؤول: </span>
+                <strong style="font-weight: 900; color: #0f172a; font-size: 14px;">${escapeHtml(officerName)}</strong>
+              </div>
+              <div>
+                <span style="font-weight: 700; color: #475569;">تاريخ المنشور: </span>
+                <strong style="font-weight: 900; color: #0f172a; font-size: 14px; font-family: monospace;">${pubDateStr}</strong>
+              </div>
+              ${item.category_name ? `
+              <div>
+                <span style="font-weight: 700; color: #475569;">التصنيف: </span>
+                <strong style="font-weight: 900; color: #0f172a; font-size: 13px;">${escapeHtml(item.category_name)}</strong>
+              </div>
+              ` : ''}
+            </div>
           </div>
 
-          <!-- التوجيهات والمحتوى النصي فقط -->
-          <div style="border: 1px solid #94a3b8; border-radius: 6px; padding: 14px 18px; margin-bottom: 14px; font-size: 13.5px; line-height: 1.9; color: #000000; white-space: pre-wrap; background: #fafafa;">
+          <!-- نص التعليمات والشرح والتوجيهات الكامل -->
+          <div style="border: 1px solid #cbd5e1; border-radius: 8px; padding: 20px 24px; font-size: 14px; line-height: 2.1; color: #0f172a; white-space: pre-wrap; background: #ffffff; min-height: 240px;">
             ${escapeHtml(item.body_text)}
+          </div>
+
+          <!-- تذييل وثيقة إلكترونية -->
+          <div style="margin-top: 24px; display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: #64748b; border-top: 1px solid #e2e8f0; padding-top: 10px;">
+            <span>تمت الطباعة مباشرة من منظومة استمارات وتوجيهات مكتب انتخابات البصرة V2</span>
+            <span>وثيقة إلكترونية رسمية معتمدة</span>
           </div>
         </div>
       `;
@@ -5027,98 +4994,7 @@
                 margin: 0 !important;
               }
             }
-          
-    /* ========================================================================== */
-    /* MASTER HIGH-CONTRAST PALETTE (100% Crisp, Light BG with Pure Opposite Text)*/
-    /* ========================================================================== */
-    body {
-      background-color: #f1f5f9 !important;
-      color: #0f172a !important;
-    }
-
-    /* Modal Cards: Always Clean White with Dark Text & Solid Borders */
-    #loginModal > div,
-    #contentModal > div,
-    #deptModal > div,
-    #unifiedPreviewModal > div,
-    #userModal > div,
-    #confirmModal > div,
-    #resetPassModal > div,
-    #changePasswordModal > div {
-      background-color: #ffffff !important;
-      border: 2px solid #cbd5e1 !important;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
-      color: #0f172a !important;
-    }
-
-    /* Modal Headers */
-    #unifiedPreviewModal .bg-slate-800\/90,
-    #unifiedPreviewModal .bg-slate-800,
-    #contentModal .bg-slate-800,
-    #deptModal .bg-slate-800,
-    #userModal .bg-slate-800 {
-      background-color: #f8fafc !important;
-      border-bottom: 2px solid #e2e8f0 !important;
-    }
-
-    /* Form Inputs */
-    input[type="text"], input[type="password"], input[type="search"], select, textarea {
-      background-color: #ffffff !important;
-      color: #0f172a !important;
-      border-color: #cbd5e1 !important;
-    }
-    input::placeholder, textarea::placeholder {
-      color: #94a3b8 !important;
-    }
-
-    /* Solid Color Buttons: ALWAYS 100% Pure White Text */
-    button.bg-blue-600, button.bg-blue-700, a.bg-blue-600, a.bg-blue-700,
-    button.bg-indigo-600, button.bg-indigo-700, a.bg-indigo-600,
-    button.bg-emerald-600, button.bg-emerald-700, a.bg-emerald-600,
-    button.bg-amber-600, button.bg-amber-700, a.bg-amber-600,
-    button.bg-rose-600, button.bg-rose-700, a.bg-rose-600,
-    #loginSubmitBtn, #btnCopyBodyText, #btnPrintFullReport, #btnPrintDocumentOnly {
-      color: #ffffff !important;
-    }
-    button.bg-blue-600 *, button.bg-blue-700 *, a.bg-blue-600 *, a.bg-blue-700 *,
-    button.bg-indigo-600 *, button.bg-indigo-700 *, a.bg-indigo-600 *,
-    button.bg-emerald-600 *, button.bg-emerald-700 *, a.bg-emerald-600 *,
-    button.bg-amber-600 *, button.bg-amber-700 *, a.bg-amber-600 *,
-    button.bg-rose-600 *, button.bg-rose-700 *, a.bg-rose-600 *,
-    #loginSubmitBtn *, #btnCopyBodyText *, #btnPrintFullReport *, #btnPrintDocumentOnly * {
-      color: #ffffff !important;
-    }
-
-    /* Cards & Containers */
-    .card-item, .content-card, #adminContentsTableContainer, #contentTableWrapper {
-      background-color: #ffffff !important;
-      border: 2px solid #e2e8f0 !important;
-      color: #0f172a !important;
-    }
-
-    /* Table High Contrast */
-    table thead tr th {
-      background-color: #f1f5f9 !important;
-      color: #0f172a !important;
-      border-bottom: 2px solid #cbd5e1 !important;
-      font-weight: 900 !important;
-    }
-    table tbody tr {
-      background-color: #ffffff !important;
-      border-bottom: 1px solid #e2e8f0 !important;
-    }
-    table tbody tr:hover {
-      background-color: #f8fafc !important;
-    }
-
-    /* Instruction Text Boxes */
-    .instruction-box-table, .instruction-box-card {
-      background-color: #f8fafc !important;
-      border: 1.5px solid #cbd5e1 !important;
-      color: #0f172a !important;
-    }
-
-  </style>
+          </style>
 </head>
         <body id="printBody">
         </body>
