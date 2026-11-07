@@ -2755,7 +2755,6 @@
           ? (f.file_size ? (String(f.file_size).toUpperCase().includes('B') ? f.file_size : `KB ${f.file_size}`) : '')
           : '';
 
-        // Media Thumbnail Banner
         let mediaBannerHtml = '';
         if (hasFile && isImage && f.file_url) {
           mediaBannerHtml = `
@@ -2785,21 +2784,42 @@
         let actionButtonsHtml = '';
         if (!hasFile) {
           actionButtonsHtml = `
-            <button type="button" onclick="openUnifiedModal('${f.id}')" class="flex-1 w-full bg-gradient-to-r from-blue-700 to-indigo-600 hover:from-blue-600 hover:to-indigo-500 text-white font-black text-sm py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md active:scale-95 cursor-pointer">
+            <button type="button" onclick="openUnifiedModal('${f.id}')" class="w-full bg-gradient-to-r from-blue-700 to-indigo-600 hover:from-blue-600 hover:to-indigo-500 text-white font-black text-sm py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md active:scale-95 cursor-pointer" title="قراءة وطباعة التعليمات كاملة">
               <i class="fa-solid fa-book-open text-base text-amber-300"></i>
               <span>قراءة وطباعة التعليمات كاملة</span>
             </button>
           `;
+        } else if (hasBodyText) {
+          actionButtonsHtml = `
+            <div class="w-full flex flex-col gap-2">
+              <button type="button" onclick="openUnifiedModal('${f.id}')" class="w-full bg-gradient-to-r from-blue-700 to-indigo-600 hover:from-blue-600 hover:to-indigo-500 text-white font-black text-xs sm:text-sm py-2.5 px-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md active:scale-95 cursor-pointer" title="قراءة وطباعة التوجيهات والتعليمات كاملة">
+                <i class="fa-solid fa-book-open text-amber-300 text-sm"></i>
+                <span>قراءة وطباعة التعليمات</span>
+              </button>
+              <div class="flex items-center gap-2 w-full">
+                <button type="button" onclick="openSheetModal('${f.id}')" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-black text-xs py-2 px-2.5 rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-md active:scale-95 cursor-pointer" title="معاينة وعرض النموذج">
+                  <i class="fa-regular fa-eye text-white text-xs"></i>
+                  <span>عرض النموذج</span>
+                </button>
+                <button type="button" onclick="downloadFormFile('${f.id}')" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-100 font-black text-xs py-2 px-2.5 rounded-xl flex items-center justify-center gap-1.5 transition-colors border border-slate-700 shadow-sm active:scale-95 cursor-pointer" title="تنزيل الملف المرفق">
+                  <i class="fa-solid fa-download text-amber-400 text-xs"></i>
+                  <span>تنزيل الملف</span>
+                </button>
+              </div>
+            </div>
+          `;
         } else {
           actionButtonsHtml = `
-            <button type="button" onclick="openSheetModal('${f.id}')" class="flex-1 w-1/2 bg-blue-600 hover:bg-blue-500 text-white font-black text-sm py-3 px-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md active:scale-95 cursor-pointer" title="عرض النموذج">
-              <i class="fa-regular fa-eye text-base text-white"></i>
-              <span class="text-white font-black">عرض النموذج</span>
-            </button>
-            <button type="button" onclick="downloadFormFile('${f.id}')" class="flex-1 w-1/2 bg-slate-800 hover:bg-slate-700 text-slate-100 font-black text-sm py-3 px-3 rounded-xl flex items-center justify-center gap-2 transition-colors border border-slate-700 shadow-sm active:scale-95 cursor-pointer" title="تنزيل الملف">
-              <i class="fa-solid fa-download text-amber-400 text-sm"></i>
-              <span>تنزيل الملف</span>
-            </button>
+            <div class="flex items-center gap-2 w-full">
+              <button type="button" onclick="openSheetModal('${f.id}')" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-black text-sm py-3 px-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md active:scale-95 cursor-pointer" title="عرض النموذج">
+                <i class="fa-regular fa-eye text-base text-white"></i>
+                <span class="text-white font-black">عرض النموذج</span>
+              </button>
+              <button type="button" onclick="downloadFormFile('${f.id}')" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-100 font-black text-sm py-3 px-3 rounded-xl flex items-center justify-center gap-2 transition-colors border border-slate-700 shadow-sm active:scale-95 cursor-pointer" title="تنزيل الملف">
+                <i class="fa-solid fa-download text-amber-400 text-sm"></i>
+                <span>تنزيل الملف</span>
+              </button>
+            </div>
           `;
         }
 
@@ -2821,11 +2841,10 @@
                   </h3>
 
                   <div class="mt-2.5">
-                    <div class="instruction-box-card p-3.5 rounded-xl border leading-relaxed shadow-sm">
-                      <div id="cardDesc_${f.id}" class="card-desc text-xs font-bold leading-relaxed line-clamp-4 transition-all select-text">
+                    <div onclick="openUnifiedModal('${f.id}')" class="instruction-box-card p-3.5 rounded-xl border leading-relaxed shadow-sm cursor-pointer hover:border-blue-500 transition-all select-text" title="اضغط لقراءة وطباعة التعليمات كاملة">
+                      <div id="cardDesc_${f.id}" class="card-desc text-xs font-bold leading-relaxed line-clamp-4 transition-all">
                         ${formatBodyTextWithClickableLinks(f.body_text || f.title || '')}
                       </div>
-                      
                     </div>
                   </div>
 
@@ -2843,7 +2862,7 @@
               </div>
             </div>
 
-            <div class="pt-4 mt-3 border-t border-slate-800 flex items-center gap-2">
+            <div class="pt-4 mt-3 border-t border-slate-800 w-full">
               ${actionButtonsHtml}
             </div>
           </div>

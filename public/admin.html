@@ -7528,7 +7528,6 @@
           ? (c.file_size ? (String(c.file_size).toUpperCase().includes('B') ? c.file_size : `KB ${c.file_size}`) : '')
           : '';
 
-        // Card Thumbnail / Media Banner HTML (صورة مصغرة للمرفق)
         let mediaBannerHtml = '';
         if (hasFile && isImage && c.file_url) {
           mediaBannerHtml = `
@@ -7555,25 +7554,45 @@
           `;
         }
 
-        // Action Buttons: large prominent primary button
         let actionButtonsHtml = '';
         if (!hasFile) {
           actionButtonsHtml = `
-            <button type="button" onclick="openUnifiedModal('${c.id}')" class="flex-1 w-full bg-gradient-to-r from-blue-700 to-indigo-600 hover:from-blue-600 hover:to-indigo-500 text-white font-black text-sm py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md active:scale-95 cursor-pointer">
+            <button type="button" onclick="openUnifiedModal('${c.id}')" class="w-full bg-gradient-to-r from-blue-700 to-indigo-600 hover:from-blue-600 hover:to-indigo-500 text-white font-black text-sm py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md active:scale-95 cursor-pointer" title="قراءة وطباعة التعليمات كاملة">
               <i class="fa-solid fa-book-open text-base text-amber-300"></i>
               <span>قراءة وطباعة التعليمات كاملة</span>
             </button>
           `;
+        } else if (hasBodyText) {
+          actionButtonsHtml = `
+            <div class="w-full flex flex-col gap-2">
+              <button type="button" onclick="openUnifiedModal('${c.id}')" class="w-full bg-gradient-to-r from-blue-700 to-indigo-600 hover:from-blue-600 hover:to-indigo-500 text-white font-black text-xs sm:text-sm py-2.5 px-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md active:scale-95 cursor-pointer" title="قراءة وطباعة التوجيهات والتعليمات كاملة">
+                <i class="fa-solid fa-book-open text-amber-300 text-sm"></i>
+                <span>قراءة وطباعة التعليمات</span>
+              </button>
+              <div class="flex items-center gap-2 w-full">
+                <button type="button" onclick="openSheetModal('${c.id}')" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-black text-xs py-2 px-2.5 rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-md active:scale-95 cursor-pointer" title="معاينة وعرض النموذج">
+                  <i class="fa-regular fa-eye text-white text-xs"></i>
+                  <span>عرض النموذج</span>
+                </button>
+                <button type="button" onclick="downloadFormFile('${c.id}')" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-100 font-black text-xs py-2 px-2.5 rounded-xl flex items-center justify-center gap-1.5 transition-colors border border-slate-700 shadow-sm active:scale-95 cursor-pointer" title="تنزيل الملف المرفق">
+                  <i class="fa-solid fa-download text-amber-400 text-xs"></i>
+                  <span>تنزيل الملف</span>
+                </button>
+              </div>
+            </div>
+          `;
         } else {
           actionButtonsHtml = `
-            <button type="button" onclick="openSheetModal('${c.id}')" class="flex-1 w-1/2 bg-blue-600 hover:bg-blue-500 text-white font-black text-sm py-3 px-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md active:scale-95 cursor-pointer" title="عرض النموذج">
-              <i class="fa-regular fa-eye text-base text-white"></i>
-              <span class="text-white font-black">عرض النموذج</span>
-            </button>
-            <button type="button" onclick="downloadFormFile('${c.id}')" class="flex-1 w-1/2 bg-slate-800 hover:bg-slate-700 text-slate-100 font-black text-sm py-3 px-3 rounded-xl flex items-center justify-center gap-2 transition-colors border border-slate-700 shadow-sm active:scale-95 cursor-pointer" title="تنزيل الملف">
-              <i class="fa-solid fa-download text-amber-400 text-sm"></i>
-              <span>تنزيل الملف</span>
-            </button>
+            <div class="flex items-center gap-2 w-full">
+              <button type="button" onclick="openSheetModal('${c.id}')" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-black text-sm py-3 px-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md active:scale-95 cursor-pointer" title="عرض النموذج">
+                <i class="fa-regular fa-eye text-base text-white"></i>
+                <span class="text-white font-black">عرض النموذج</span>
+              </button>
+              <button type="button" onclick="downloadFormFile('${c.id}')" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-100 font-black text-sm py-3 px-3 rounded-xl flex items-center justify-center gap-2 transition-colors border border-slate-700 shadow-sm active:scale-95 cursor-pointer" title="تنزيل الملف">
+                <i class="fa-solid fa-download text-amber-400 text-sm"></i>
+                <span>تنزيل الملف</span>
+              </button>
+            </div>
           `;
         }
 
@@ -7582,7 +7601,6 @@
         return `
           <div class="content-card ${c.is_hidden ? 'card-hidden-content' : ''} bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg flex flex-col justify-between transition-all hover:border-slate-700">
             <div>
-              <!-- Top Badges Row -->
               <div class="flex items-center justify-between gap-2 mb-3">
                 <div class="flex items-center gap-1.5 flex-wrap">
                   ${typeBadge}
@@ -7594,25 +7612,20 @@
                 ${fileSizeFormatted ? `<span class="text-[11px] font-mono font-bold text-slate-400 select-none">${fileSizeFormatted}</span>` : ''}
               </div>
 
-              <!-- Media Thumbnail Banner if present -->
               ${mediaBannerHtml}
 
-              <!-- Title -->
               <h3 class="card-title text-base font-black text-slate-100 leading-snug cursor-pointer hover:text-blue-400 transition-colors" onclick="openUnifiedModal('${c.id}')" title="${escapeHtml(c.title || c.file_name || 'بدون عنوان')}">
                 ${escapeHtml(c.title || c.file_name || 'بدون عنوان')}
               </h3>
 
-              <!-- Instructions / Description: Larger Dedicated Box -->
               <div class="mt-2.5">
-                <div class="instruction-box-card p-3.5 rounded-xl border leading-relaxed shadow-sm">
-                  <div id="cardDesc_${c.id}" class="card-desc text-xs font-bold leading-relaxed line-clamp-4 transition-all select-text">
+                <div onclick="openUnifiedModal('${c.id}')" class="instruction-box-card p-3.5 rounded-xl border leading-relaxed shadow-sm cursor-pointer hover:border-blue-500 transition-all select-text" title="اضغط لقراءة وطباعة التعليمات كاملة">
+                  <div id="cardDesc_${c.id}" class="card-desc text-xs font-bold leading-relaxed line-clamp-4 transition-all">
                     ${formatBodyTextWithClickableLinks(c.body_text || c.title || '')}
                   </div>
-                  
                 </div>
               </div>
 
-              <!-- Meta Details: Department & Publisher -->
               <div class="mt-3 flex items-center justify-between text-xs font-bold gap-2 flex-wrap">
                 <div class="card-dept flex items-center gap-1.5 text-amber-400 font-black">
                   <i class="fa-solid fa-building-columns text-[11px]"></i>
@@ -7626,12 +7639,10 @@
             </div>
 
             <div>
-              <!-- Action Buttons Container (مساحة التعليمات واضحة وأكبر من أزرار التحكم) -->
-              <div class="pt-4 mt-3 border-t border-slate-800 flex items-center gap-2">
+              <div class="pt-4 mt-3 border-t border-slate-800 w-full">
                 ${actionButtonsHtml}
               </div>
 
-              <!-- Admin Quick Control Strip (تعديل / إخفاء / حذف) -->
               ${canManage ? `
                 <div class="mt-2.5 pt-2 border-t border-slate-800 flex items-center justify-between text-xs gap-2">
                   <button type="button" onclick="editContent('${c.id}')" class="admin-btn-edit flex-1 py-1.5 px-2 rounded-xl bg-blue-500/15 hover:bg-blue-500/25 text-blue-300 font-black border border-blue-500/30 flex items-center justify-center gap-1.5 transition-all">
@@ -7657,6 +7668,8 @@
           </div>
         `;
       }).join('');
+
+      setTimeout(syncAllContrasts, 30);
     }
 
 
