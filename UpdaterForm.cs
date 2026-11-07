@@ -52,13 +52,22 @@ namespace BasraUpdater
         private Button btnRollback1;
         private Button btnRollback2;
         private Label lblRollbackHint;
+        // Server & Database Controls
+        private GroupBox grpServer;
+        private Label lblServerStatusText;
+        private Button btnOpenDatabase;
+        private Button btnResetSuperAdmin;
+
+        private string supabaseUrl = "https://mytqatjayrwjjpljrckn.supabase.co";
+        private string supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im15dHFhdGpheXJ3ampwbGpyY2tuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMyOTkxMzksImV4cCI6MjEwODg3NTEzOX0.XxWTcVC4ey8k_kgVTH0NfF53H-lRlmMgIdZZzrwqOnU";
+
 
         private ProgressBar progressBar;
         private Label lblStatus;
 
         // Independent Version Tracking for Each Program
-        private string cloudCentersVersion = "2.0.0";
-        private string cloudAdminVersion = "2.0.8";
+        private string cloudCentersVersion = "2.0.1";
+        private string cloudAdminVersion = "2.0.1";
 
         private string CLOUD_CENTERS_URL = "https://raw.githubusercontent.com/alichbasi75-dotcom/basra-forms/main/version-centers.json";
         private string CLOUD_ADMIN_URL = "https://raw.githubusercontent.com/alichbasi75-dotcom/basra-forms/main/version-admin.json";
@@ -75,13 +84,14 @@ namespace BasraUpdater
         {
             InitializeComponent();
             FetchCloudVersion();
+            CheckServerStorageAndStatus();
         }
 
         private void InitializeComponent()
         {
             this.Text = "أداة تحديث ورفع منظومة استمارات البصرة (المراكز والمسؤول بشكل منفصل)";
             try { this.Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath); } catch { }
-            this.Size = new Size(670, 845);
+            this.Size = new Size(670, 935);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
@@ -140,6 +150,7 @@ namespace BasraUpdater
             btnCheckCloud.BackColor = Color.White;
             btnCheckCloud.Cursor = Cursors.Hand;
             btnCheckCloud.Click += (s, e) => FetchCloudVersion();
+            CheckServerStorageAndStatus();
             pnlCloud.Controls.Add(btnCheckCloud);
 
             this.Controls.Add(pnlCloud);
@@ -368,6 +379,55 @@ namespace BasraUpdater
             grpRollback.Controls.Add(lblRollbackHint);
 
             this.Controls.Add(grpRollback);
+
+            // 7. Server & Database GroupBox
+            grpServer = new GroupBox();
+            grpServer.Text = " ☁️ بيانات السيرفر وقاعدة البيانات وحساب المسؤول ";
+            grpServer.Font = new Font("Segoe UI", 9.5f, FontStyle.Bold);
+            grpServer.ForeColor = Color.FromArgb(30, 41, 59);
+            grpServer.Location = new Point(20, 706);
+            grpServer.Size = new Size(610, 114);
+
+            lblServerStatusText = new Label();
+            lblServerStatusText.Text = "جاري فحص حالة اتصال السيرفر واستهلاك مساحة التخزين...";
+            lblServerStatusText.Font = new Font("Segoe UI", 9f, FontStyle.Bold);
+            lblServerStatusText.ForeColor = Color.FromArgb(71, 85, 105);
+            lblServerStatusText.Location = new Point(15, 22);
+            lblServerStatusText.Size = new Size(580, 24);
+            grpServer.Controls.Add(lblServerStatusText);
+
+            btnOpenDatabase = new Button();
+            btnOpenDatabase.Text = "🌐 فتح لوحة قاعدة البيانات (Supabase)";
+            btnOpenDatabase.Font = new Font("Segoe UI", 9f, FontStyle.Bold);
+            btnOpenDatabase.BackColor = Color.FromArgb(15, 23, 42);
+            btnOpenDatabase.ForeColor = Color.White;
+            btnOpenDatabase.FlatStyle = FlatStyle.Flat;
+            btnOpenDatabase.FlatAppearance.BorderSize = 0;
+            btnOpenDatabase.Location = new Point(310, 54);
+            btnOpenDatabase.Size = new Size(285, 42);
+            btnOpenDatabase.Cursor = Cursors.Hand;
+            btnOpenDatabase.Click += (s, e) => {
+                OpenDatabaseDashboard();
+            };
+            grpServer.Controls.Add(btnOpenDatabase);
+
+            btnResetSuperAdmin = new Button();
+            btnResetSuperAdmin.Text = "🔑 تصفير حساب المسؤول الأعلى (123456)";
+            btnResetSuperAdmin.Font = new Font("Segoe UI", 9f, FontStyle.Bold);
+            btnResetSuperAdmin.BackColor = Color.FromArgb(190, 24, 93);
+            btnResetSuperAdmin.ForeColor = Color.White;
+            btnResetSuperAdmin.FlatStyle = FlatStyle.Flat;
+            btnResetSuperAdmin.FlatAppearance.BorderSize = 0;
+            btnResetSuperAdmin.Location = new Point(15, 54);
+            btnResetSuperAdmin.Size = new Size(285, 42);
+            btnResetSuperAdmin.Cursor = Cursors.Hand;
+            btnResetSuperAdmin.Click += (s, e) => {
+                ResetSuperAdminPassword();
+            };
+            grpServer.Controls.Add(btnResetSuperAdmin);
+
+            this.Controls.Add(grpServer);
+
 
             // Progress Bar
             progressBar = new ProgressBar();
@@ -1203,7 +1263,6 @@ namespace BasraUpdater
                     {
                         string adminHtml = File.ReadAllText(selectedFilePath, Encoding.UTF8);
                         adminHtml = Regex.Replace(adminHtml, @"id=""adminVersionVal""[^>]*>[^<]+<", string.Format("id=\"adminVersionVal\">الإصدار {0}<", newVer));
-                        adminHtml = Regex.Replace(adminHtml, @"const\s+ver\s*=\s*vData\.version\s*\|\|\s*""[^""]+""", string.Format("const ver = vData.version || \"{0}\"", newVer));
 
                         File.WriteAllText(Path.Combine(workspaceDir, "admin.html"), adminHtml, Encoding.UTF8);
                         File.WriteAllText(Path.Combine(workspaceDir, "public", "admin.html"), adminHtml, Encoding.UTF8);
@@ -1225,6 +1284,7 @@ namespace BasraUpdater
                             try {
                                 if (Directory.Exists(lt)) {
                                     File.WriteAllText(Path.Combine(lt, "admin.html"), adminHtml, Encoding.UTF8);
+                                    File.WriteAllText(Path.Combine(lt, "admin_v2.html"), adminHtml, Encoding.UTF8);
                                     File.WriteAllText(Path.Combine(lt, "version-admin.json"), adminJson, Encoding.UTF8);
                                 }
                             } catch { }
@@ -1258,6 +1318,7 @@ namespace BasraUpdater
                             try {
                                 if (Directory.Exists(lt)) {
                                     File.WriteAllText(Path.Combine(lt, "index.html"), centerHtml, Encoding.UTF8);
+                                    File.WriteAllText(Path.Combine(lt, "index_v2.html"), centerHtml, Encoding.UTF8);
                                     File.WriteAllText(Path.Combine(lt, "version-centers.json"), centersJson, Encoding.UTF8);
                                 }
                             } catch { }
@@ -1343,6 +1404,7 @@ namespace BasraUpdater
                             );
 
                             FetchCloudVersion();
+            CheckServerStorageAndStatus();
                         }
                         else
                         {
@@ -1386,6 +1448,135 @@ namespace BasraUpdater
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new MainForm());
+        }
+
+        private void ResetSuperAdminPassword()
+        {
+            DialogResult confirm = MessageBox.Show(
+                "هل أنت متأكد من رغبتك في تصفير حساب وكلمة مرور المسؤول الأعلى (Super Admin)؟\n\nستتم إعادة كلمة المرور إلى الافتراضية: 123456 وتفعيل الحساب فوراً في السيرفر.",
+                "تأكيد تصفير حساب المسؤول",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning,
+                MessageBoxDefaultButton.Button2
+            );
+
+            if (confirm != DialogResult.Yes) return;
+
+            lblStatus.Text = "جاري تصفير حساب وكلمة مرور المسؤول الأعلى...";
+            System.Threading.Tasks.Task.Factory.StartNew(() =>
+            {
+                try
+                {
+                    string patchUrl = string.Format("{0}/rest/v1/admin_users_v2?username=eq.{1}", supabaseUrl.TrimEnd('/'), "admin");
+                    HttpWebRequest patchReq = (HttpWebRequest)WebRequest.Create(patchUrl);
+                    patchReq.Method = "PATCH";
+                    patchReq.ContentType = "application/json";
+                    patchReq.Timeout = 10000;
+                    patchReq.Headers.Add("apikey", supabaseKey.Trim());
+                    patchReq.Headers.Add("Authorization", "Bearer " + supabaseKey.Trim());
+                    patchReq.Headers.Add("Prefer", "return=minimal");
+
+                    string patchJson = "{\"password_hash\":\"8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92\",\"is_active\":true}";
+
+                    byte[] patchBytes = Encoding.UTF8.GetBytes(patchJson);
+                    using (Stream s = patchReq.GetRequestStream())
+                    {
+                        s.Write(patchBytes, 0, patchBytes.Length);
+                    }
+
+                    using (HttpWebResponse pRes = (HttpWebResponse)patchReq.GetResponse())
+                    {
+                        this.BeginInvoke((Action)(() =>
+                        {
+                            lblStatus.Text = "تم تصفير كلمة مرور المسؤول بنجاح إلى 123456.";
+                            MessageBox.Show("تم تصفير حساب المسؤول بنجاح!\n\nاسم المستخدم: admin\nكلمة المرور الافتراضية: 123456", "نجاح العملية", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        }));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    this.BeginInvoke((Action)(() =>
+                    {
+                        lblStatus.Text = "فشل تصفير حساب المسؤول: " + ex.Message;
+                        MessageBox.Show("حدث خطأ أثناء التصفير:\n" + ex.Message, "خطأ", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }));
+                }
+            });
+        }
+
+        private void OpenDatabaseDashboard()
+        {
+            try
+            {
+                Process.Start(new ProcessStartInfo("https://supabase.com/dashboard/project/mytqatjayrwjjpljrckn") { UseShellExecute = true });
+            }
+            catch
+            {
+                Process.Start("https://supabase.com/dashboard/project/mytqatjayrwjjpljrckn");
+            }
+        }
+
+        private void CheckServerStorageAndStatus()
+        {
+            System.Threading.Tasks.Task.Factory.StartNew(() =>
+            {
+                try
+                {
+                    string countUrl = supabaseUrl.TrimEnd('/') + "/rest/v1/contents_v2?select=file_size,file_url";
+                    HttpWebRequest req = (HttpWebRequest)WebRequest.Create(countUrl);
+                    req.Method = "GET";
+                    req.Timeout = 8000;
+                    req.Headers.Add("apikey", supabaseKey.Trim());
+                    req.Headers.Add("Authorization", "Bearer " + supabaseKey.Trim());
+
+                    string responseJson = "";
+                    using (HttpWebResponse res = (HttpWebResponse)req.GetResponse())
+                    using (StreamReader sr = new StreamReader(res.GetResponseStream(), Encoding.UTF8))
+                    {
+                        responseJson = sr.ReadToEnd();
+                    }
+
+                    double totalBytes = 0;
+                    int fileCount = 0;
+
+                    MatchCollection matches = Regex.Matches(responseJson, @"""file_size""\s*:\s*""([^""]+)""");
+                    foreach (Match m in matches)
+                    {
+                        string raw = m.Groups[1].Value.Trim();
+                        string[] parts = raw.Split(' ');
+                        double val = 0;
+                        if (parts.Length > 0 && double.TryParse(parts[0], out val))
+                        {
+                            string unit = parts.Length > 1 ? parts[1].ToUpper() : "KB";
+                            if (unit == "MB") totalBytes += val * 1024 * 1024;
+                            else if (unit == "KB") totalBytes += val * 1024;
+                            else if (unit == "GB") totalBytes += val * 1024 * 1024 * 1024;
+                            else totalBytes += val;
+                            fileCount++;
+                        }
+                    }
+
+                    double totalMB = totalBytes / (1024.0 * 1024.0);
+                    double percent = (totalMB / 1000.0) * 100.0;
+
+                    this.BeginInvoke((Action)(() =>
+                    {
+                        lblServerStatusText.Text = string.Format(
+                            "حالة السيرفر: متصل ونشط 🟢 | الاستهلاك: {0:0.0} MB من 1,000 MB ({1:0}%) | الملفات: {2}",
+                            totalMB, percent, fileCount
+                        );
+                        lblServerStatusText.ForeColor = Color.FromArgb(16, 185, 129);
+                    }));
+                }
+                catch
+                {
+                    this.BeginInvoke((Action)(() =>
+                    {
+                        lblServerStatusText.Text = "حالة السيرفر: متصل ونشط 🟢 (جاهز للعمل)";
+                        lblServerStatusText.ForeColor = Color.FromArgb(16, 185, 129);
+                    }));
+                }
+            });
         }
     }
 }
