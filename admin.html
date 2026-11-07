@@ -2003,34 +2003,8 @@
 
     <!-- TAB 1: Content Management -->
     <section id="sectionContents" class="space-y-5">
-      <!-- Storage Quota & Health Monitor Widget (الخطة المجانية - سحابة Supabase) -->
-      <div id="storageQuotaWidget" class="hidden bg-slate-900 border border-slate-800 p-4 rounded-2xl flex flex-wrap items-center justify-between gap-4 shadow-sm mb-5">
-        <div class="flex items-center gap-3.5">
-          <div class="w-11 h-11 rounded-2xl bg-blue-500/10 text-blue-400 border border-blue-500/20 flex items-center justify-center text-xl shadow-inner">
-            <i class="fa-solid fa-hard-drive"></i>
-          </div>
-          <div>
-            <div class="flex items-center gap-2">
-              <h4 class="text-xs font-black text-white">مساحة التخزين السحابي (سحابة Supabase)</h4>
-              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">1,000 MB مجاني</span>
-              <span id="serverHealthBadge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 inline-flex items-center gap-1">
-                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                السيرفر متصل ونشط
-              </span>
-            </div>
-            <p id="storageQuotaText" class="text-[11px] text-slate-400 font-bold mt-1">جاري فحص المساحة المستهلكة بدقة...</p>
-          </div>
-        </div>
-        <div class="flex-1 max-w-sm min-w-[220px]">
-          <div class="w-full bg-slate-800 h-3 rounded-full overflow-hidden border border-slate-700/60 p-0.5 shadow-inner">
-            <div id="storageQuotaBar" class="h-full bg-emerald-500 rounded-full transition-all duration-500" style="width: 2%;"></div>
-          </div>
-          <div class="flex items-center justify-between text-[10px] text-slate-400 font-bold mt-1.5">
-            <span id="storageFileCountText">0 ملفات مخزنة</span>
-            <span>الحد الأقصى المجاني: 1,000 MB</span>
-          </div>
-        </div>
-      </div>
+      <!-- Storage Quota Widget (Hidden from web portal; available exclusively in Updater App) -->
+      <div id="storageQuotaWidget" style="display: none !important;" class="hidden"></div>
       <!-- Search and Filter Bar -->
       <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex flex-wrap items-center justify-between gap-4">
         <div class="flex items-center gap-3 flex-1 min-w-[280px]">
@@ -3144,11 +3118,8 @@
       if (!currentUser) return;
       const storageWidget = document.getElementById('storageQuotaWidget');
       if (storageWidget) {
-        if (currentUser.role === 'super_admin') {
-          storageWidget.classList.remove('hidden');
-        } else {
-          storageWidget.classList.add('hidden');
-        }
+        storageWidget.classList.add('hidden');
+        storageWidget.style.display = 'none';
       }
       document.getElementById('headerUserName').innerText = currentUser.full_name;
       document.getElementById('headerUserRole').innerText = currentUser.role === 'super_admin' ? 'المسؤول الأعلى (استعراض المحتوى والمنظومة)' : currentUser.department_name;
@@ -4097,15 +4068,11 @@
     // Storage Quota Display Calculator
     function updateStorageQuotaDisplay() {
       const storageWidget = document.getElementById('storageQuotaWidget');
-      const isSuperAdmin = currentUser && currentUser.role === 'super_admin';
       if (storageWidget) {
-        if (isSuperAdmin) {
-          storageWidget.classList.remove('hidden');
-        } else {
-          storageWidget.classList.add('hidden');
-          return;
-        }
+        storageWidget.classList.add('hidden');
+        storageWidget.style.display = 'none';
       }
+      return;
       const textLabel = document.getElementById('storageQuotaText');
       const countLabel = document.getElementById('storageFileCountText');
       const fillBar = document.getElementById('storageQuotaBar');
