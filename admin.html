@@ -1388,7 +1388,33 @@
       font-weight: 900 !important;
     }
 
-  </style>
+  
+    /* Pasted File & Drop Zone Styles */
+    body.light-theme #contentPasteDropZone {
+      background-color: #f8fafc !important;
+      border-color: #cbd5e1 !important;
+      color: #334155 !important;
+    }
+    body.light-theme #contentPasteDropZone:hover {
+      background-color: #eff6ff !important;
+      border-color: #3b82f6 !important;
+    }
+    body.light-theme #contentPasteDropZone kbd {
+      background-color: #e2e8f0 !important;
+      color: #0f172a !important;
+      border-color: #cbd5e1 !important;
+    }
+    body.light-theme #activeFilePreviewCard {
+      background-color: #eef2ff !important;
+      border-color: #a5b4fc !important;
+    }
+    body.light-theme #activeFileName {
+      color: #0f172a !important;
+    }
+    body.light-theme #activeFileSize {
+      color: #4338ca !important;
+    }
+</style>
 
   <!-- PDF.js, Mammoth.js & XLSX.js for in-browser sheet rendering -->
   <script src="./libs/pdf.min.js"></script>
@@ -2244,15 +2270,52 @@ syncLiveAdminVersion();
           <textarea id="contentBodyText" rows="5" placeholder="أدخل هنا كامل نص التعليمات أو التوجيهات أو الملاحظات..." class="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-white text-xs leading-relaxed focus:outline-none focus:border-blue-500"></textarea>
         </div>
 
-        <!-- File Upload Section -->
+        <!-- File Upload Section with Clipboard Paste & Drop Support -->
         <div class="p-4 rounded-2xl bg-slate-800/60 border border-slate-700/80 space-y-3">
-          <div class="flex items-center justify-between">
+          <div class="flex items-center justify-between flex-wrap gap-2">
             <label class="block text-slate-300 font-bold">الملف المرفق (PDF, Word, Excel, صور):</label>
             <span class="text-[10px] text-slate-400 font-semibold bg-slate-700/50 px-2.5 py-0.5 rounded-lg border border-slate-600/40">الحد الأقصى: 15 ميجابايت • ضغط تلقائي للصور</span>
           </div>
           
-          <div class="flex items-center gap-3">
-            <input type="file" id="contentFileInput" onchange="handleFileInputChange(event)" accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.webp" class="block w-full text-xs text-slate-400 file:mr-0 file:ml-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-500 cursor-pointer">
+          <div class="flex items-center gap-2.5 flex-wrap">
+            <div class="flex-1 min-w-[200px]">
+              <input type="file" id="contentFileInput" onchange="handleFileInputChange(event)" accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.webp" class="block w-full text-xs text-slate-400 file:mr-0 file:ml-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-500 cursor-pointer">
+            </div>
+            <button type="button" onclick="pasteAttachmentFromClipboard()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs px-3.5 py-2.5 rounded-xl flex items-center gap-2 transition-all shadow-md active:scale-95 cursor-pointer shrink-0" title="لصق صورة أو ملف من الحافظة أو عبر لقطة الشاشة">
+              <i class="fa-solid fa-paste text-amber-300"></i>
+              <span>لصق المرفق (Ctrl+V)</span>
+            </button>
+          </div>
+
+          <!-- Interactive Paste & Drop Zone -->
+          <div id="contentPasteDropZone" onclick="pasteAttachmentFromClipboard()" class="border-2 border-dashed border-slate-700/90 hover:border-indigo-400 rounded-xl p-3 text-center cursor-pointer transition-all bg-slate-900/40 hover:bg-indigo-950/20 group">
+            <div class="flex items-center justify-center gap-2.5 text-xs text-slate-400 group-hover:text-slate-200">
+              <div class="w-7 h-7 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-sm">
+                <i class="fa-regular fa-clipboard"></i>
+              </div>
+              <span class="font-bold">يمكنك نسخ أي صورة أو لقطة شاشة والضغط هنا أو <kbd class="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-600 text-slate-200 font-mono text-[11px] font-black">Ctrl + V</kbd> للصق المرفق فوراً</span>
+            </div>
+          </div>
+
+          <!-- Active Attached / Pasted File Preview Card -->
+          <div id="activeFilePreviewCard" class="hidden p-3 rounded-xl border border-indigo-500/40 bg-indigo-950/30 flex items-center justify-between gap-3 flex-wrap">
+            <div class="flex items-center gap-3 min-w-0 flex-1">
+              <div id="activeFileThumbnailBox" class="w-12 h-12 rounded-lg bg-slate-900 border border-slate-700 flex items-center justify-center overflow-hidden shrink-0">
+                <i id="activeFileIcon" class="fa-solid fa-file text-xl text-blue-400"></i>
+                <img id="activeFileImg" class="w-full h-full object-cover hidden" alt="معاينة الصورة">
+              </div>
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <span id="activeFileSourceBadge" class="px-2 py-0.5 rounded text-[10px] font-black bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">مرفق ملصق</span>
+                  <span id="activeFileName" class="text-xs font-bold text-white truncate"></span>
+                </div>
+                <div class="text-[11px] text-slate-400 font-semibold mt-0.5" id="activeFileSize"></div>
+              </div>
+            </div>
+            <button type="button" onclick="clearAttachedFile()" class="px-3 py-1.5 rounded-lg bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 border border-rose-500/40 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer">
+              <i class="fa-solid fa-trash-can text-[11px]"></i>
+              <span>إلغاء المرفق</span>
+            </button>
           </div>
 
           <!-- Optimization & Size Feedback Badge -->
@@ -2260,7 +2323,7 @@ syncLiveAdminVersion();
 
           <div id="currentFileInfo" class="hidden text-[11px] text-emerald-400 flex items-center gap-2">
             <i class="fa-solid fa-check-circle"></i>
-            <span>الملف الحالي المرفق: <span id="currentFileName" class="font-bold underline"></span></span>
+            <span>الملف المرفق الحالي: <span id="currentFileName" class="font-bold underline"></span></span>
           </div>
         </div>
 
@@ -4022,64 +4085,247 @@ syncLiveAdminVersion();
     }
 
     // File input handler: live validation, compression, and feedback
-    async function handleFileInputChange(e) {
-      const fileInput = e.target;
-      const feedback = document.getElementById('fileOptimizationFeedback');
+    let currentPastedFile = null;
+
+    // Clear currently attached file (selected, pasted, or dropped)
+    function clearAttachedFile() {
+      currentPastedFile = null;
       currentOptimizedFile = null;
-      if (!feedback) return;
+      const fileInput = document.getElementById('contentFileInput');
+      if (fileInput) fileInput.value = '';
+      const previewCard = document.getElementById('activeFilePreviewCard');
+      if (previewCard) previewCard.classList.add('hidden');
+      const feedback = document.getElementById('fileOptimizationFeedback');
+      if (feedback) { feedback.className = 'hidden'; feedback.innerHTML = ''; }
+      const img = document.getElementById('activeFileImg');
+      if (img) { img.src = ''; img.classList.add('hidden'); }
+      const icon = document.getElementById('activeFileIcon');
+      if (icon) icon.classList.remove('hidden');
+      if (typeof AudioEngine !== 'undefined') AudioEngine.info();
+      showToast('تمت إزالة الملف المرفق.', 'info', 'المرفق');
+    }
 
-      feedback.className = 'hidden text-xs p-2.5 rounded-xl border flex items-center gap-2';
-      feedback.innerHTML = '';
-      if (!fileInput.files || fileInput.files.length === 0) return;
+    // Unified processor for any attached file (file input, clipboard paste, or drag & drop)
+    async function setAttachedFile(file, source = 'file') {
+      if (!file) return;
+      currentPastedFile = file;
+      currentOptimizedFile = null;
 
-      const file = fileInput.files[0];
+      const fileInput = document.getElementById('contentFileInput');
+      try {
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        if (fileInput) fileInput.files = dt.files;
+      } catch (e) {}
+
+      const feedback = document.getElementById('fileOptimizationFeedback');
+      if (feedback) {
+        feedback.className = 'hidden text-xs p-2.5 rounded-xl border flex items-center gap-2';
+        feedback.innerHTML = '';
+      }
+
       const sizeMB = file.size / (1024 * 1024);
       const ext = (file.name.split('.').pop() || '').toLowerCase();
 
       // 1. Strict Max Limit: 15 MB
       if (sizeMB > 15) {
         if (typeof AudioEngine !== 'undefined') AudioEngine.error();
-        feedback.className = 'text-xs p-2.5 rounded-xl border border-rose-500/40 bg-rose-500/10 text-rose-300 flex items-center gap-2 font-bold';
-        feedback.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-rose-400 text-sm"></i>
-          <span>حجم الملف (${sizeMB.toFixed(1)} MB) يتجاوز الحد الأقصى المسموح به (15 MB). يرجى تقليله أولاً لحماية مساحة السيرفر.</span>`;
-        fileInput.value = '';
+        if (feedback) {
+          feedback.className = 'text-xs p-2.5 rounded-xl border border-rose-500/40 bg-rose-500/10 text-rose-300 flex items-center gap-2 font-bold';
+          feedback.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-rose-400 text-sm"></i>
+            <span>حجم الملف (${sizeMB.toFixed(1)} MB) يتجاوز الحد الأقصى المسموح به (15 MB). يرجى تقليل حجم الملف قبل إرفاقه.</span>`;
+        }
+        clearAttachedFile();
         return;
       }
 
       // 2. Automatic Image Compression for JPG/PNG/WebP > 400 KB
-      const isImage = ['png', 'jpg', 'jpeg', 'webp'].includes(ext) || file.type.startsWith('image/');
+      const isImage = ['png', 'jpg', 'jpeg', 'webp', 'bmp'].includes(ext) || (file.type && file.type.startsWith('image/'));
       if (isImage && file.size > 400 * 1024) {
-        feedback.className = 'text-xs p-2.5 rounded-xl border border-blue-500/40 bg-blue-500/10 text-blue-300 flex items-center gap-2 font-semibold';
-        feedback.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-blue-400"></i>
-          <span>جاري ضغط وتحسين الصورة تلقائياً لتوفير مساحة السيرفر...</span>`;
+        if (feedback) {
+          feedback.className = 'text-xs p-2.5 rounded-xl border border-blue-500/40 bg-blue-500/10 text-blue-300 flex items-center gap-2 font-semibold';
+          feedback.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-blue-400"></i>
+            <span>جاري ضغط الصورة تلقائياً لتحسين سرعة التحميل...</span>`;
+        }
 
         try {
           const compResult = await compressImageFile(file, 2200, 2200, 0.82);
           if (compResult.compressed && compResult.newSize < compResult.originalSize) {
             currentOptimizedFile = compResult.file;
+            currentPastedFile = compResult.file;
             const savedPercent = Math.round((1 - compResult.newSize / compResult.originalSize) * 100);
             const oldMB = (compResult.originalSize / (1024 * 1024)).toFixed(2);
             const newKB = (compResult.newSize / 1024).toFixed(0);
-            feedback.className = 'text-xs p-2.5 rounded-xl border border-emerald-500/40 bg-emerald-500/10 text-emerald-300 flex items-center gap-2 font-bold';
-            feedback.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles text-emerald-400 text-sm"></i>
-              <span>تم تحسين الصورة تلقائياً: تم تقليل الحجم من (${oldMB} MB) إلى (${newKB} KB) بتوفير ${savedPercent}% مع الحفاظ على وضوح الخطوط!</span>`;
-            return;
+            if (feedback) {
+              feedback.className = 'text-xs p-2.5 rounded-xl border border-emerald-500/40 bg-emerald-500/10 text-emerald-300 flex items-center gap-2 font-bold';
+              feedback.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles text-emerald-400 text-sm"></i>
+                <span>تم ضغط الصورة بنجاح: تم تقليل الحجم من (${oldMB} MB) إلى (${newKB} KB) وتوفير ${savedPercent}% من السعة مع حفظ الجودة!</span>`;
+            }
           }
         } catch (compErr) {
           console.warn('Image compression fallback:', compErr);
         }
+      } else if (sizeMB > 4) {
+        if (feedback) {
+          feedback.className = 'text-xs p-2.5 rounded-xl border border-amber-500/40 bg-amber-500/10 text-amber-300 flex items-center gap-2 font-bold';
+          feedback.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-amber-400 text-sm"></i>
+            <span>تنبيه: حجم الملف (${sizeMB.toFixed(1)} MB) كبير نسبياً. يفضل استخدام ملفات أقل من 4MB لسرعة التصفح في المراكز وحفظ السعة.</span>`;
+        }
+      } else {
+        if (feedback) {
+          feedback.className = 'text-xs p-2.5 rounded-xl border border-slate-700 bg-slate-800/80 text-slate-300 flex items-center gap-2 font-semibold';
+          feedback.innerHTML = `<i class="fa-solid fa-check text-emerald-400"></i>
+            <span>المرفق جاهز للنشر: ${(file.size / 1024).toFixed(1)} KB (حجم ممتاز وخفيف).</span>`;
+        }
       }
 
-      // 3. Advisory Warning for files > 4 MB
-      if (sizeMB > 4) {
-        feedback.className = 'text-xs p-2.5 rounded-xl border border-amber-500/40 bg-amber-500/10 text-amber-300 flex items-center gap-2 font-bold';
-        feedback.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-amber-400 text-sm"></i>
-          <span>تنبيه: حجم الملف (${sizeMB.toFixed(1)} MB) كبير نسبياً. يُفضل استخدام ملفات أقل من 4MB لسرعة تحميلها في المراكز وتوفير المساحة.</span>`;
-      } else {
-        feedback.className = 'text-xs p-2.5 rounded-xl border border-slate-700 bg-slate-800/80 text-slate-300 flex items-center gap-2 font-semibold';
-        feedback.innerHTML = `<i class="fa-solid fa-check text-emerald-400"></i>
-          <span>الملف جاهز للرفع: ${(file.size / 1024).toFixed(1)} KB (حجم ممتاز ومتوافق).</span>`;
+      // Update Preview Card UI
+      const activeFile = currentOptimizedFile || currentPastedFile;
+      const previewCard = document.getElementById('activeFilePreviewCard');
+      const nameEl = document.getElementById('activeFileName');
+      const sizeEl = document.getElementById('activeFileSize');
+      const badgeEl = document.getElementById('activeFileSourceBadge');
+      const imgEl = document.getElementById('activeFileImg');
+      const iconEl = document.getElementById('activeFileIcon');
+
+      if (previewCard && nameEl && sizeEl) {
+        nameEl.innerText = activeFile.name;
+        sizeEl.innerText = (activeFile.size / 1024).toFixed(1) + ' KB';
+        if (badgeEl) {
+          badgeEl.innerText = (source === 'clipboard' || source === 'paste') ? '📋 مرفق ملصق من الحافظة' : (source === 'drop' ? '🎯 تم إسقاط الملف' : '📁 ملف محدد');
+        }
+
+        if (isImage) {
+          if (imgEl && iconEl) {
+            imgEl.src = URL.createObjectURL(activeFile);
+            imgEl.classList.remove('hidden');
+            iconEl.classList.add('hidden');
+          }
+        } else {
+          if (imgEl && iconEl) {
+            imgEl.classList.add('hidden');
+            iconEl.classList.remove('hidden');
+            if (ext === 'pdf') iconEl.className = 'fa-solid fa-file-pdf text-xl text-rose-500';
+            else if (['doc', 'docx'].includes(ext)) iconEl.className = 'fa-solid fa-file-word text-xl text-blue-500';
+            else if (['xls', 'xlsx'].includes(ext)) iconEl.className = 'fa-solid fa-file-excel text-xl text-emerald-500';
+            else iconEl.className = 'fa-solid fa-file text-xl text-slate-400';
+          }
+        }
+
+        previewCard.classList.remove('hidden');
       }
+
+      // Hide the legacy currentFileInfo if replacing
+      const curInfo = document.getElementById('currentFileInfo');
+      if (curInfo) curInfo.classList.add('hidden');
+
+      if (typeof AudioEngine !== 'undefined') AudioEngine.success();
+      if (source === 'clipboard' || source === 'paste' || source === 'drop') {
+        showToast(`تم إرفاق الملف بنجاح: ${activeFile.name}`, 'success', 'إرفاق المرفق');
+      }
+    }
+
+    // File input change listener
+    async function handleFileInputChange(e) {
+      if (e.target.files && e.target.files.length > 0) {
+        await setAttachedFile(e.target.files[0], 'file');
+      }
+    }
+
+    // Paste Attachment from Clipboard Button
+    async function pasteAttachmentFromClipboard() {
+      try {
+        if (navigator.clipboard && navigator.clipboard.read) {
+          const clipboardItems = await navigator.clipboard.read();
+          for (const item of clipboardItems) {
+            for (const type of item.types) {
+              if (type.startsWith('image/')) {
+                const blob = await item.getType(type);
+                const ext = type.includes('png') ? 'png' : (type.includes('webp') ? 'webp' : 'jpg');
+                const now = new Date();
+                const pad = n => String(n).padStart(2, '0');
+                const timestamp = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}_${pad(now.getHours())}-${pad(now.getMinutes())}-${pad(now.getSeconds())}`;
+                const pastedFile = new File([blob], `مرفق_ملصق_${timestamp}.${ext}`, { type: blob.type });
+                await setAttachedFile(pastedFile, 'clipboard');
+                return;
+              }
+            }
+          }
+        }
+        if (typeof AudioEngine !== 'undefined') AudioEngine.warning();
+        showToast('لم يتم العثور على صورة في الحافظة. انسخ أي صورة أو التقط شاشة (Win + Shift + S) ثم اضغط Ctrl + V أو على هذا الزر للصقها.', 'warning', 'الحافظة فارغة');
+      } catch (err) {
+        console.warn('Clipboard read error:', err);
+        if (typeof AudioEngine !== 'undefined') AudioEngine.info();
+        showToast('يرجى الضغط على مفتاحي Ctrl + V من لوحة المفاتيح للصق الصورة مباشرة.', 'info', 'لصق سريع');
+      }
+    }
+
+    // Setup Global Paste & Drag-Drop listeners for Content Modal
+    function setupContentPasteAndDrop() {
+      const dropZone = document.getElementById('contentPasteDropZone');
+      if (dropZone) {
+        ['dragenter', 'dragover'].forEach(eventName => {
+          dropZone.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropZone.classList.add('border-indigo-500', 'bg-indigo-950/40');
+          });
+        });
+        ['dragleave', 'drop'].forEach(eventName => {
+          dropZone.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropZone.classList.remove('border-indigo-500', 'bg-indigo-950/40');
+          });
+        });
+        dropZone.addEventListener('drop', (e) => {
+          if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+            setAttachedFile(e.dataTransfer.files[0], 'drop');
+          }
+        });
+      }
+
+      window.addEventListener('paste', async (e) => {
+        const modal = document.getElementById('contentModal');
+        if (!modal || modal.classList.contains('hidden')) return;
+
+        const clipboardData = e.clipboardData || window.clipboardData;
+        if (!clipboardData) return;
+
+        // 1. Files in clipboardData.files
+        if (clipboardData.files && clipboardData.files.length > 0) {
+          e.preventDefault();
+          await setAttachedFile(clipboardData.files[0], 'paste');
+          return;
+        }
+
+        // 2. Clipboard items for images
+        if (clipboardData.items) {
+          for (let i = 0; i < clipboardData.items.length; i++) {
+            const item = clipboardData.items[i];
+            if (item.type && item.type.startsWith('image/')) {
+              const blob = item.getAsFile();
+              if (blob) {
+                e.preventDefault();
+                const ext = item.type.includes('png') ? 'png' : (item.type.includes('webp') ? 'webp' : 'jpg');
+                const now = new Date();
+                const pad = n => String(n).padStart(2, '0');
+                const timestamp = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}_${pad(now.getHours())}-${pad(now.getMinutes())}-${pad(now.getSeconds())}`;
+                const pastedFile = new File([blob], `مرفق_ملصق_${timestamp}.${ext}`, { type: item.type });
+                await setAttachedFile(pastedFile, 'paste');
+                return;
+              }
+            }
+          }
+        }
+      });
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', setupContentPasteAndDrop);
+    } else {
+      setupContentPasteAndDrop();
     }
 
     // Storage Quota Display Calculator
@@ -4187,6 +4433,9 @@ syncLiveAdminVersion();
       const fileInput = document.getElementById('contentFileInput');
       if (fileInput) fileInput.value = '';
       currentOptimizedFile = null;
+      currentPastedFile = null;
+      const previewCard = document.getElementById('activeFilePreviewCard');
+      if (previewCard) previewCard.classList.add('hidden');
       const optFb = document.getElementById('fileOptimizationFeedback');
       if (optFb) { optFb.className = 'hidden'; optFb.innerHTML = ''; }
       document.getElementById('contentModal').classList.remove('hidden');
@@ -4237,6 +4486,7 @@ syncLiveAdminVersion();
 
     function closeContentModal() {
       document.getElementById('contentModal').classList.add('hidden');
+      if (typeof clearAttachedFile === 'function') clearAttachedFile();
     }
 
     // Save Content to Supabase
@@ -4373,8 +4623,9 @@ syncLiveAdminVersion();
           }
         }
 
-        if (fileInput.files && fileInput.files.length > 0) {
-          const file = currentOptimizedFile || fileInput.files[0];
+        const activeUploadFile = currentOptimizedFile || currentPastedFile || (fileInput.files && fileInput.files.length > 0 ? fileInput.files[0] : null);
+        if (activeUploadFile) {
+          const file = activeUploadFile;
           fileName = file.name;
           fileSize = (file.size / 1024).toFixed(1) + ' KB';
           const ext = file.name.split('.').pop().toLowerCase();
