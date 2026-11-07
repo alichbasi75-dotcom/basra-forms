@@ -1255,7 +1255,7 @@
       font-weight: 900 !important;
     }
 
-  
+
     body.light-theme #unifiedPreviewModal > div {
       background-color: #ffffff !important;
       color: #0f172a !important;
@@ -1880,7 +1880,7 @@
       color: #38bdf8 !important;
     }
 
-  </style>
+</style>
 <script>window.__BASRA_APP_VERSION__ = "v2.0.1";</script>
 </head>
 <body class="min-h-screen flex flex-col bg-slate-950 text-slate-100 light-theme">
@@ -2159,6 +2159,8 @@
             </div>
 
             <iframe id="unifiedPdfIframe" class="w-full h-[450px] border-0 hidden"></iframe>
+          </div>
+            <iframe id="unifiedPdfIframe" class="w-full h-full border-0"></iframe>
           </div>
 
           <!-- Image Viewer -->
@@ -3430,8 +3432,8 @@
       });
     }
 
-    
-    // Render PDF onto HTML5 Canvas for 100% universal compatibility across mobile & desktop browsers
+
+    // Render PDF onto HTML5 Canvas for universal compatibility across mobile & desktop browsers
     async function renderUnifiedPdfDocument(pdfUrl) {
       const container = document.getElementById('unifiedPdfCanvasContainer');
       const fallbackBox = document.getElementById('unifiedPdfFallbackBox');
@@ -3674,4 +3676,2338 @@
     }
 
     function setupOfficeBox(item, iconClass, iconBoxClass, typeLabel = 'مستند رسمي') {
+      const isLight = document.body.classList.contains('light-theme');
+      const iconEl = document.getElementById('unifiedOfficeIcon');
+      if (iconEl) {
+        iconEl.className = `w-14 h-14 rounded-2xl flex items-center justify-center text-3xl shrink-0 ${iconBoxClass}`;
+        iconEl.innerHTML = `<i class="fa-solid ${iconClass}"></i>`;
+      }
+      const nameEl = document.getElementById('unifiedOfficeFileName');
+      if (nameEl) {
+        nameEl.innerText = item.file_name || 'ملف مرفق';
+        nameEl.style.color = isLight ? '#0f172a' : '#ffffff';
+      }
+
+      const metaEl = document.getElementById('unifiedOfficeMeta');
+      if (metaEl) {
+        metaEl.innerText = `${typeLabel} • ${item.file_size || 'حجم مناسب'} • مستند رسمي معتمد متاح للتنزيل من الزر الأخضر أعلاه`;
+        metaEl.style.color = isLight ? '#475569' : '#cbd5e1';
+      }
+    }
+
+    function closeUnifiedPreviewModal() {
+      const container = document.getElementById('unifiedPdfCanvasContainer');
+      if (container) container.innerHTML = '';
+      const pdfIframe = document.getElementById('unifiedPdfIframe');
+      if (pdfIframe) pdfIframe.src = '';
+      document.getElementById('unifiedPreviewModal').classList.add('hidden');
+    }
+
+    // ==========================================================================
+    // محرك معالجة وطباعة ملفات PDF والمستندات بدقة كاملة
+    // ==========================================================================
+
+    async function loadAndRenderPdfPages(pdfUrl, targetContainer) {
+      if (typeof pdfjsLib === 'undefined') {
+        console.warn('PDF.js library is not loaded');
+        return false;
+      }
+      try {
+        try {
+          pdfjsLib.GlobalWorkerOptions.workerSrc = './libs/pdf.worker.min.js';
+        } catch(e) {}
+
+        let loadingTask;
+        try {
+          const response = await fetch(pdfUrl);
+          if (response.ok) {
+            const arrayBuf = await response.arrayBuffer();
+            loadingTask = pdfjsLib.getDocument({
+              data: arrayBuf,
+              cMapUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/cmaps/',
+              cMapPacked: true
+            });
+          } else {
+            loadingTask = pdfjsLib.getDocument({
+              url: pdfUrl,
+              cMapUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/cmaps/',
+              cMapPacked: true
+            });
+          }
+        } catch (fetchErr) {
+          loadingTask = pdfjsLib.getDocument({
+            url: pdfUrl,
+            cMapUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/cmaps/',
+            cMapPacked: true
+          });
+        }
+
+        const pdf = await loadingTask.promise;
+        if (!pdf || pdf.numPages === 0) return false;
+
+        for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+          const page = await pdf.getPage(pageNum);
+          const viewport = page.getViewport({ scale: 2.0 });
+          const canvas = document.createElement('canvas');
+          canvas.width = viewport.width;
+          canvas.height = viewport.height;
+          canvas.style.width = '100%';
+          canvas.style.maxWidth = '100%';
+          canvas.style.height = 'auto';
+          canvas.style.display = 'block';
+          canvas.style.margin = '0 auto';
+          canvas.style.boxSizing = 'border-box';
+          if (pageNum < pdf.numPages) {
+            canvas.style.pageBreakAfter = 'always';
+            canvas.style.marginBottom = '20px';
+          }
+          const ctx = canvas.getContext('2d');
+          await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+          targetContainer.appendChild(canvas);
+        }
+        return true;
+      } catch (err) {
+        console.error('Error rendering PDF with PDF.js:', err);
+        return false;
+      }
+    }
+
+    function getOfficerAndDeptName(item) {
+      let deptName = item.department_name || '';
+      let officerName = item.updated_by_name || '';
+
+      if (!deptName && item.department_id && typeof allDepartments !== 'undefined') {
+        const d = allDepartments.find(dep => dep.id === item.department_id);
+        if (d) deptName = d.name;
+      }
+
+      return {
+        deptName: deptName || 'القسم العام',
+        officerName: officerName || 'مسؤول الشعبة'
+      };
+    }
+
+    // ==========================================================================
+    // محرك الطباعة المطور V2 (خياران للطباعة وفق متطلبات الإدارة)
+    // ==========================================================================
+
+    /**
+     * الخيار 1: طباعة المستند المرفق فقط (صفحات النموذج كاملة دون نصوص أو ترويسة)
+     */
+    async function printAttachedDocumentOnly() {
+      if (!currentUnifiedItem || !currentUnifiedItem.file_url) {
+        showToast('لا يوجد ملف مرفق متاح للطباعة المباشرة.', 'warning', 'تنبيه الطباعة');
+        return;
+      }
+      const item = currentUnifiedItem;
+      const url = item.file_url;
+      const ext = (item.file_name || item.file_type || '').split('.').pop().toLowerCase();
+      const isPdf = ext === 'pdf' || url.toLowerCase().includes('.pdf');
+      const isImg = ['png', 'jpg', 'jpeg', 'webp', 'bmp', 'svg'].includes(ext);
+
+      let printDiv = document.getElementById('cleanPrintContainer');
+      if (!printDiv) {
+        printDiv = document.createElement('div');
+        printDiv.id = 'cleanPrintContainer';
+        document.body.appendChild(printDiv);
+      }
+      printDiv.innerHTML = '<div id="pureDocPagesArea" style="width: 100%; margin: 0; padding: 0; background: #ffffff;"></div>';
+      const container = document.getElementById('pureDocPagesArea');
+
+      if (isPdf) {
+        showToast('جاري تجهيز صفحات المستند للطباعة بدقة عالية...', 'info', 'تجهيز الطباعة');
+        const rendered = await loadAndRenderPdfPages(url, container);
+        if (rendered) {
+          setTimeout(() => {
+            window.print();
+          }, 250);
+          return;
+        }
+        // Fallback في حال تعذر العرض
+        const printWin = window.open(url, '_blank');
+        if (printWin) printWin.focus();
+        return;
+      }
+
+      if (isImg) {
+        container.innerHTML = `<img src="${url}" style="width: 100%; max-width: 100%; height: auto; display: block; margin: 0 auto;" />`;
+        setTimeout(() => {
+          window.print();
+        }, 200);
+        return;
+      }
+
+      // مستندات Word و Excel
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = item.file_name || 'document';
+      a.target = '_blank';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      showToast('جاري فتح/تحميل المستند للطباعة من التطبيق المعتمد.', 'info', 'طباعة المستند');
+    }
+
+    /**
+     * الخيار 2: طباعة المستند مع التوجيهات وبيانات الشعبة والمسؤول فقط لا غير
+     */
+    async function printUnifiedFullReport() {
+      if (!currentUnifiedItem) return;
+      const item = currentUnifiedItem;
+      let printDiv = document.getElementById('cleanPrintContainer');
+      if (!printDiv) {
+        printDiv = document.createElement('div');
+        printDiv.id = 'cleanPrintContainer';
+        document.body.appendChild(printDiv);
+      }
+
+      const { deptName, officerName } = getOfficerAndDeptName(item);
+      const hasBodyText = Boolean(item.body_text && item.body_text.trim());
+
+      // التنبيه بعدم وجود نص وإلغاء أمر الطباعة في حال خلو المنشور من المحتوى النصي
+      if (!hasBodyText) {
+        if (typeof AudioEngine !== 'undefined' && AudioEngine.warning) AudioEngine.warning();
+        showToast('تعذر إجراء الطباعة: لا يوجد محتوى نصي أو توجيهات مكتوبة لهذا المنشور.', 'warning', 'تنبيه عدم وجود نص');
+        return;
+      }
+
+      const pubDateStr = item.created_at ? new Date(item.created_at).toLocaleDateString('ar-IQ', { year: 'numeric', month: '2-digit', day: '2-digit' }) : 'غير محدد';
+      const printDateStr = new Date().toLocaleDateString('ar-IQ', { year: 'numeric', month: '2-digit', day: '2-digit' });
+
+      printDiv.innerHTML = `
+        <div style="font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif; direction: rtl; text-align: right; color: #000000; padding: 24px; background: #ffffff;">
+          <!-- ترويسة رسمية للمفوضية ومكتب انتخابات البصرة -->
+          <div style="border-bottom: 2px solid #0f172a; padding-bottom: 12px; margin-bottom: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+              <div>
+                <h2 style="font-size: 16px; font-weight: 900; margin: 0 0 4px 0; color: #0f172a;">المفوضية العليا المستقلة للانتخابات</h2>
+                <h3 style="font-size: 13px; font-weight: 700; margin: 0; color: #475569;">مكتب انتخابات محافظة البصرة - البوابة الإلكترونية للمراكز</h3>
+              </div>
+              <div style="text-align: left; font-size: 12px; color: #475569; font-family: monospace;">
+                <div><strong>تاريخ الطباعة:</strong> ${printDateStr}</div>
+              </div>
+            </div>
+
+            <!-- عنوان المنشور الرئيسي -->
+            <div style="background: #f8fafc; border-right: 5px solid #2563eb; border: 1px solid #cbd5e1; border-right-width: 5px; padding: 10px 14px; border-radius: 6px; margin: 12px 0;">
+              <h1 style="font-size: 16px; font-weight: 900; margin: 0; color: #0f172a;">${escapeHtml(item.title || 'تعليمات وتوجيهات رسمية')}</h1>
+            </div>
+
+            <!-- شريط بيانات المنشور المطلوبة: تاريخ المنشور + اسم المجموعة / الشعبة + اسم الناشر -->
+            <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 14px; padding: 10px 14px; background: #f1f5f9; border-radius: 8px; font-size: 13px; border: 1px solid #e2e8f0;">
+              <div>
+                <span style="font-weight: 700; color: #475569;">المجموعة / الشعبة المصدرة: </span>
+                <strong style="font-weight: 900; color: #0f172a; font-size: 14px;">${escapeHtml(deptName)}</strong>
+              </div>
+              <div>
+                <span style="font-weight: 700; color: #475569;">اسم الناشر المسؤول: </span>
+                <strong style="font-weight: 900; color: #0f172a; font-size: 14px;">${escapeHtml(officerName)}</strong>
+              </div>
+              <div>
+                <span style="font-weight: 700; color: #475569;">تاريخ المنشور: </span>
+                <strong style="font-weight: 900; color: #0f172a; font-size: 14px; font-family: monospace;">${pubDateStr}</strong>
+              </div>
+              ${item.category_name ? `
+              <div>
+                <span style="font-weight: 700; color: #475569;">التصنيف: </span>
+                <strong style="font-weight: 900; color: #0f172a; font-size: 13px;">${escapeHtml(item.category_name)}</strong>
+              </div>
+              ` : ''}
+            </div>
+          </div>
+
+          <!-- نص التعليمات والشرح والتوجيهات الكامل -->
+          <div style="border: 1px solid #cbd5e1; border-radius: 8px; padding: 20px 24px; font-size: 14px; line-height: 2.1; color: #0f172a; white-space: pre-wrap; background: #ffffff; min-height: 240px;">
+            ${escapeHtml(item.body_text)}
+          </div>
+
+          <!-- تذييل وثيقة إلكترونية -->
+          <div style="margin-top: 24px; display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: #64748b; border-top: 1px solid #e2e8f0; padding-top: 10px;">
+            <span>تمت الطباعة مباشرة من منظومة استمارات وتوجيهات مكتب انتخابات البصرة V2</span>
+            <span>وثيقة إلكترونية رسمية معتمدة</span>
+          </div>
+        </div>
+      `;
+
+      setTimeout(() => {
+        window.print();
+      }, 150);
+    }
+
+    function printUnifiedContent() {
+      printUnifiedFullReport();
+    }
+
+    function printUnifiedItem(itemId) {
+      const item = allContents.find(c => c.id === itemId);
+      if (!item) return;
+      currentUnifiedItem = item;
+
+      const ext = (item.file_name || item.file_type || '').split('.').pop().toLowerCase();
+      const hasFile = Boolean(item.file_url);
+      const isPdfOrImg = hasFile && (['pdf', 'png', 'jpg', 'jpeg', 'webp', 'bmp'].includes(ext) || item.file_url.match(/\.(pdf|png|jpe?g|webp)$/i));
+
+      if (isPdfOrImg) {
+        printAttachedDocumentOnly();
+      } else {
+        printUnifiedFullReport();
+      }
+    }
+
+    // Backwards Compatibility Routing
+    function openPreviewModal(id) {
+      openUnifiedModal(id);
+    }
+    function openTextModal(id) {
+      openUnifiedModal(id);
+    }
+    function closePreviewModal() {
+      closeUnifiedPreviewModal();
+    }
+    function closeTextModal() {
+      closeUnifiedPreviewModal();
+    }
+    function printItem(itemId) {
+      printUnifiedItem(itemId);
+    }
+
+    // ==========================================================================
+    // دالة حساب التباين ومعيار WCAG AA لتحديد درجة إضاءة الخلفيات تلقائياً
+    
+    // ==========================================================================
+    // محرك حساب وتطبيق التباين العالي الفوري للنصوص والرسائل (WCAG 2.1 AA / AAA Engine)
+    // ==========================================================================
+
+    /**
+     * حساب الإضاءة النسبية (Relative Luminance) للون sRGB وفق مواصفات W3C WCAG 2.1
+     */
+    function calculateRelativeLuminance(r, g, b) {
+      const normalize = (c) => {
+        const s = c / 255;
+        return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
+      };
+      return 0.2126 * normalize(r) + 0.7152 * normalize(g) + 0.0722 * normalize(b);
+    }
+
+    /**
+     * حساب نسبة التباين الصريحة (Contrast Ratio) بين قيمتي إضاءة نسبية
+     * تعيد قيمة بين 1.0 و 21.0
+     */
+    function getContrastRatio(lum1, lum2) {
+      const l1 = Math.max(lum1, lum2);
+      const l2 = Math.min(lum1, lum2);
+      return (l1 + 0.05) / (l2 + 0.05);
+    }
+
+    /**
+     * استخراج مكونات RGB وقيمة الشفافية من أي تعبير لوني (Hex, RGB, RGBA, Named Color)
+     */
+    function parseRgbColor(colorStr) {
+      if (!colorStr) return null;
+      const str = String(colorStr).trim().toLowerCase();
+
+      // تحليل صيغ RGB / RGBA
+      const rgbMatch = str.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
+      if (rgbMatch) {
+        return {
+          r: parseInt(rgbMatch[1], 10),
+          g: parseInt(rgbMatch[2], 10),
+          b: parseInt(rgbMatch[3], 10),
+          a: rgbMatch[4] !== undefined ? parseFloat(rgbMatch[4]) : 1
+        };
+      }
+
+      // تحليل صيغ Hex (#RGB, #RGBA, #RRGGBB, #RRGGBBAA)
+      if (str.startsWith('#')) {
+        let hex = str.slice(1);
+        if (hex.length === 3 || hex.length === 4) {
+          hex = hex.split('').map(c => c + c).join('');
+        }
+        if (hex.length >= 6) {
+          return {
+            r: parseInt(hex.substring(0, 2), 16) || 0,
+            g: parseInt(hex.substring(2, 4), 16) || 0,
+            b: parseInt(hex.substring(4, 6), 16) || 0,
+            a: hex.length >= 8 ? (parseInt(hex.substring(6, 8), 16) / 255) : 1
+          };
+        }
+      }
+
+      // التحليل عبر عنصر DOM مؤقت لأسماء الألوان القياسية
+      try {
+        const dummy = document.createElement('div');
+        dummy.style.color = str;
+        document.body.appendChild(dummy);
+        const cs = window.getComputedStyle(dummy).color;
+        document.body.removeChild(dummy);
+        const m = cs.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
+        if (m) {
+          return {
+            r: parseInt(m[1], 10),
+            g: parseInt(m[2], 10),
+            b: parseInt(m[3], 10),
+            a: m[4] !== undefined ? parseFloat(m[4]) : 1
+          };
+        }
+      } catch (e) {}
+
+      return null;
+    }
+
+    /**
+     * استخراج لون الخلفية الفعلي والمؤثر للعنصر بالصعود في شجرة الـ DOM
+     */
+    function getEffectiveBackgroundColor(el) {
+      const isLight = document.body && document.body.classList.contains('light-theme');
+      const defaultBg = isLight ? '#f1f5f9' : '#020617';
+
+      if (!el || !(el instanceof HTMLElement)) {
+        return defaultBg;
+      }
+
+      let current = el;
+      while (current && current !== document && current.nodeType === Node.ELEMENT_NODE) {
+        const style = window.getComputedStyle(current);
+        const bg = style.backgroundColor;
+        if (bg && bg !== 'transparent' && bg !== 'rgba(0, 0, 0, 0)') {
+          const parsed = parseRgbColor(bg);
+          if (parsed && parsed.a >= 0.35) {
+            return bg;
+          }
+        }
+        current = current.parentElement;
+      }
+
+      return defaultBg;
+    }
+
+    /**
+     * الدالة المتقدمة لتحديد اللون المغاير عالي التباين بناءً على درجة التباين المحسوبة
+     * تضمن تباين يتجاوز 7:1 للمستويات القياسية ويصل إلى 16:1 في الحالات الصريحة
+     */
+    function getContrastingTextColor(bg, options = {}) {
+      const isLight = document.body && document.body.classList.contains('light-theme');
       
+      let effectiveBg = bg;
+      if (bg instanceof HTMLElement) {
+        effectiveBg = getEffectiveBackgroundColor(bg);
+      } else if (!bg) {
+        effectiveBg = isLight ? '#f1f5f9' : '#020617';
+      }
+
+      const rgb = parseRgbColor(effectiveBg);
+      if (!rgb || rgb.a < 0.25) {
+        return isLight ? '#0f172a' : '#ffffff';
+      }
+
+      const bgLuminance = calculateRelativeLuminance(rgb.r, rgb.g, rgb.b);
+
+      // حساب نسبة التباين مع الأبيض النقي (#ffffff, L = 1.0)
+      const contrastWithWhite = getContrastRatio(1.0, bgLuminance);
+
+      // حساب نسبة التباين مع الكحلي الداكن الصريح (#0f172a, L = ~0.012)
+      const darkLuminance = calculateRelativeLuminance(15, 23, 42);
+      const contrastWithDark = getContrastRatio(bgLuminance, darkLuminance);
+
+      const role = options.role || 'primary'; // 'primary' | 'secondary' | 'muted'
+
+      if (contrastWithWhite >= contrastWithDark) {
+        // الخلفية داكنة وتحتاج نصاً فاتحاً عالي التباين
+        if (role === 'secondary') return '#f8fafc';
+        if (role === 'muted') return '#cbd5e1';
+        return '#ffffff';
+      } else {
+        // الخلفية فاتحة وتحتاج نصاً داكناً عالي التباين
+        if (role === 'secondary') return '#1e293b';
+        if (role === 'muted') return '#334155';
+        return '#0f172a';
+      }
+    }
+
+    /**
+     * الدالة الشاملة لتطبيق اللون المغاير عالي التباين على أي نص أو رسالة في واجهات المنظومة
+     * تفحص العناصر وتطبق اللون الأمثل المغاير للون الخلفية لضمان تباين فوري عالي الوضوح
+     * @param {HTMLElement|string} target - العنصر أو الحاوية المستهدفة (الافتراضي: كامل الواجهة)
+     * @param {Object} options - خيارات التخصيص والفرض
+     */
+    function applyHighContrastText(target = document.body, options = {}) {
+      try {
+        let root = target;
+        if (typeof target === 'string') {
+          root = document.querySelector(target);
+        }
+        if (!root || !(root instanceof HTMLElement)) return;
+
+        // العناصر النصية المستهدفة في الواجهة والرسائل والنوافذ المنبثقة
+        const selector = 'p, h1, h2, h3, h4, h5, h6, label, span, td, th, li, a, button, input, textarea, select, [data-contrast-target]';
+        const textElements = root.matches(selector)
+          ? [root]
+          : Array.from(root.querySelectorAll(selector));
+
+        textElements.forEach(el => {
+          // استثناء الأيقونات الرسومية الصرفة لتجنب كسر تلوينها
+          if (el.classList.contains('table-title') || el.closest('.table-title') || el.closest('#unifiedPreviewModal') || el.closest('#loginModal') || el.closest('#changePasswordModal') || el.closest('#resetPassModal') || el.classList.contains('card-date-badge') || el.closest('.card-date-badge')) return;
+          if (el.tagName === 'I' || el.classList.contains('fa') || el.classList.contains('fa-solid') || el.classList.contains('fa-regular')) {
+            return;
+          }
+          if (el.closest('.content-card') || el.closest('.drag-box') || el.classList.contains('drag-textarea') || el.classList.contains('drag-bar') || el.closest('.view-mode-toggle') || el.classList.contains('view-toggle-btn')) {
+            return;
+          }
+          if (el.tagName === 'svg' || el.closest('svg')) {
+            return;
+          }
+
+          // التحقق من احتواء العنصر على محتوى نصي ظاهر
+          const text = el.innerText || el.textContent;
+          if (!text || !text.trim()) return;
+
+          const bg = getEffectiveBackgroundColor(el);
+          const computedStyle = window.getComputedStyle(el);
+          const currentTextColor = computedStyle.color;
+          const parsedCurrent = parseRgbColor(currentTextColor);
+          const parsedBg = parseRgbColor(bg);
+
+          if (parsedCurrent && parsedBg) {
+            const currentLum = calculateRelativeLuminance(parsedCurrent.r, parsedCurrent.g, parsedCurrent.b);
+            const bgLum = calculateRelativeLuminance(parsedBg.r, parsedBg.g, parsedBg.b);
+            const currentRatio = getContrastRatio(currentLum, bgLum);
+
+            // معيار WCAG AA الصارم: 4.5:1 للنصوص العادية و 3.0:1 للعناوين والأزرار
+            const minAllowedRatio = (el.matches('h1, h2, h3, h4, h5, h6, button, th') ? 3.0 : 4.5);
+
+            if (currentRatio < minAllowedRatio || options.forceAll) {
+              const role = el.matches('h1, h2, h3, h4, h5, h6, button, th') ? 'primary' : 'secondary';
+              const optimalColor = getContrastingTextColor(bg, { role });
+              el.style.setProperty('color', optimalColor, 'important');
+            }
+          } else {
+            const optimalColor = getContrastingTextColor(bg);
+            el.style.setProperty('color', optimalColor, 'important');
+          }
+        });
+      } catch (err) {
+        console.warn('تنبيه محرك التباين العالي:', err);
+      }
+    }
+
+    // إتاحة الدوال على نطاق Window العام لتكون متاحة للنظام بأكمله
+    window.calculateRelativeLuminance = calculateRelativeLuminance;
+    window.getContrastRatio = getContrastRatio;
+    window.getEffectiveBackgroundColor = getEffectiveBackgroundColor;
+    window.getContrastingTextColor = getContrastingTextColor;
+    window.applyHighContrastText = applyHighContrastText;
+    window.ensureHighContrast = applyHighContrastText;
+    window.applyHighContrastToElement = applyHighContrastText;
+
+    /**
+     * مزامنة التباين العالي الشاملة لكافة مكونات ورسائل الواجهة
+     */
+    function syncAllContrasts(scope = document.body) {
+      const tooltip = document.getElementById('agyGlobalTooltip');
+      if (tooltip) {
+        const isLight = document.body.classList.contains('light-theme');
+        tooltip.style.backgroundColor = isLight ? '#0f172a' : '#020617';
+        tooltip.style.color = '#ffffff';
+        tooltip.style.border = `1.5px solid ${isLight ? '#334155' : '#475569'}`;
+      }
+
+      // تطبيق التباين العالي على الحاوية المستهدفة ورسائل التنبيه
+      applyHighContrastText(scope);
+
+      const toastContainer = document.getElementById('toastContainer');
+      if (toastContainer) {
+        applyHighContrastText(toastContainer, { forceAll: true });
+      }
+    }
+
+    /**
+     * مراقب التغييرات الفوري (MutationObserver) لضمان تطبيق التباين العالي على أي رسالة أو نافذة جديدة فور ظهورها
+     */
+    function initDynamicContrastObserver() {
+      try {
+        const toastContainer = document.getElementById('toastContainer');
+        if (toastContainer && window.MutationObserver) {
+          const toastObserver = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+              mutation.addedNodes.forEach((node) => {
+                if (node instanceof HTMLElement) {
+                  applyHighContrastText(node, { forceAll: true });
+                }
+              });
+            });
+          });
+          toastObserver.observe(toastContainer, { childList: true, subtree: true });
+        }
+      } catch (e) {}
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initDynamicContrastObserver);
+    } else {
+      initDynamicContrastObserver();
+    }
+
+    /**
+     * محرك التلميحات عالي التباين لكافة الأماكن في الواجهة
+     */
+    function initGlobalTooltipEngine() {
+      const tooltip = document.getElementById('agyGlobalTooltip');
+      if (tooltip) tooltip.remove();
+    }
+
+    // تفعيل محرك التلميحات عالي التباين
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initGlobalTooltipEngine);
+    } else {
+      initGlobalTooltipEngine();
+    }
+
+    // Day / Night Theme Engine (الوضع الليلي والنهاري)
+    function applyTheme(mode) {
+      const icon = document.getElementById('themeToggleIcon');
+      const text = document.getElementById('themeToggleText');
+      if (mode === 'light') {
+        document.body.classList.add('light-theme');
+        if (icon) icon.innerHTML = '<i class="fa-solid fa-moon text-indigo-500"></i>';
+        if (text) text.innerText = 'ليلي';
+      } else {
+        document.body.classList.remove('light-theme');
+        if (icon) icon.innerHTML = '<i class="fa-solid fa-sun text-amber-400"></i>';
+        if (text) text.innerText = 'نهاري';
+      }
+      try {
+        document.querySelectorAll('.content-card, .content-card *').forEach(el => el.style.removeProperty('color'));
+      } catch (e) {}
+      syncAllContrasts();
+    }
+
+    function toggleTheme() {
+      const isLight = document.body.classList.contains('light-theme');
+      const newMode = isLight ? 'dark' : 'light';
+      applyTheme(newMode);
+      try {
+        localStorage.setItem('basra_theme_mode_v2', newMode);
+        localStorage.setItem('basra_theme_mode', newMode);
+      } catch (e) {}
+    }
+
+    // Initialize saved theme on start (الوضعية الافتراضية عند التشغيل هي الوضعية النهارية)
+    try {
+      const savedTheme = localStorage.getItem('basra_theme_mode_v2') || 'light';
+      applyTheme(savedTheme);
+    } catch (e) {
+      applyTheme('light');
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+  
+
+
+    // ================= GLOBAL SHEET ENGINE STATE =================
+    const OFFICIAL_FORM_SHEETS_MAP = {"form_1792961892317": ["./sheets/form_1792961892317_page_1.png"], "زمنية لسنة 2023.doc": ["./sheets/form_1792961892317_page_1.png"], "1792961892317____________2023.doc": ["./sheets/form_1792961892317_page_1.png"], "نموذج الزمنية": ["./sheets/form_1792961892317_page_1.png"], "form_1792961847784": ["./sheets/form_1792961847784_page_1.png"], "الخروج بواجب لسنة 2023.doc": ["./sheets/form_1792961847784_page_1.png"], "1792961847784___________________2023.doc": ["./sheets/form_1792961847784_page_1.png"], "نموذج الخروج للواجب": ["./sheets/form_1792961847784_page_1.png"], "form_1792961704382": ["./sheets/form_1792961704382_page_1.png"], "طلب اجازة اعتيادية لسنة 2023.doc": ["./sheets/form_1792961704382_page_1.png"], "1792961704382_________________________2023.doc": ["./sheets/form_1792961704382_page_1.png"], "نموذج اجازة اعتيادية": ["./sheets/form_1792961704382_page_1.png"], "form_1792960378733": ["./sheets/form_1792960378733_page_1.png"], "نموذج اجازة اعتيادية من 4 الى 5 ايام ترسل لمكتب انتخابات البصرة بالبريد .doc": ["./sheets/form_1792960378733_page_1.png"], "1792960378733_________________________4_____5_________________________________________.doc": ["./sheets/form_1792960378733_page_1.png"], "نموذج طلب اجازة اعتيادية من 4 الى 5 ايام ترسل لمكتب انتخابات البصرة بالبريد": ["./sheets/form_1792960378733_page_1.png"], "form_1792957024209": ["./sheets/form_1792957024209_page_1.png"], "نموذج اجازة من 6 ايام و اكثر  ترسل للمكتب الوطني وتؤخذ باليد لمكتب انتخابات البصرة  مع استمارة تؤخذ من مكتب المحافظه .doc": ["./sheets/form_1792957024209_page_1.png"], "1792957024209________________6_____________________________________________________________________________________________________.doc": ["./sheets/form_1792957024209_page_1.png"], "نموذج طلب اجازة من 6 ايام و اكثر  ترسل للمكتب الوطني وتؤخذ باليد لمكتب انتخابات البصرة": ["./sheets/form_1792957024209_page_1.png"], "form_1792790662356": ["./sheets/form_1792790662356_page_1.png"], "نموذج المباشرة.doc": ["./sheets/form_1792790662356_page_1.png"], "1792790662353_175922.doc": ["./sheets/form_1792790662356_page_1.png"], "نموذج المباشرة": ["./sheets/form_1792790662356_page_1.png"], "form_1792790583961": ["./sheets/form_1792790583961_page_1.png"], "نموذج فحص ومعالجة.doc": ["./sheets/form_1792790583961_page_1.png"], "1792790583958_932345.doc": ["./sheets/form_1792790583961_page_1.png"], "نموذج فحص ومعالجة": ["./sheets/form_1792790583961_page_1.png"], "form_1792783929926": ["./sheets/form_1792783929926_page_1.png"], "نموذج انفكاك.docx": ["./sheets/form_1792783929926_page_1.png"], "1792783929923_84284.docx": ["./sheets/form_1792783929926_page_1.png"], "نموذج انفكاك": ["./sheets/form_1792783929926_page_1.png"], "form_1792780898589": ["./sheets/form_1792780898589_page_1.png"], "نموذج طلب اجازة خاصه.docx": ["./sheets/form_1792780898589_page_1.png"], "1792780898579_282916.docx": ["./sheets/form_1792780898589_page_1.png"], "نموذج طلب اجازة خاصه": ["./sheets/form_1792780898589_page_1.png"], "form_09": ["./sheets/form_09_page_1.png"], "فورمة براءة ذمة.pdf": ["./sheets/form_09_page_1.png"], "form_09_فورمة براءة ذمة.pdf": ["./sheets/form_09_page_1.png"], "فورمة براءة ذمة": ["./sheets/form_09_page_1.png"], "form_11": ["./sheets/form_11_page_1.png"], "نموذج الاخبار.pdf": ["./sheets/form_11_page_1.png"], "form_11_نموذج الاخبار.pdf": ["./sheets/form_11_page_1.png"], "نموذج الاخبار": ["./sheets/form_11_page_1.png"], "form_12": ["./sheets/form_12_page_1.png"], "نموذج التعهد.pdf": ["./sheets/form_12_page_1.png"], "form_12_نموذج التعهد.pdf": ["./sheets/form_12_page_1.png"], "نموذج التعهد": ["./sheets/form_12_page_1.png"], "form_17": ["./sheets/form_17_page_1.png"], "استمارة الاستقطاع المباشر.pdf": ["./sheets/form_17_page_1.png"], "form_17_استمارة الاستقطاع المباشر.pdf": ["./sheets/form_17_page_1.png"], "استمارة الاستقطاع المباشر": ["./sheets/form_17_page_1.png"], "form_18": ["./sheets/form_18_page_1.png", "./sheets/form_18_page_2.png", "./sheets/form_18_page_3.png"], "نموذج سجل حضور وانصراف 2026.xlsx": ["./sheets/form_18_page_1.png", "./sheets/form_18_page_2.png", "./sheets/form_18_page_3.png"], "form_18_نموذج سجل حضور وانصراف 2928 2026.xlsx": ["./sheets/form_18_page_1.png", "./sheets/form_18_page_2.png", "./sheets/form_18_page_3.png"], "نموذج سجل حضور وانصراف 2026": ["./sheets/form_18_page_1.png", "./sheets/form_18_page_2.png", "./sheets/form_18_page_3.png"], "form_19": ["./sheets/form_19_page_1.png", "./sheets/form_19_page_2.png", "./sheets/form_19_page_3.png", "./sheets/form_19_page_4.png", "./sheets/form_19_page_5.png", "./sheets/form_19_page_6.png", "./sheets/form_19_page_7.png", "./sheets/form_19_page_8.png", "./sheets/form_19_page_9.png", "./sheets/form_19_page_10.png", "./sheets/form_19_page_11.png", "./sheets/form_19_page_12.png", "./sheets/form_19_page_13.png"], "تسلسل الموظفين يكتب على النماذج.xlsx": ["./sheets/form_19_page_1.png", "./sheets/form_19_page_2.png", "./sheets/form_19_page_3.png", "./sheets/form_19_page_4.png", "./sheets/form_19_page_5.png", "./sheets/form_19_page_6.png", "./sheets/form_19_page_7.png", "./sheets/form_19_page_8.png", "./sheets/form_19_page_9.png", "./sheets/form_19_page_10.png", "./sheets/form_19_page_11.png", "./sheets/form_19_page_12.png", "./sheets/form_19_page_13.png"], "form_19_تسلسل الموظفين يكتب على النماذج.xlsx": ["./sheets/form_19_page_1.png", "./sheets/form_19_page_2.png", "./sheets/form_19_page_3.png", "./sheets/form_19_page_4.png", "./sheets/form_19_page_5.png", "./sheets/form_19_page_6.png", "./sheets/form_19_page_7.png", "./sheets/form_19_page_8.png", "./sheets/form_19_page_9.png", "./sheets/form_19_page_10.png", "./sheets/form_19_page_11.png", "./sheets/form_19_page_12.png", "./sheets/form_19_page_13.png"], "تسلسل الموظفين يكتب على النماذج": ["./sheets/form_19_page_1.png", "./sheets/form_19_page_2.png", "./sheets/form_19_page_3.png", "./sheets/form_19_page_4.png", "./sheets/form_19_page_5.png", "./sheets/form_19_page_6.png", "./sheets/form_19_page_7.png", "./sheets/form_19_page_8.png", "./sheets/form_19_page_9.png", "./sheets/form_19_page_10.png", "./sheets/form_19_page_11.png", "./sheets/form_19_page_12.png", "./sheets/form_19_page_13.png"], "b70947fe-adff-48ec-9ea6-0ce684ab9c28": ["./sheets/form_1792790662356_page_1.png"], "مباشرة": ["./sheets/form_1792790662356_page_1.png"], "04f4d965-9670-4b47-a07a-3a28842b0766": ["./sheets/form_09_page_1.png"], "براءة ذمة": ["./sheets/form_09_page_1.png"], "form_09_sheet.png": ["./sheets/form_09_page_1.png"], "7194d968-2999-42e7-b415-81e1419827fa": ["./sheets/form_1792961892317_page_1.png"], "زمنية": ["./sheets/form_1792961892317_page_1.png"], "e6130337-cbac-4077-bc5a-932ecc2916ca": ["./sheets/form_1792783929926_page_1.png"], "نموذج  الانفكاك2": ["./sheets/form_1792783929926_page_1.png"], "نموذج الانفكاك2": ["./sheets/form_1792783929926_page_1.png"], "انفكاك": ["./sheets/form_1792783929926_page_1.png"]};
+
+    let allForms = [];
+    let activeCenter = null;
+    let activeForm = null;
+    let boxIdCounter = 0;
+    let currentVisiblePage = 1;
+    let currentSheetRotation = 0;
+    let currentSheetWidth = 850;
+    let currentSheetZoom = 850;
+
+    function trackActivity(id, title, action) {
+      // Safe activity tracker
+    }
+
+    function normalizePath(p) {
+      if (!p) return '';
+      if (p.startsWith('/sheets/')) return './sheets/' + p.substring(8);
+      if (p.startsWith('/uploads/')) return './uploads/' + p.substring(9);
+      if (p.startsWith('/')) return '.' + p;
+      return p;
+    }
+
+    // ================= UNIVERSAL OFFICE (DOC / DOCX / XLS / XLSX) & PDF IN-BROWSER SHEET RENDERER =================
+    async function renderOfficeBufferToDataUrls(arrayBuffer, ext, formTitle) {
+      const cleanExt = (ext || '').toLowerCase().replace(/^\./, '');
+      const titleText = formTitle || 'نموذج رسمي - مكتب انتخابات محافظة البصرة';
+
+      // Helper to wrap text lines on a 2D canvas
+      function wrapCanvasText(ctx, text, maxWidth) {
+        if ((text || '').includes('(') && (text || '').includes(')')) return [text];
+        const words = (text || '').split(/\s+/);
+        const lines = [];
+        let current = '';
+        for (let i = 0; i < words.length; i++) {
+          const w = words[i];
+          const test = current ? (current + ' ' + w) : w;
+          if (ctx.measureText(test).width > maxWidth && current) {
+            lines.push(current);
+            current = w;
+          } else {
+            current = test;
+          }
+        }
+        if (current) lines.push(current);
+        return lines.length > 0 ? lines : [''];
+      }
+
+      // Helper to render structured paragraphs/blocks onto A4 canvases (1240 x 1754 px)
+      function renderParagraphsToA4Canvases(paragraphs, isSpreadsheet, gridRows) {
+        const pageW = isSpreadsheet ? 1754 : 1240;
+        const pageH = isSpreadsheet ? 1240 : 1754;
+        const marginX = 95;
+        const contentW = pageW - (marginX * 2);
+
+        const createPageCanvas = () => {
+          const c = document.createElement('canvas');
+          c.width = pageW;
+          c.height = pageH;
+          const ctx = c.getContext('2d');
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, pageW, pageH);
+
+          // Official IHEC Header
+          ctx.direction = 'rtl';
+          ctx.textAlign = 'center';
+          ctx.fillStyle = '#0f172a';
+          ctx.font = 'bold 24px "Cairo", "Traditional Arabic", serif';
+          ctx.fillText('جمهورية العراق', pageW / 2, 65);
+          ctx.fillStyle = '#1e3a8a';
+          ctx.font = 'bold 28px "Cairo", "Traditional Arabic", serif';
+          ctx.fillText('المفوضية العليا المستقلة للانتخابات', pageW / 2, 102);
+          ctx.fillStyle = '#334155';
+          ctx.font = 'bold 18px "Cairo", "Traditional Arabic", sans-serif';
+          ctx.fillText('The Independent High Electoral Commission', pageW / 2, 132);
+
+          // Right Header
+          ctx.textAlign = 'right';
+          ctx.fillStyle = '#0f172a';
+          ctx.font = 'bold 24px "Cairo", "Traditional Arabic", serif';
+          ctx.fillText('مكتب انتخابات', pageW - marginX, 78);
+          ctx.fillText('محافظة البصرة', pageW - marginX, 114);
+
+          // Left Header
+          ctx.textAlign = 'right';
+          ctx.font = 'bold 20px "Cairo", "Traditional Arabic", serif';
+          ctx.fillText('العدد /', marginX + 180, 78);
+          ctx.fillText('التاريخ /', marginX + 180, 114);
+
+          // Header divider line
+          ctx.strokeStyle = '#0f172a';
+          ctx.lineWidth = 4;
+          ctx.beginPath();
+          ctx.moveTo(marginX, 155);
+          ctx.lineTo(pageW - marginX, 155);
+          ctx.stroke();
+
+          return { canvas: c, ctx, y: 210 };
+        };
+
+        if (isSpreadsheet && gridRows && gridRows.length > 0) {
+          const pages = [];
+          let cur = createPageCanvas();
+          pages.push(cur.canvas);
+
+          // Title
+          cur.ctx.direction = 'rtl';
+          cur.ctx.textAlign = 'center';
+          cur.ctx.fillStyle = '#0f172a';
+          cur.ctx.font = 'bold 28px "Cairo", "Traditional Arabic", serif';
+          cur.ctx.fillText(titleText, pageW / 2, cur.y);
+          cur.y += 45;
+
+          const nonEmptyRows = gridRows.filter(r => Array.isArray(r) && r.some(cell => String(cell || '').trim() !== ''));
+          const maxCols = Math.min(12, Math.max(1, ...nonEmptyRows.map(r => r.length)));
+          const colW = contentW / maxCols;
+          const rowH = 44;
+
+          for (let rIdx = 0; rIdx < nonEmptyRows.length; rIdx++) {
+            if (cur.y + rowH > pageH - 80) {
+              cur = createPageCanvas();
+              pages.push(cur.canvas);
+            }
+            const row = nonEmptyRows[rIdx];
+            const isHeader = rIdx === 0;
+            for (let cIdx = 0; cIdx < maxCols; cIdx++) {
+              const cellX = pageW - marginX - ((cIdx + 1) * colW);
+              cur.ctx.fillStyle = isHeader ? '#f1f5f9' : '#ffffff';
+              cur.ctx.fillRect(cellX, cur.y, colW, rowH);
+              cur.ctx.strokeStyle = '#64748b';
+              cur.ctx.lineWidth = 1.5;
+              cur.ctx.strokeRect(cellX, cur.y, colW, rowH);
+
+              const val = String(row[cIdx] !== undefined && row[cIdx] !== null ? row[cIdx] : '').trim();
+              if (val) {
+                cur.ctx.fillStyle = '#0f172a';
+                cur.ctx.font = (isHeader ? 'bold 18px ' : 'bold 16px ') + '"Cairo", "Traditional Arabic", sans-serif';
+                cur.ctx.textAlign = 'center';
+                cur.ctx.fillText(val.substring(0, 35), cellX + (colW / 2), cur.y + 28);
+              }
+            }
+            cur.y += rowH;
+          }
+          return pages.map(c => c.toDataURL('image/png'));
+        }
+
+        // Word Document (.doc / .docx) layout
+        const pages = [];
+        let cur = createPageCanvas();
+        pages.push(cur.canvas);
+
+        cur.ctx.direction = 'rtl';
+        for (let i = 0; i < paragraphs.length; i++) {
+          const p = paragraphs[i];
+          const text = (p.text || '').trim();
+          if (!text) {
+            cur.y += 18;
+            continue;
+          }
+
+          if (cur.y > pageH - 120) {
+            cur = createPageCanvas();
+            pages.push(cur.canvas);
+          }
+
+          if (p.type === 'subject') {
+            cur.y += 15;
+            cur.ctx.textAlign = 'center';
+            cur.ctx.fillStyle = '#0f172a';
+            cur.ctx.font = 'bold 32px "Cairo", "Traditional Arabic", serif';
+            cur.ctx.fillText(text, pageW / 2, cur.y);
+            cur.y += 55;
+          } else if (p.type === 'addressee') {
+            cur.ctx.textAlign = 'right';
+            cur.ctx.fillStyle = '#0f172a';
+            cur.ctx.font = 'bold 28px "Cairo", "Traditional Arabic", serif';
+            cur.ctx.fillText(text, pageW - marginX, cur.y);
+            cur.y += 48;
+          } else if (p.type === 'signatures_dual') {
+            // Two-column signature block (right & left)
+            cur.y = Math.max(cur.y + 60, pageH - 420);
+            cur.ctx.textAlign = 'right';
+            cur.ctx.fillStyle = '#0f172a';
+            cur.ctx.font = 'bold 25px "Cairo", "Traditional Arabic", serif';
+            const rightLines = p.rightLines || [];
+            const leftLines = p.leftLines || [];
+            const maxL = Math.max(rightLines.length, leftLines.length);
+            for (let k = 0; k < maxL; k++) {
+              if (rightLines[k]) {
+                cur.ctx.fillText(rightLines[k], pageW - marginX, cur.y);
+              }
+              if (leftLines[k]) {
+                cur.ctx.fillText(leftLines[k], marginX + 380, cur.y);
+              }
+              cur.y += 50;
+            }
+          } else if (p.type === 'note') {
+            cur.y += 20;
+            cur.ctx.textAlign = 'right';
+            cur.ctx.fillStyle = '#1e293b';
+            cur.ctx.font = 'bold 22px "Cairo", "Traditional Arabic", serif';
+            cur.ctx.fillText(text, pageW - marginX, cur.y);
+            cur.y += 42;
+          } else {
+            cur.ctx.textAlign = 'right';
+            cur.ctx.fillStyle = '#0f172a';
+            cur.ctx.font = 'bold 27px "Cairo", "Traditional Arabic", serif';
+            const wrapped = wrapCanvasText(cur.ctx, text, contentW);
+            for (let w = 0; w < wrapped.length; w++) {
+              if (cur.y > pageH - 100) {
+                cur = createPageCanvas();
+                pages.push(cur.canvas);
+              }
+              cur.ctx.fillText(wrapped[w], pageW - marginX, cur.y);
+              cur.y += 54;
+            }
+          }
+        }
+
+        return pages.map(c => c.toDataURL('image/png'));
+      }
+
+      // 1. Excel (.xlsx / .xls) via SheetJS
+      if ((cleanExt === 'xlsx' || cleanExt === 'xls') && window.XLSX) {
+        try {
+          const wb = XLSX.read(arrayBuffer, { type: 'array' });
+          const firstSheetName = wb.SheetNames[0];
+          const ws = wb.Sheets[firstSheetName];
+          const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+          if (rows && rows.length > 0) {
+            return renderParagraphsToA4Canvases([], true, rows);
+          }
+        } catch (e) {
+          console.warn('SheetJS Excel render warning:', e);
+        }
+      }
+
+      // 2. Word (.docx) via Mammoth
+      let rawTextLines = [];
+      if (cleanExt === 'docx' && window.mammoth) {
+        try {
+          const res = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
+          if (res && res.value) {
+            rawTextLines = res.value.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+          }
+        } catch (e) {
+          console.warn('Mammoth docx extract warning:', e);
+        }
+      }
+
+      // 3. Word 97-2003 (.doc) or fallback UTF-16LE / UTF-8 stream extraction
+      if (rawTextLines.length === 0) {
+        try {
+          const uint8 = new Uint8Array(arrayBuffer);
+          const utf16Text = new TextDecoder('utf-16le', { fatal: false }).decode(uint8);
+          const matches = utf16Text.match(/[\u0600-\u06FF][\u0600-\u06FF\s0-9/:().\-ـ،*+×÷=٪%"]+/g) || [];
+          const ignoreWords = [
+            'مكتب نور البراق', 'دائرة بناء القدرات', 'Normal', 'Times New Roman', 'Microsoft Word',
+            'عادي', 'العنوان 1', 'العنوان 2', 'العنوان 3', 'العنوان', 'خط الفقرة الافتراضي',
+            'جدول عادي', 'بلا قائمة', 'رأس الصفحة', 'تذييل الصفحة', 'نص في بالون',
+            'شبكة جدول', 'جدول ويب 1', 'جدول ويب 2', 'جدول ويب 3', 'جدول أنيق', 'توكيد'
+          ];
+          for (const chunk of matches) {
+            const cleaned = chunk.replace(/\r/g, '\n').trim();
+            if (cleaned.length < 4) continue;
+            if (ignoreWords.some(w => cleaned === w)) continue;
+            const subLines = cleaned.split('\n').map(s => s.trim()).filter(Boolean);
+            for (const sl of subLines) {
+              if (ignoreWords.some(w => sl.includes(w) && sl.length < 25)) continue;
+              if (sl === 'مكتب انتخابات' || sl === 'محافظة البصرة' || sl.startsWith('العدد') || sl === 'التاريخ/') continue;
+              rawTextLines.push(sl);
+            }
+          }
+        } catch (e) {
+          console.warn('Binary .doc UTF-16LE parse warning:', e);
+        }
+      }
+
+      // Organize extracted lines into structured official form paragraphs
+      const structured = [];
+      if (rawTextLines.length === 0) {
+        structured.push({ type: 'subject', text: titleText });
+      } else {
+        let i = 0;
+        while (i < rawTextLines.length) {
+          const line = rawTextLines[i];
+          if (line.startsWith('م /') || line.startsWith('م/') || line.startsWith('الموضوع')) {
+            structured.push({ type: 'subject', text: line });
+            i++;
+          } else if (line.startsWith('السيد ') || line.startsWith('إلى /') || line.startsWith('الى /') || line.startsWith('شعبة ')) {
+            structured.push({ type: 'addressee', text: line });
+            i++;
+          } else if (line.startsWith('التوقيع')) {
+            // Collect signature block(s)
+            const sigBlock1 = [];
+            const sigBlock2 = [];
+            while (i < rawTextLines.length && !rawTextLines[i].startsWith('ملاحظة')) {
+              const curL = rawTextLines[i];
+              if (curL.startsWith('التوقيع') && sigBlock1.length > 0) {
+                // Start second signature column
+                while (i < rawTextLines.length && !rawTextLines[i].startsWith('ملاحظة')) {
+                  sigBlock2.push(rawTextLines[i]);
+                  i++;
+                }
+                break;
+              } else {
+                sigBlock1.push(curL);
+                i++;
+              }
+            }
+            structured.push({
+              type: 'signatures_dual',
+              rightLines: sigBlock1,
+              leftLines: sigBlock2
+            });
+          } else if (line.startsWith('ملاحظة')) {
+            structured.push({ type: 'note', text: line });
+            i++;
+          } else {
+            structured.push({ type: 'body', text: line });
+            i++;
+          }
+        }
+      }
+
+      return renderParagraphsToA4Canvases(structured, false, null);
+    }
+
+    
+
+    async function handleSheetImgError(img, fileName, origSrc) {
+      const cleanKey = (origSrc || '').split('/').pop();
+      if (typeof BasraOfflineDB !== 'undefined') {
+        const blobUrl = await BasraOfflineDB.getBlobUrl(cleanKey);
+        if (blobUrl && img.src !== blobUrl) {
+          img.src = blobUrl;
+          return;
+        }
+      }
+      const active = (typeof activeAdminForm !== 'undefined' ? activeAdminForm : null) || (typeof activeForm !== 'undefined' ? activeForm : null);
+      if (!img._errStep) img._errStep = 1;
+      else img._errStep++;
+
+      // Step 1: Try alternate sheet paths (local relative vs Vercel cloud)
+      if (img._errStep === 1 && origSrc) {
+        const cleanPath = (origSrc || '').replace(/^\.?\//, '');
+        if (!img.src.includes('basra-forms.vercel.app')) {
+          img.src = 'https://basra-forms.vercel.app/' + cleanPath;
+          return;
+        }
+      }
+
+      // Step 2: If it is a direct image file, try uploads folder
+      const isImgFile = ['.png', '.jpg', '.jpeg', '.webp'].some(ext => (fileName || '').toLowerCase().endsWith(ext));
+      if (isImgFile && fileName) {
+        if (img._errStep === 2) {
+          img.src = './uploads/' + fileName;
+          return;
+        }
+        if (img._errStep === 3) {
+          img.src = 'https://basra-forms.vercel.app/uploads/' + fileName;
+          return;
+        }
+      }
+
+      // Step 3: If it is a PDF file, render dynamically into img.src so text boxes stay interactive!
+      const isPdf = (active && active.fileType === 'pdf') || (fileName && fileName.toLowerCase().endsWith('.pdf'));
+      if (isPdf && window.pdfjsLib && !img._pdfRenderAttempted) {
+        img._pdfRenderAttempted = true;
+        const urlsToTry = [
+          ...(active && active.fileUrl ? [active.fileUrl] : []),
+          (active && active.fileName) ? `./uploads/${active.fileName}` : `./uploads/${fileName}`,
+          `https://basra-forms.vercel.app/uploads/${(active && active.fileName) ? active.fileName : fileName}`
+        ];
+        for (const pdfUrl of urlsToTry) {
+          try {
+            const loadingTask = pdfjsLib.getDocument(pdfUrl);
+            const pdf = await loadingTask.promise;
+            const pNum = parseInt((img.id || '').replace('sheetImage_', '')) || 1;
+            const targetPageNum = Math.min(Math.max(1, pNum), pdf.numPages);
+            const page = await pdf.getPage(targetPageNum);
+            const viewport = page.getViewport({ scale: 1.8 });
+
+            const canvas = document.createElement('canvas');
+            canvas.width = viewport.width;
+            canvas.height = viewport.height;
+            const ctx = canvas.getContext('2d');
+            await page.render({ canvasContext: ctx, viewport }).promise;
+            img.src = canvas.toDataURL('image/png');
+            return;
+          } catch (pdfErr) {
+            console.warn('PDF fallback attempt warning:', pdfErr);
+          }
+        }
+      }
+
+      // Step 4: If it is an Office file (.doc, .docx, .xls, .xlsx), fetch and render onto A4 sheet image so text boxes work 100%!
+      const isOfficeFile = (active && (active.isOffice || ['docx', 'doc', 'xlsx', 'xls'].includes(active.fileType)))
+        || ['.docx', '.doc', '.xlsx', '.xls'].some(ext => (fileName || '').toLowerCase().endsWith(ext));
+      if (isOfficeFile && !img._officeRenderAttempted) {
+        img._officeRenderAttempted = true;
+        const targetFile = (active && active.fileName) ? active.fileName : fileName;
+        const ext = (active && active.fileType) ? active.fileType : (targetFile || '').split('.').pop();
+        const title = active ? active.title : '';
+        const urlsToTry = [
+          ...(active && active.fileUrl ? [active.fileUrl] : []),
+          `./uploads/${targetFile}`,
+          `https://basra-forms.vercel.app/uploads/${targetFile}`
+        ];
+        for (const u of urlsToTry) {
+          try {
+            const resp = await fetch(u);
+            if (resp.ok) {
+              const buf = await resp.arrayBuffer();
+              const dataUrls = await renderOfficeBufferToDataUrls(buf, ext, title);
+              if (dataUrls && dataUrls.length > 0) {
+                const pNum = parseInt((img.id || '').replace('sheetImage_', '')) || 1;
+                img.src = dataUrls[Math.min(pNum - 1, dataUrls.length - 1)];
+                return;
+              }
+            }
+          } catch (offErr) {
+            console.warn('Office dynamic sheet render warning:', offErr);
+          }
+        }
+      }
+
+      console.warn('Could not load sheet image:', origSrc);
+    }
+
+    
+
+    // ================= DOWNLOAD & FILE PICKER =================
+    async function downloadFileWithPicker(downloadUrl, originalFileName) {
+      if (!downloadUrl) {
+        alert('لا يوجد رابط لتحميل هذا الملف');
+        return;
+      }
+      if (window.showSaveFilePicker) {
+        try {
+          const dotIdx = originalFileName.lastIndexOf('.');
+          const ext = dotIdx !== -1 ? originalFileName.substring(dotIdx).toLowerCase() : '';
+
+          let mime = 'application/octet-stream';
+          let desc = 'ملف النموذج الأصلي (*' + ext + ')';
+          if (ext === '.docx') mime = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+          else if (ext === '.doc') mime = 'application/msword';
+          else if (ext === '.xlsx') mime = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+          else if (ext === '.xls') mime = 'application/vnd.ms-excel';
+          else if (ext === '.pdf') mime = 'application/pdf';
+          else if (ext === '.jpg' || ext === '.jpeg') mime = 'image/jpeg';
+          else if (ext === '.png') mime = 'image/png';
+
+          const fileHandle = await window.showSaveFilePicker({
+            suggestedName: originalFileName,
+            types: [{
+              description: desc,
+              accept: { [mime]: [ext] }
+            }]
+          });
+
+          const res = await fetch(normalizePath(downloadUrl));
+          const blob = await res.blob();
+          const writable = await fileHandle.createWritable();
+          await writable.write(blob);
+          await writable.close();
+          return;
+        } catch (err) {
+          if (err.name === 'AbortError') return; // User cancelled
+          console.warn('showSaveFilePicker fallback:', err);
+        }
+      }
+
+      // Fallback if browser doesn't support showSaveFilePicker
+      const a = document.createElement('a');
+      a.href = normalizePath(downloadUrl);
+      a.download = originalFileName;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    }
+
+    function getFormDownloadName(form) {
+      if (!form) return 'النموذج.docx';
+      let ext = 'docx';
+      if (form.fileName && form.fileName.includes('.')) {
+        ext = form.fileName.split('.').pop().toLowerCase();
+      } else if (form.file_name && form.file_name.includes('.')) {
+        ext = form.file_name.split('.').pop().toLowerCase();
+      } else if (form.fileType) {
+        ext = form.fileType.replace(/^\./, '').toLowerCase();
+      } else if (form.file_type) {
+        ext = form.file_type.replace(/^\./, '').toLowerCase();
+      }
+      let cleanTitle = (form.title || form.file_name || 'النموذج').trim();
+      cleanTitle = cleanTitle.replace(/\.(docx?|xlsx?|pdf|png|jpe?g)$/i, '');
+      return `${cleanTitle}.${ext}`;
+    }
+
+    function downloadFormFile(formId) {
+      const f = (typeof allContents !== 'undefined' ? allContents : (typeof allForms !== 'undefined' ? allForms : [])).find(item => String(item.id) === String(formId));
+      if (!f) return;
+      if (typeof trackActivity === 'function') {
+        trackActivity(f.id, f.title, 'download');
+      }
+      const downloadName = getFormDownloadName(f);
+      const downloadUrl = (typeof getDocumentAccessUrl === 'function' && f.file_url) ? getDocumentAccessUrl(f) : (f.file_url || (f.file_name ? `./uploads/${encodeURIComponent(f.file_name)}` : ''));
+      downloadFileWithPicker(downloadUrl, downloadName);
+    }
+
+    function handleModalDownload() {
+      if (!activeForm) return;
+      if (typeof trackActivity === 'function') {
+        trackActivity(activeForm.id, activeForm.title, 'download');
+      }
+      const downloadName = getFormDownloadName(activeForm);
+      const downloadUrl = activeForm.fileUrl || ((typeof getDocumentAccessUrl === 'function' && activeForm.file_url) ? getDocumentAccessUrl(activeForm) : (activeForm.file_url || (activeForm.fileName ? `./uploads/${encodeURIComponent(activeForm.fileName)}` : '')));
+      downloadFileWithPicker(downloadUrl, downloadName);
+    }
+
+    // ================= OPEN SHEET MODAL =================
+    async function openSheetModal(formId) {
+      const f = (typeof allContents !== 'undefined' ? allContents : (typeof allForms !== 'undefined' ? allForms : [])).find(item => String(item.id) === String(formId));
+      if (!f) return;
+
+      if (typeof trackActivity === 'function') {
+        trackActivity(f.id, f.title, 'view');
+      }
+
+      const ext = (f.file_name || f.file_type || '').split('.').pop().toLowerCase();
+      const isOffice = ['docx', 'doc', 'xlsx', 'xls'].includes(ext) || f.file_type === 'doc' || f.file_type === 'docx' || f.file_type === 'xls' || f.file_type === 'xlsx';
+      const isPdf = ext === 'pdf' || f.file_type === 'pdf';
+      const isImg = ['png', 'jpg', 'jpeg', 'webp', 'gif', 'svg'].includes(ext) || f.file_type === 'image';
+
+      activeForm = {
+        ...f,
+        id: f.id,
+        title: f.title || f.file_name || 'النموذج',
+        fileName: f.file_name || f.title,
+        originalName: f.file_name || f.title,
+        fileType: ext || f.file_type,
+        fileUrl: (typeof getDocumentAccessUrl === 'function' && f.file_url) ? getDocumentAccessUrl(f) : (f.file_url || ''),
+        isOffice: isOffice
+      };
+
+      const titleEl = document.getElementById('modalSheetTitle');
+      if (titleEl) titleEl.innerText = `عرض النموذج: ${activeForm.title}`;
+
+      const dlBtn = document.getElementById('modalDownloadBtn');
+      if (dlBtn) dlBtn.setAttribute('title', `تنزيل: ${activeForm.originalName || activeForm.title}`);
+
+      const addBoxBtn = document.getElementById('addBoxModalBtn');
+      const boxesCountWrap = document.getElementById('boxesCountWrap');
+      const tipText = document.getElementById('modalTipText');
+      const tipIcon = document.getElementById('modalTipIcon');
+
+      if (addBoxBtn) addBoxBtn.classList.remove('hidden');
+      if (boxesCountWrap) boxesCountWrap.classList.remove('hidden');
+      if (tipIcon) tipIcon.className = 'fa-solid fa-lightbulb text-amber-600';
+      if (tipText) tipText.innerText = 'اضغط زر "إضافة نص"، ثم اسحبه لأي مكان في النموذج وكبّره وصغره حسب الفراغ.';
+
+      // Show modal
+      const modal = document.getElementById('sheetModal');
+      if (modal) modal.classList.remove('hidden');
+
+      const scrollArea = document.getElementById('sheetScrollArea');
+      if (!scrollArea) return;
+
+      scrollArea.innerHTML = `
+        <div class="flex flex-col items-center justify-center py-28 text-slate-700 gap-3">
+          <i class="fa-solid fa-circle-notch fa-spin text-4xl text-amber-500"></i>
+          <span class="text-sm font-black text-slate-800">جاري معالجة وتجهيز النموذج بجودة عالية...</span>
+        </div>
+      `;
+
+      boxIdCounter = 0;
+      currentVisiblePage = 1;
+      currentSheetRotation = 0;
+      currentSheetWidth = 850;
+
+      const rotBadge = document.getElementById('rotationAngleBadge');
+      if (rotBadge) {
+        rotBadge.innerText = '0°';
+        rotBadge.classList.add('hidden');
+      }
+      const zoomBadge = document.getElementById('zoomPercentBadge');
+      if (zoomBadge) zoomBadge.innerText = '100%';
+      const bCountBadge = document.getElementById('boxesCountBadge');
+      if (bCountBadge) bCountBadge.innerText = '0';
+
+      let pages = [];
+
+      try {
+        // 1. Check official pre-rendered sheets map first for crystal-clear fidelity
+        const cleanT = (activeForm.title || '').trim().toLowerCase();
+        const cleanFN = (activeForm.fileName || '').trim().toLowerCase();
+        const cleanID = String(activeForm.id || '');
+
+        if (typeof OFFICIAL_FORM_SHEETS_MAP !== 'undefined') {
+          if (OFFICIAL_FORM_SHEETS_MAP[cleanID]) {
+            pages = [...OFFICIAL_FORM_SHEETS_MAP[cleanID]];
+          } else if (OFFICIAL_FORM_SHEETS_MAP[cleanFN]) {
+            pages = [...OFFICIAL_FORM_SHEETS_MAP[cleanFN]];
+          } else if (OFFICIAL_FORM_SHEETS_MAP[cleanT]) {
+            pages = [...OFFICIAL_FORM_SHEETS_MAP[cleanT]];
+          } else {
+            for (const [key, pList] of Object.entries(OFFICIAL_FORM_SHEETS_MAP)) {
+              if (key.length > 3 && (cleanT.includes(key) || key.includes(cleanT) || cleanFN.includes(key))) {
+                pages = [...pList];
+                break;
+              }
+            }
+          }
+        }
+
+        // 2. If not in official map, handle dynamic file rendering
+        if (pages.length === 0 && activeForm.fileUrl) {
+          if (isImg) {
+            pages = [activeForm.fileUrl];
+          } else if (isPdf && window.pdfjsLib) {
+            try {
+              const loadingTask = pdfjsLib.getDocument(activeForm.fileUrl);
+              const pdfDoc = await loadingTask.promise;
+              const numPages = pdfDoc.numPages;
+              for (let p = 1; p <= numPages; p++) {
+                const page = await pdfDoc.getPage(p);
+                const viewport = page.getViewport({ scale: 2.0 });
+                const canvas = document.createElement('canvas');
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+                const ctx = canvas.getContext('2d');
+                await page.render({ canvasContext: ctx, viewport }).promise;
+                pages.push(canvas.toDataURL('image/png'));
+              }
+            } catch (pdfErr) {
+              console.warn('Direct PDF load warning:', pdfErr);
+            }
+          } else if (isOffice) {
+            try {
+              const resp = await fetch(activeForm.fileUrl);
+              if (resp.ok) {
+                const buf = await resp.arrayBuffer();
+                const dataUrls = await renderOfficeBufferToDataUrls(buf, ext, activeForm.title);
+                if (dataUrls && dataUrls.length > 0) {
+                  pages = dataUrls;
+                }
+              }
+            } catch (offErr) {
+              console.warn('Direct Office load warning:', offErr);
+            }
+          }
+        }
+
+        // 3. Fallbacks
+        if (pages.length === 0) {
+          if (activeForm.previewPages && activeForm.previewPages.length > 0) {
+            pages = [...activeForm.previewPages];
+          } else if (activeForm.pages && activeForm.pages.length > 0) {
+            pages = [...activeForm.pages];
+          } else if (activeForm.sheetImage) {
+            pages = [activeForm.sheetImage];
+          } else if (activeForm.body_text) {
+            const dataUrls = await renderOfficeBufferToDataUrls(new ArrayBuffer(0), 'docx', activeForm.title);
+            if (dataUrls && dataUrls.length > 0) pages = dataUrls;
+          }
+        }
+
+        if (pages.length === 0) {
+          const dataUrls = await renderOfficeBufferToDataUrls(new ArrayBuffer(0), 'docx', activeForm.title);
+          pages = (dataUrls && dataUrls.length > 0) ? dataUrls : ['./sheets/' + activeForm.id + '_sheet.png'];
+        }
+      } catch (err) {
+        console.error('Error preparing sheet pages:', err);
+      }
+
+      scrollArea.innerHTML = '';
+      const pCountBadge = document.getElementById('pagesCountBadge');
+      if (pCountBadge) pCountBadge.innerText = pages.length;
+
+      pages.forEach((pageSrc, pageIdx) => {
+        const pNum = pageIdx + 1;
+        const pageWrapper = document.createElement('div');
+        pageWrapper.className = 'sheet-wrapper';
+        pageWrapper.id = `sheetWrapper_${pNum}`;
+        pageWrapper.setAttribute('data-page', pNum);
+
+        let pageHeaderHtml = '';
+        if (pages.length > 1) {
+          pageHeaderHtml = `
+            <div class="bg-slate-800 text-white text-xs font-bold px-3 py-1.5 rounded-t flex items-center justify-between">
+              <span>صفحة ${pNum} من ${pages.length}</span>
+              <button type="button" onclick="addDraggableBox('', 35, 30, 140, 30, ${pNum})" class="bg-amber-500 hover:bg-amber-400 text-slate-950 px-2.5 py-0.5 rounded text-xs font-black">
+                + إضافة مربع نص
+              </button>
+            </div>
+          `;
+        }
+
+        const initialSrc = (typeof normalizePath === 'function') ? normalizePath(pageSrc) : pageSrc;
+        pageWrapper.innerHTML = `
+          ${pageHeaderHtml}
+          <div class="page-rotatable-inner" id="pageRotatable_${pNum}" style="position: relative; width: 100%; transition: transform 0.2s ease;">
+            <img src="${initialSrc}" class="sheet-bg" id="sheetImage_${pNum}" alt="ورقة ${pNum}" onload="applySheetRotation()" onerror="handleSheetImgError(this, '${activeForm.fileName || ''}', '${pageSrc}')">
+            <div id="boxesContainer_${pNum}" class="absolute inset-0">
+              <!-- Text Boxes for page ${pNum} -->
+            </div>
+          </div>
+        `;
+        scrollArea.appendChild(pageWrapper);
+
+        // Instant local IndexedDB blob update if available
+        if (typeof BasraOfflineDB !== 'undefined' && BasraOfflineDB.getBlobUrl) {
+          const key = pageSrc.split('/').pop();
+          BasraOfflineDB.getBlobUrl(key).then((blobUrl) => {
+            if (blobUrl) {
+              const imgEl = document.getElementById(`sheetImage_${pNum}`);
+              if (imgEl) imgEl.src = blobUrl;
+            }
+          }).catch(() => {});
+        }
+      });
+
+      // Initial layout pass
+      setTimeout(applySheetRotation, 50);
+    }
+
+    function rotateCurrentSheet(delta = 90) {
+      if (typeof currentSheetWidth !== 'number' || isNaN(currentSheetWidth)) {
+        currentSheetWidth = 850;
+      }
+      currentSheetRotation = ((currentSheetRotation || 0) + delta) % 360;
+      applySheetRotation();
+    }
+
+    function setSheetWidth(width) {
+      const targetW = (typeof width === 'number' && !isNaN(width)) ? width : 850;
+      currentSheetWidth = Math.max(300, Math.min(2600, targetW));
+      const zoomBadge = document.getElementById('zoomPercentBadge');
+      if (zoomBadge) {
+        const pct = Math.round((currentSheetWidth / 850) * 100);
+        zoomBadge.innerText = `${pct}%`;
+      }
+
+      const zoomRatio = currentSheetWidth / 850;
+      document.querySelectorAll('#sheetScrollArea .drag-textarea').forEach(ta => {
+        const baseFont = parseFloat(ta.getAttribute('data-base-font')) || 16;
+        ta.style.fontSize = `${Math.round(baseFont * zoomRatio)}px`;
+      });
+
+      applySheetRotation();
+    }
+
+    function adjustSheetZoom(delta) {
+      if (typeof currentSheetWidth !== 'number' || isNaN(currentSheetWidth)) {
+        currentSheetWidth = 850;
+      }
+      setSheetWidth(currentSheetWidth + delta);
+    }
+
+    function applySheetRotation() {
+      const wrappers = document.querySelectorAll('#sheetScrollArea .sheet-wrapper');
+      const badge = document.getElementById('rotationAngleBadge');
+      if (badge) {
+        if (currentSheetRotation > 0) {
+          badge.innerText = `${currentSheetRotation}°`;
+          badge.classList.remove('hidden');
+        } else {
+          badge.classList.add('hidden');
+        }
+      }
+
+      wrappers.forEach(wrapper => {
+        const pNum = wrapper.getAttribute('data-page') || '1';
+        const inner = document.getElementById(`pageRotatable_${pNum}`);
+        const img = document.getElementById(`sheetImage_${pNum}`);
+        if (!inner || !img) return;
+
+        const natW = img.naturalWidth || 1200;
+        const natH = img.naturalHeight || 1700;
+        const aspect = natH / natW;
+
+        const W = currentSheetWidth;
+        const H = Math.round(W * aspect);
+
+        inner.style.width = `${W}px`;
+        inner.style.height = `${H}px`;
+
+        const headerEl = wrapper.querySelector('.bg-slate-800');
+        const headerH = headerEl ? headerEl.offsetHeight : 0;
+
+        wrapper.style.maxWidth = 'none';
+
+        if (currentSheetRotation === 0) {
+          wrapper.style.width = `${W}px`;
+          wrapper.style.height = 'auto';
+          inner.style.position = 'relative';
+          inner.style.top = '0px';
+          inner.style.left = '0px';
+          inner.style.transformOrigin = 'top left';
+          inner.style.transform = 'none';
+        } else if (currentSheetRotation === 90) {
+          wrapper.style.width = `${H}px`;
+          wrapper.style.height = `${W + headerH}px`;
+          inner.style.position = 'absolute';
+          inner.style.top = `${headerH}px`;
+          inner.style.left = '0px';
+          inner.style.transformOrigin = 'top left';
+          inner.style.transform = `translate(${H}px, 0px) rotate(90deg)`;
+        } else if (currentSheetRotation === 180) {
+          wrapper.style.width = `${W}px`;
+          wrapper.style.height = `${H + headerH}px`;
+          inner.style.position = 'absolute';
+          inner.style.top = `${headerH}px`;
+          inner.style.left = '0px';
+          inner.style.transformOrigin = 'top left';
+          inner.style.transform = `translate(${W}px, ${H}px) rotate(180deg)`;
+        } else if (currentSheetRotation === 270) {
+          wrapper.style.width = `${H}px`;
+          wrapper.style.height = `${W + headerH}px`;
+          inner.style.position = 'absolute';
+          inner.style.top = `${headerH}px`;
+          inner.style.left = '0px';
+          inner.style.transformOrigin = 'top left';
+          inner.style.transform = `translate(0px, ${W}px) rotate(270deg)`;
+        }
+      });
+    }
+
+    function closeSheetModal() {
+      document.getElementById('sheetModal').classList.add('hidden');
+      document.getElementById('sheetScrollArea').innerHTML = '';
+    }
+
+    function addDraggableBoxToCurrentPage() {
+      // Find visible page in scroll area
+      const wrappers = document.querySelectorAll('#sheetScrollArea .sheet-wrapper');
+      let targetPage = 1;
+      const scrollArea = document.getElementById('sheetScrollArea');
+      const scrollTop = scrollArea.scrollTop;
+
+      wrappers.forEach(w => {
+        const pageNum = parseInt(w.getAttribute('data-page')) || 1;
+        if (w.offsetTop - 100 <= scrollTop) {
+          targetPage = pageNum;
+        }
+      });
+
+      addDraggableBox('', 35, 30, 140, 30, targetPage);
+    }
+
+    // Add New Draggable & Resizable Text Box to specified page
+    function addDraggableBox(defaultText = '', posXPercent = 35, posYPercent = 30, widthVal = 16.5, heightVal = 2.7, pageNum = 1, baseFont = 16) {
+      const container = document.getElementById(`boxesContainer_${pageNum}`) || document.getElementById('boxesContainer_1');
+      if (!container) return;
+
+      boxIdCounter++;
+      const boxId = 'box_' + boxIdCounter;
+
+      let wPct = parseFloat(widthVal) || 16.5;
+      if (wPct > 50) wPct = ((wPct / 850) * 100); // convert legacy pixel inputs to percentage
+      let hPct = parseFloat(heightVal) || 2.7;
+      if (hPct > 15) hPct = ((hPct / 1200) * 100);
+
+      const box = document.createElement('div');
+      box.className = 'drag-box is-focused';
+      box.style.setProperty('background', 'transparent', 'important');
+      box.style.setProperty('background-color', 'transparent', 'important');
+      box.style.background = 'transparent';
+      box.id = boxId;
+      box.setAttribute('data-page', pageNum);
+      box.style.top = `${posYPercent}%`;
+      box.style.left = `${posXPercent}%`;
+      box.style.width = `${wPct.toFixed(2)}%`;
+      box.style.height = `${hPct.toFixed(2)}%`;
+
+      box.innerHTML = `
+        <div class="drag-bar" onpointerdown="startDrag(event, '${boxId}', ${pageNum})">
+          <span class="flex items-center gap-1">
+            <i class="fa-solid fa-arrows-up-down-left-right text-[10px]"></i>
+            <span>اسحب</span>
+          </span>
+          <div class="flex items-center gap-1.5 no-drag">
+            <button type="button" onclick="duplicateBox('${boxId}')" class="hover:text-emerald-300 font-bold px-1 flex items-center gap-0.5 text-[10px] bg-white/10 rounded" title="تكرار / نسخ هذا المربع">
+              <i class="fa-regular fa-clone"></i>
+              <span>نسخ</span>
+            </button>
+            <button type="button" onclick="adjustBoxFont('${boxId}', 1)" class="hover:text-amber-300 font-bold px-1" title="تكبير الخط">A+</button>
+            <button type="button" onclick="adjustBoxFont('${boxId}', -1)" class="hover:text-amber-300 font-bold px-1" title="تصغير الخط">A-</button>
+            <button type="button" onclick="deleteBox('${boxId}')" class="hover:text-rose-300 font-bold px-1 text-xs" title="حذف المربع">✕</button>
+          </div>
+        </div>
+        <textarea class="drag-textarea" placeholder="اكتب هنا..." data-base-font="${baseFont}">${defaultText}</textarea>
+        <div class="resize-handle" onpointerdown="startResize(event, '${boxId}')" title="اسحب لتكبير وتصغير المربع">⇲</div>
+      `;
+
+      container.appendChild(box);
+      updateBoxesCount();
+
+      const ta = box.querySelector('.drag-textarea');
+      if (ta) {
+        ta.style.setProperty('background', 'transparent', 'important');
+        ta.style.setProperty('background-color', 'transparent', 'important');
+      }
+      const zoomRatio = currentSheetWidth / 850;
+      if (ta) {
+        ta.style.fontSize = `${Math.round(baseFont * zoomRatio)}px`;
+      }
+
+      // Track whether box has text content to seamlessly blend when unfocused
+      function updateBoxTextState() {
+        if (ta && ta.value && ta.value.trim().length > 0) {
+          box.classList.add('has-text');
+        } else {
+          box.classList.remove('has-text');
+        }
+      }
+      ta.addEventListener('input', updateBoxTextState);
+      ta.addEventListener('change', updateBoxTextState);
+      updateBoxTextState();
+
+      // Focus handling:
+      ta.addEventListener('focus', () => {
+        document.querySelectorAll('.drag-box').forEach(b => b.classList.remove('is-focused'));
+        box.classList.add('is-focused');
+      });
+      ta.addEventListener('blur', () => {
+        box.classList.remove('is-focused');
+      });
+      box.addEventListener('pointerdown', () => {
+        document.querySelectorAll('.drag-box').forEach(b => b.classList.remove('is-focused'));
+        box.classList.add('is-focused');
+      });
+
+      // Auto expand height if needed
+      ta.addEventListener('input', () => {
+        const containerH = container.offsetHeight || 1200;
+        if (ta.scrollHeight > box.clientHeight) {
+          const newHPct = ((ta.scrollHeight + 4) / containerH) * 100;
+          box.style.height = `${newHPct.toFixed(2)}%`;
+        }
+      });
+
+      // Focus the textarea
+      setTimeout(() => {
+        if (ta) ta.focus();
+      }, 50);
+    }
+
+    function deleteBox(id) {
+      const el = document.getElementById(id);
+      if (el) el.remove();
+      updateBoxesCount();
+    }
+
+    // Duplicate text box
+    function duplicateBox(boxId) {
+      const srcBox = document.getElementById(boxId);
+      if (!srcBox) return;
+
+      const pageNum = parseInt(srcBox.getAttribute('data-page')) || 1;
+      const srcTa = srcBox.querySelector('.drag-textarea');
+      const text = srcTa ? srcTa.value : '';
+      const baseFont = srcTa ? (parseFloat(srcTa.getAttribute('data-base-font')) || 16) : 16;
+
+      const srcLeftPct = parseFloat(srcBox.style.left) || 35;
+      const srcTopPct = parseFloat(srcBox.style.top) || 30;
+      const srcWidthPct = parseFloat(srcBox.style.width) || 16.5;
+      const srcHeightPct = parseFloat(srcBox.style.height) || 2.7;
+
+      let newLeftPct = Math.max(1, Math.min(85, srcLeftPct - 1.5));
+      let newTopPct = Math.max(1, Math.min(94, srcTopPct + 2.5));
+
+      addDraggableBox(text, newLeftPct.toFixed(2), newTopPct.toFixed(2), srcWidthPct.toFixed(2), srcHeightPct.toFixed(2), pageNum, baseFont);
+    }
+
+    function adjustBoxFont(id, delta) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const ta = el.querySelector('.drag-textarea');
+      if (!ta) return;
+      let baseFont = parseFloat(ta.getAttribute('data-base-font')) || 16;
+      baseFont = Math.max(8, Math.min(48, baseFont + (delta * 2)));
+      ta.setAttribute('data-base-font', baseFont);
+      const zoomRatio = currentSheetWidth / 850;
+      ta.style.fontSize = `${Math.round(baseFont * zoomRatio)}px`;
+    }
+
+    function updateBoxesCount() {
+      const count = document.querySelectorAll('#sheetScrollArea .drag-box').length;
+      const badge = document.getElementById('boxesCountBadge');
+      if (badge) badge.innerText = count;
+    }
+
+    // Drag Implementation with Rotation Support
+    let activeDrag = null;
+
+    function startDrag(e, boxId, pageNum = 1) {
+      if (e.target.closest('.no-drag')) return;
+      e.preventDefault();
+
+      const box = document.getElementById(boxId);
+      const container = box.parentElement; // boxesContainer
+      const containerW = container.offsetWidth || currentSheetWidth;
+      const containerH = container.offsetHeight || Math.round(currentSheetWidth * 1.414);
+
+      const currentLeftPct = parseFloat(box.style.left) || 35;
+      const currentTopPct = parseFloat(box.style.top) || 30;
+
+      activeDrag = {
+        box,
+        pageNum,
+        startX: e.clientX,
+        startY: e.clientY,
+        initialLeftPx: (currentLeftPct / 100) * containerW,
+        initialTopPx: (currentTopPct / 100) * containerH,
+        containerW,
+        containerH,
+        rotation: currentSheetRotation
+      };
+
+      box.classList.add('active');
+
+      window.addEventListener('pointermove', onDragging);
+      window.addEventListener('pointerup', stopDrag);
+    }
+
+    function onDragging(e) {
+      if (!activeDrag) return;
+      e.preventDefault();
+
+      const dxScreen = e.clientX - activeDrag.startX;
+      const dyScreen = e.clientY - activeDrag.startY;
+
+      let dxLocal = dxScreen;
+      let dyLocal = dyScreen;
+
+      if (activeDrag.rotation === 90) {
+        dxLocal = dyScreen;
+        dyLocal = -dxScreen;
+      } else if (activeDrag.rotation === 180) {
+        dxLocal = -dxScreen;
+        dyLocal = -dyScreen;
+      } else if (activeDrag.rotation === 270) {
+        dxLocal = -dyScreen;
+        dyLocal = dxScreen;
+      }
+
+      let newLeft = activeDrag.initialLeftPx + dxLocal;
+      let newTop = activeDrag.initialTopPx + dyLocal;
+
+      newLeft = Math.max(0, Math.min(activeDrag.containerW - 30, newLeft));
+      newTop = Math.max(0, Math.min(activeDrag.containerH - 20, newTop));
+
+      const leftPct = (newLeft / activeDrag.containerW) * 100;
+      const topPct = (newTop / activeDrag.containerH) * 100;
+
+      activeDrag.box.style.left = `${leftPct.toFixed(2)}%`;
+      activeDrag.box.style.top = `${topPct.toFixed(2)}%`;
+    }
+
+    function stopDrag() {
+      if (activeDrag && activeDrag.box) {
+        activeDrag.box.classList.remove('active');
+      }
+      activeDrag = null;
+      window.removeEventListener('pointermove', onDragging);
+      window.removeEventListener('pointerup', stopDrag);
+    }
+
+    // Resize Implementation with Rotation Support
+    let activeResize = null;
+
+    function startResize(e, boxId) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const box = document.getElementById(boxId);
+      const container = box.parentElement;
+      const containerW = container.offsetWidth || currentSheetWidth;
+      const containerH = container.offsetHeight || Math.round(currentSheetWidth * 1.414);
+
+      activeResize = {
+        box,
+        startX: e.clientX,
+        startY: e.clientY,
+        initialWidthPx: box.offsetWidth,
+        initialHeightPx: box.offsetHeight,
+        containerW,
+        containerH,
+        rotation: currentSheetRotation
+      };
+
+      box.classList.add('active');
+
+      window.addEventListener('pointermove', onResizing);
+      window.addEventListener('pointerup', stopResize);
+    }
+
+    function onResizing(e) {
+      if (!activeResize) return;
+      e.preventDefault();
+
+      const dxScreen = activeResize.startX - e.clientX;
+      const dyScreen = e.clientY - activeResize.startY;
+
+      let dxLocal = dxScreen;
+      let dyLocal = dyScreen;
+
+      if (activeResize.rotation === 90) {
+        dxLocal = dyScreen;
+        dyLocal = dxScreen;
+      } else if (activeResize.rotation === 180) {
+        dxLocal = -dxScreen;
+        dyLocal = -dyScreen;
+      } else if (activeResize.rotation === 270) {
+        dxLocal = -dyScreen;
+        dyLocal = -dxScreen;
+      }
+
+      const newWidthPx = Math.max(30, activeResize.initialWidthPx + dxLocal);
+      const newHeightPx = Math.max(20, activeResize.initialHeightPx + dyLocal);
+
+      const widthPct = (newWidthPx / activeResize.containerW) * 100;
+      const heightPct = (newHeightPx / activeResize.containerH) * 100;
+
+      activeResize.box.style.width = `${widthPct.toFixed(2)}%`;
+      activeResize.box.style.height = `${heightPct.toFixed(2)}%`;
+    }
+
+    function stopResize() {
+      if (activeResize && activeResize.box) {
+        activeResize.box.classList.remove('active');
+      }
+      activeResize = null;
+      window.removeEventListener('pointermove', onResizing);
+      window.removeEventListener('pointerup', stopResize);
+    }
+
+    // Generate high-resolution canvas with official sheet and user texts baked in (supports multi-page)
+    async function generateBakedCanvases() {
+      if (!activeForm) return [];
+
+      if (document.fonts && document.fonts.ready) {
+        await document.fonts.ready;
+      }
+
+      let pages = [];
+      if (activeForm.pages && activeForm.pages.length > 0) {
+        pages = activeForm.pages;
+      } else if (activeForm.sheetImage) {
+        pages = [activeForm.sheetImage];
+      } else if (activeForm.fileType === 'image' || ['.png', '.jpg', '.jpeg', '.webp'].some(ext => (activeForm.fileName || '').toLowerCase().endsWith(ext))) {
+        pages = ['./uploads/' + activeForm.fileName];
+      } else {
+        pages = [`./sheets/${activeForm.id}_sheet.png`];
+      }
+
+            if ((!pages || pages.length <= 1) && activeForm.pageCount && activeForm.pageCount > 1) {
+        pages = [];
+        for (let i = 1; i <= activeForm.pageCount; i++) {
+          pages.push(`./sheets/${activeForm.id}_page_${i}.png`);
+        }
+      }
+
+      const canvases = [];
+
+      for (let pIdx = 0; pIdx < pages.length; pIdx++) {
+        const pNum = pIdx + 1;
+        const pageImgEl = document.getElementById(`sheetImage_${pNum}`);
+        const rotatableInner = document.getElementById(`pageRotatable_${pNum}`);
+        const boxes = document.querySelectorAll(`#boxesContainer_${pNum} .drag-box`);
+        if (!pageImgEl) continue;
+
+        const origW = pageImgEl.naturalWidth || 1700;
+        const origH = pageImgEl.naturalHeight || 2200;
+
+        const canvas = document.createElement('canvas');
+        if (currentSheetRotation === 90 || currentSheetRotation === 270) {
+          canvas.width = origH;
+          canvas.height = origW;
+        } else {
+          canvas.width = origW;
+          canvas.height = origH;
+        }
+        const ctx = canvas.getContext('2d');
+
+        ctx.save();
+        if (currentSheetRotation === 90) {
+          ctx.translate(origH, 0);
+          ctx.rotate(90 * Math.PI / 180);
+        } else if (currentSheetRotation === 180) {
+          ctx.translate(origW, origH);
+          ctx.rotate(180 * Math.PI / 180);
+        } else if (currentSheetRotation === 270) {
+          ctx.translate(0, origW);
+          ctx.rotate(270 * Math.PI / 180);
+        }
+
+        // Draw original page sheet
+        ctx.drawImage(pageImgEl, 0, 0, origW, origH);
+
+        const innerW = rotatableInner ? rotatableInner.offsetWidth : currentSheetWidth;
+        const innerH = rotatableInner ? rotatableInner.offsetHeight : Math.round(currentSheetWidth * (origH / origW));
+
+        const scaleX = origW / innerW;
+        const scaleY = origH / innerH;
+
+        boxes.forEach(box => {
+          const ta = box.querySelector('.drag-textarea');
+          const text = ta ? ta.value : '';
+          if (text && text.trim()) {
+            const leftPct = parseFloat(box.style.left) || 0;
+            const topPct = parseFloat(box.style.top) || 0;
+            const widthPct = parseFloat(box.style.width) || 16.5;
+
+            const baseFontPx = parseFloat(ta.getAttribute('data-base-font')) || 16;
+            const printScale = origW / 850;
+            const canvasFontSize = Math.round(baseFontPx * printScale);
+
+            ctx.save();
+            ctx.font = `bold ${canvasFontSize}px "Cairo", "Traditional Arabic", sans-serif`;
+            ctx.fillStyle = '#000000';
+            ctx.direction = 'rtl';
+            ctx.textAlign = 'right';
+            ctx.textBaseline = 'top';
+
+            // Coordinates on canvas (rotates with image context)
+            const boxX = (leftPct / 100) * origW;
+            const boxY = (topPct / 100) * origH;
+            const boxW = (widthPct / 100) * origW;
+            const textRight = boxX + boxW;
+            const baselineNudge = canvasFontSize * 0.18; // precise downward baseline alignment
+
+            const lines = text.split('\n');
+            const lineHeight = canvasFontSize * 1.30;
+
+            lines.forEach((line, idx) => {
+              ctx.fillText(line, textRight - (2 * printScale), boxY + baselineNudge + (idx * lineHeight));
+            });
+
+            ctx.restore();
+          }
+        });
+
+        ctx.restore();
+        canvases.push(canvas);
+      }
+
+      return canvases;
+    }
+
+    // Print the Sheet with 100% pixel accuracy (supports all pages)
+    
+
+    async function printSheetWithBoxes() {
+      if (!activeForm) return;
+      trackActivity(activeForm.id, activeForm.title, 'print');
+
+      const wrappers = document.querySelectorAll('#sheetScrollArea .sheet-wrapper');
+      if (!wrappers || wrappers.length === 0) {
+        window.print();
+        return;
+      }
+
+      // Determine orientation from first image
+      const firstImg = document.querySelector('#sheetScrollArea .sheet-bg');
+      const isLandscape = firstImg && (firstImg.naturalWidth > firstImg.naturalHeight * 1.15);
+      const printOrientation = isLandscape ? 'A4 landscape' : 'A4 portrait';
+      const printPageWidth = isLandscape ? '297mm' : '210mm';
+
+      // 1. Generate High-Resolution Baked Canvases (identical to v2.0.0, zero drift)
+      let canvases = [];
+      try {
+        canvases = await generateBakedCanvases();
+      } catch (err) {
+        console.warn('Canvas baking warning:', err);
+        canvases = [];
+      }
+
+      // 2. Try exporting canvases to DataURL (works on HTTP/HTTPS / Vercel with 100% pixel precision)
+      let canUseDataUrl = false;
+      let bakedUrls = [];
+      if (canvases && canvases.length === wrappers.length) {
+        try {
+          for (let i = 0; i < canvases.length; i++) {
+            bakedUrls.push(canvases[i].toDataURL('image/png', 1.0));
+          }
+          canUseDataUrl = true;
+        } catch (e) {
+          canUseDataUrl = false;
+          bakedUrls = [];
+        }
+      }
+
+      let printFrame = document.getElementById('basraPrintFrame');
+      if (printFrame) printFrame.remove();
+
+      printFrame = document.createElement('iframe');
+      printFrame.id = 'basraPrintFrame';
+      printFrame.style.position = 'fixed';
+      printFrame.style.right = '0';
+      printFrame.style.bottom = '0';
+      printFrame.style.width = '1px';
+      printFrame.style.height = '1px';
+      printFrame.style.opacity = '0.01';
+      printFrame.style.border = '0';
+      printFrame.style.pointerEvents = 'none';
+      document.body.appendChild(printFrame);
+
+      const fwin = printFrame.contentWindow;
+      const fdoc = fwin.document;
+      fdoc.open();
+      fdoc.write(`
+        <!DOCTYPE html>
+        <html lang="ar" dir="rtl">
+        <head>
+          <meta charset="UTF-8">
+          <title>البوابة الإلكترونية للمراكز - مفوضية الانتخابات v2.0.1</title>
+          <style>
+            @page {
+              size: ${printOrientation};
+              margin: 0;
+            }
+            * {
+              box-sizing: border-box;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            html, body {
+              margin: 0;
+              padding: 0;
+              width: 100%;
+              background: #fff;
+            }
+            .a4-print-page {
+              width: ${printPageWidth};
+              max-width: 100%;
+              margin: 0 auto;
+              position: relative;
+              page-break-inside: avoid;
+            }
+            .baked-sheet-img {
+              width: 100%;
+              height: auto;
+              display: block;
+            }
+            @media print {
+              html, body {
+                width: 100%;
+                margin: 0;
+                padding: 0;
+              }
+              .a4-print-page {
+                width: 100% !important;
+                margin: 0 !important;
+              }
+            }
+
+    body.light-theme #unifiedPreviewModal > div {
+      background-color: #ffffff !important;
+      color: #0f172a !important;
+      border: 2px solid #cbd5e1 !important;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+    }
+    body.light-theme #unifiedModalHeader {
+      background-color: #f1f5f9 !important;
+      border-bottom: 2px solid #cbd5e1 !important;
+    }
+    body.light-theme #unifiedModalTitle {
+      color: #0f172a !important;
+      -webkit-text-fill-color: #0f172a !important;
+      font-weight: 900 !important;
+      font-size: 16px !important;
+    }
+    body.light-theme #unifiedModalMetaPills .modal-pill-dept {
+      background-color: #fef3c7 !important;
+      color: #92400e !important;
+      border: 1.5px solid #f59e0b !important;
+      font-weight: 900 !important;
+    }
+    body.light-theme #unifiedModalMetaPills .modal-pill-cat {
+      background-color: #dbeafe !important;
+      color: #1e40af !important;
+      border: 1.5px solid #3b82f6 !important;
+      font-weight: 900 !important;
+    }
+    body.light-theme #unifiedModalMetaPills .modal-pill-date {
+      color: #0f172a !important;
+      background-color: #e2e8f0 !important;
+      border: 1.5px solid #cbd5e1 !important;
+      font-weight: 900 !important;
+    }
+    body.light-theme #unifiedModalMetaPills .modal-pill-date i {
+      color: #d97706 !important;
+    }
+
+    /* Dark Theme */
+    body:not(.light-theme) #unifiedPreviewModal > div {
+      background-color: #0f172a !important;
+      color: #f8fafc !important;
+      border: 2px solid #334155 !important;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6) !important;
+    }
+    body:not(.light-theme) #unifiedModalHeader {
+      background-color: #0f172a !important;
+      border-bottom: 2px solid #334155 !important;
+    }
+    body:not(.light-theme) #unifiedModalTitle {
+      color: #ffffff !important;
+      -webkit-text-fill-color: #ffffff !important;
+      font-weight: 900 !important;
+      font-size: 16px !important;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+    }
+    body:not(.light-theme) #unifiedModalMetaPills .modal-pill-dept {
+      background-color: rgba(245, 158, 11, 0.25) !important;
+      color: #fde68a !important;
+      border: 1.5px solid #f59e0b !important;
+      font-weight: 900 !important;
+    }
+    body:not(.light-theme) #unifiedModalMetaPills .modal-pill-cat {
+      background-color: rgba(99, 102, 241, 0.35) !important;
+      color: #ffffff !important;
+      border: 1.5px solid #818cf8 !important;
+      font-weight: 900 !important;
+    }
+    body:not(.light-theme) #unifiedModalMetaPills .modal-pill-date {
+      color: #ffffff !important;
+      background-color: rgba(30, 41, 59, 0.9) !important;
+      border: 1.5px solid #475569 !important;
+      font-weight: 900 !important;
+    }
+    body:not(.light-theme) #unifiedModalMetaPills .modal-pill-date i {
+      color: #38bdf8 !important;
+    }
+
+          </style>
+</head>
+        <body id="printBody">
+        </body>
+        </html>
+      `);
+      fdoc.close();
+
+      const printBody = fdoc.getElementById('printBody');
+
+      if (canUseDataUrl) {
+        // v2.0.0 High-Resolution Baked PNG Images (100% zero drift)
+        bakedUrls.forEach((url, idx) => {
+          const pageDiv = fdoc.createElement('div');
+          pageDiv.className = 'a4-print-page';
+          if (idx > 0) pageDiv.style.pageBreakBefore = 'always';
+          const img = fdoc.createElement('img');
+          img.src = url;
+          img.className = 'baked-sheet-img';
+          img.alt = `صفحة ${idx + 1}`;
+          pageDiv.appendChild(img);
+          printBody.appendChild(pageDiv);
+        });
+      } else if (canvases && canvases.length === wrappers.length) {
+        // Direct Canvas Element Insertion (works on file:/// even when tainted, 100% baked, zero drift!)
+        canvases.forEach((c, idx) => {
+          const pageDiv = fdoc.createElement('div');
+          pageDiv.className = 'a4-print-page';
+          if (idx > 0) pageDiv.style.pageBreakBefore = 'always';
+          c.className = 'baked-sheet-img';
+          c.style.width = '100%';
+          c.style.height = 'auto';
+          c.style.display = 'block';
+          try {
+            const adopted = fdoc.adoptNode(c);
+            pageDiv.appendChild(adopted);
+          } catch(err) {
+            pageDiv.appendChild(c);
+          }
+          printBody.appendChild(pageDiv);
+        });
+      } else {
+        // Pixel-accurate DOM clone fallback (exact 1:1 clone of editor textarea styles, zero drift!)
+        wrappers.forEach((wrapper, idx) => {
+          const imgEl = wrapper.querySelector('.sheet-bg');
+          if (!imgEl) return;
+          const pageDiv = fdoc.createElement('div');
+          pageDiv.className = 'a4-print-page';
+          pageDiv.style.position = 'relative';
+          if (idx > 0) pageDiv.style.pageBreakBefore = 'always';
+
+          const img = fdoc.createElement('img');
+          img.src = imgEl.src;
+          img.className = 'baked-sheet-img';
+          pageDiv.appendChild(img);
+
+          const overlay = fdoc.createElement('div');
+          overlay.style.position = 'absolute';
+          overlay.style.top = '0';
+          overlay.style.left = '0';
+          overlay.style.right = '0';
+          overlay.style.bottom = '0';
+          overlay.style.pointerEvents = 'none';
+
+          const boxes = wrapper.querySelectorAll('.drag-box');
+          boxes.forEach(box => {
+            const ta = box.querySelector('.drag-textarea');
+            const text = ta ? ta.value : '';
+            if (text && text.trim()) {
+              const left = box.style.left;
+              const top = box.style.top;
+              const width = box.style.width;
+              const height = box.style.height;
+              const baseFontPx = parseFloat(ta.getAttribute('data-base-font')) || 16;
+              const textAlign = ta.style.textAlign || 'right';
+
+              const boxDiv = fdoc.createElement('div');
+              boxDiv.style.position = 'absolute';
+              boxDiv.style.left = left;
+              boxDiv.style.top = top;
+              boxDiv.style.width = width;
+              boxDiv.style.height = height;
+              boxDiv.style.boxSizing = 'border-box';
+              boxDiv.style.overflow = 'hidden';
+
+              const textInner = fdoc.createElement('div');
+              textInner.style.width = '100%';
+              textInner.style.height = '100%';
+              textInner.style.padding = '1px 3px';
+              textInner.style.fontFamily = "'Cairo', 'Traditional Arabic', serif";
+              textInner.style.fontSize = `${baseFontPx}px`;
+              textInner.style.fontWeight = '800';
+              textInner.style.lineHeight = '1.25';
+              textInner.style.direction = 'rtl';
+              textInner.style.textAlign = textAlign;
+              textInner.style.color = '#000';
+              textInner.style.whiteSpace = 'pre-wrap';
+              textInner.style.wordBreak = 'break-word';
+              textInner.textContent = text;
+
+              boxDiv.appendChild(textInner);
+              overlay.appendChild(boxDiv);
+            }
+          });
+
+          pageDiv.appendChild(overlay);
+          printBody.appendChild(pageDiv);
+        });
+      }
+
+      const iframeImgs = fdoc.querySelectorAll('img');
+      let loaded = 0;
+      const total = iframeImgs.length;
+      let printTriggered = false;
+
+      function triggerPrintNow() {
+        if (printTriggered) return;
+        printTriggered = true;
+        setTimeout(() => {
+          try {
+            fwin.focus();
+            fwin.print();
+          } catch (e) {
+            window.print();
+          }
+        }, 200);
+      }
+
+      if (total === 0) {
+        triggerPrintNow();
+      } else {
+        iframeImgs.forEach(img => {
+          if (img.complete) {
+            loaded++;
+            if (loaded >= total) triggerPrintNow();
+          } else {
+            img.onload = img.onerror = () => {
+              loaded++;
+              if (loaded >= total) triggerPrintNow();
+            };
+          }
+        });
+        setTimeout(triggerPrintNow, 1200);
+      }
+    }
+
+    async function downloadBakedSheet() {
+      if (!activeForm) return;
+      try {
+        const canvases = await generateBakedCanvases();
+        if (!canvases || canvases.length === 0) return;
+
+        canvases.forEach((canvas, idx) => {
+          const link = document.createElement('a');
+          link.download = canvases.length > 1
+            ? `${activeForm.title}_صفحة_${idx + 1}_معبأ.png`
+            : `${activeForm.title}_معبأ.png`;
+          link.href = canvas.toDataURL('image/png', 1.0);
+          link.click();
+        });
+      } catch (err) {
+        console.error('Download baked sheet error:', err);
+        alert('ملاحظة: تنزيل النموذج كصورة PNG جاهزة يتطلب تشغيل النظام عبر السيرفر أو الرابط المرفوع (Vercel). للطباعة المباشرة يمكنك استخدام زر "طباعة A4".');
+      }
+    }
+
+
+    
+    </script>
+
+  <!-- Floating Toast Notifications Container -->
+  <div id="toastContainer" class="fixed top-5 left-5 z-[100] flex flex-col gap-2.5 max-w-sm w-full pointer-events-none"></div>
+
+
+<div id="sheetModal" class="fixed inset-0 z-50 bg-slate-900 hidden flex flex-col w-screen h-[100dvh] overflow-hidden m-0 p-0">
+    <div class="bg-white w-full h-full flex flex-col overflow-hidden m-0 p-0 rounded-none border-0">
+      
+      <!-- Top Action Toolbar (متجاوب للهواتف والشاشات الكبيرة) -->
+      <div class="bg-amber-500 text-slate-950 px-2 sm:px-4 py-1.5 sm:py-2 flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-2 border-b border-amber-600 shadow-sm shrink-0">
+        
+        <!-- Row 1 on Mobile: Title + Pinned Close Button (ALWAYS 100% visible, never pushed away) -->
+        <div class="flex items-center justify-between gap-2 w-full sm:w-auto min-w-0">
+          <div class="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-1 overflow-hidden">
+            <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-slate-950 text-amber-400 flex items-center justify-center text-xs sm:text-sm shadow shrink-0">
+              <i class="fa-solid fa-file-invoice"></i>
+            </div>
+            <div class="min-w-0">
+              <h3 id="modalSheetTitle" class="text-xs sm:text-sm font-black text-slate-950 truncate sm:line-clamp-2 leading-tight">عرض النموذج</h3>
+            </div>
+          </div>
+          <!-- Close Button on Mobile (Pinned) -->
+          <button type="button" onclick="closeSheetModal()" class="sm:hidden shrink-0 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white font-black text-xs px-3 py-1.5 rounded-xl flex items-center gap-1 shadow-md active:scale-95 border border-red-400/40 cursor-pointer" title="إغلاق النافذة">
+            <i class="fa-solid fa-xmark text-sm"></i>
+            <span>إغلاق</span>
+          </button>
+        </div>
+
+        <!-- Row 2 on Mobile / Left on Desktop: Horizontally Scrollable Ribbon of Tools -->
+        <div class="flex items-center justify-between sm:justify-end gap-1.5 w-full sm:w-auto min-w-0 shrink-0">
+          
+          <div class="flex items-center gap-1 sm:gap-1.5 overflow-x-auto overflow-y-hidden py-0.5 scroll-touch-x select-none flex-1 sm:flex-initial" style="-webkit-overflow-scrolling: touch; touch-action: pan-x;">
+            <!-- 🔄 تدوير وتكبير/تصغير -->
+            <div class="flex items-center bg-slate-900/30 rounded-xl p-0.5 gap-0.5 sm:gap-1 text-slate-950 text-xs font-bold border border-slate-900/20 shrink-0">
+              <button type="button" onclick="rotateCurrentSheet()" id="rotateSheetBtn" class="px-2 sm:px-2.5 py-1 rounded-lg bg-white/80 hover:bg-white text-slate-950 font-black flex items-center gap-1 transition-all shadow-sm active:scale-95 text-[11px] sm:text-xs shrink-0" title="تدوير الصفحة / الصورة 90 درجة">
+                <i class="fa-solid fa-rotate text-blue-700 text-xs"></i>
+                <span class="text-[11px]">تدوير</span>
+                <span id="rotationAngleBadge" class="text-[10px] bg-blue-100 text-blue-800 font-mono font-bold px-1 rounded hidden">90°</span>
+              </button>
+              <button type="button" onclick="adjustSheetZoom(-150)" class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-white/70 hover:bg-white flex items-center justify-center font-black text-xs sm:text-sm shrink-0" title="تصغير العرض">-</button>
+              <span id="zoomPercentBadge" class="text-[10px] sm:text-[11px] font-mono px-0.5 sm:px-1 font-bold text-slate-900 shrink-0">100%</span>
+              <button type="button" onclick="adjustSheetZoom(150)" class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-white/70 hover:bg-white flex items-center justify-center font-black text-xs sm:text-sm shrink-0" title="تكبير العرض">+</button>
+            </div>
+
+            <!-- ➕ إضافة مربع نص -->
+            <button id="addBoxModalBtn" onclick="addDraggableBoxToCurrentPage()" class="shrink-0 bg-slate-950 hover:bg-slate-800 text-amber-300 font-black text-[11px] sm:text-xs px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl flex items-center gap-1 shadow-md transition-all active:scale-95 whitespace-nowrap">
+              <i class="fa-solid fa-plus-circle text-xs"></i>
+              <span>إضافة نص</span>
+            </button>
+
+            <!-- 🖨️ طباعة A4 -->
+            <button onclick="printSheetWithBoxes()" class="shrink-0 bg-emerald-700 hover:bg-emerald-600 text-white font-black text-[11px] sm:text-xs px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl flex items-center gap-1 shadow-md transition-all active:scale-95 whitespace-nowrap">
+              <i class="fa-solid fa-print text-xs"></i>
+              <span>طباعة A4</span>
+            </button>
+
+            <!-- 📥 تنزيل -->
+            <button type="button" id="modalDownloadBtn" onclick="handleModalDownload()" class="shrink-0 bg-white hover:bg-slate-100 text-slate-800 font-bold text-[11px] sm:text-xs px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl flex items-center gap-1 shadow-sm border border-slate-300 whitespace-nowrap" title="تنزيل الملف">
+              <i class="fa-solid fa-download text-amber-600"></i>
+              <span>تنزيل</span>
+            </button>
+          </div>
+
+          <!-- Close Button on Desktop -->
+          <button type="button" onclick="closeSheetModal()" class="hidden sm:flex shrink-0 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white font-black text-xs sm:text-sm px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-xl items-center gap-1.5 shadow-md hover:shadow-lg transition-all active:scale-95 border border-red-400/40 cursor-pointer" title="إغلاق النافذة">
+            <i class="fa-solid fa-xmark text-sm sm:text-base"></i>
+            <span>إغلاق</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick Guidance Bar -->
+      <div class="bg-amber-50 border-b border-amber-200 px-3 sm:px-4 py-1.5 text-xs text-amber-900 flex items-center justify-between" id="modalGuidanceBar">
+        <div class="flex items-center gap-2 font-bold min-w-0" id="modalTipContainer">
+          <i class="fa-solid fa-lightbulb text-amber-600 shrink-0" id="modalTipIcon"></i>
+          <span id="modalTipText" class="truncate">اضغط زر "إضافة نص"، ثم اسحبه لأي مكان في النموذج.</span>
+          <span id="scrollNoticeBadge" class="hidden bg-blue-100 text-blue-800 border border-blue-300 px-2 py-0.5 rounded-lg font-bold text-[11px] shrink-0"><i class="fa-solid fa-arrows-left-right ml-1"></i> شريط التمرير العرضي مفعّل</span>
+        </div>
+        <div class="text-[11px] text-slate-600 flex items-center gap-3 shrink-0 mr-2">
+          <span>الصفحات: <strong id="pagesCountBadge" class="text-blue-700 font-bold">1</strong></span>
+          <span id="boxesCountWrap">المربعات: <strong id="boxesCountBadge" class="text-blue-700 font-bold">0</strong></span>
+        </div>
+      </div>
+
+      <!-- Interactive Canvas Area (شاشة كاملة، شريط التمرير على اليمين) -->
+      <div class="flex-1 bg-slate-200 overflow-auto p-2 sm:p-4 select-none" id="sheetScrollArea">
+        <!-- Rendered page sheets dynamically injected here -->
+      </div>
+
+    </div>
+  </div>
+
+</body>
+</html>
