@@ -1865,7 +1865,24 @@
       display: grid !important;
     }
 </style>
-<script>window.__BASRA_APP_VERSION__ = "v2.0.1";</script>
+<script>
+window.__BASRA_ADMIN_VERSION__ = "v2.0.1";
+async function syncLiveAdminVersion() {
+  try {
+    const res = await fetch('./version-admin.json?t=' + Date.now(), { cache: 'no-store' });
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.version) {
+        const clean = data.version.startsWith('v') || data.version.startsWith('V') ? data.version : 'v' + data.version;
+        window.__BASRA_ADMIN_VERSION__ = clean;
+        const valEl = document.getElementById('adminVersionVal');
+        if (valEl) valEl.innerText = clean;
+      }
+    }
+  } catch (e) {}
+}
+syncLiveAdminVersion();
+</script>
 </head>
 <body class="min-h-screen flex flex-col bg-slate-950 text-slate-100 light-theme">
 
