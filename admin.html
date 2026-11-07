@@ -1643,7 +1643,7 @@
             <thead class="bg-slate-100 text-slate-900 border-b-2 border-slate-300 font-black" style="background-color: #f1f5f9 !important; color: #0f172a !important;">
               <tr>
                 <th class="p-4 text-right text-sm font-black text-slate-900" style="color: #0f172a !important;">
-                  <i class="fa-solid fa-file-lines text-blue-600 ml-1.5"></i> نص التعليمات والتوجيهات والشرح (المساحة المتبقية كاملة)
+                  <i class="fa-solid fa-file-lines text-blue-600 ml-1.5"></i> نص التعليمات والتوجيهات ومصغر المرفق (المساحة المتبقية كاملة)
                 </th>
                 <th class="p-4 text-center text-sm font-black text-slate-900 w-80 min-w-[280px] max-w-[320px] whitespace-nowrap" style="color: #0f172a !important;">
                   <i class="fa-solid fa-sliders text-indigo-600 ml-1.5"></i> بيانات المنشور وإدارة المحتوى
@@ -3301,7 +3301,7 @@
 
       return `
       <tr class="transition-colors border-b-2 border-slate-200 hover:bg-slate-50/80 bg-white">
-        <!-- 1. نص التعليمات والتفاصيل (يأخذ المساحة المتبقية كلها) -->
+        <!-- 1. نص التعليمات والتفاصيل وبجانبها مصغر المرفق (المساحة المتبقية كاملة) -->
         <td class="p-4 align-top">
           <div class="flex flex-col gap-2.5">
             <!-- عنوان المنشور الرئيسي -->
@@ -3310,25 +3310,71 @@
               <span class="text-base font-black">${escapeHtml(c.title || 'بدون عنوان')}</span>
             </div>
 
-            <!-- صندوق التعليمات الممتد والواضح جداً -->
-            ${hasBodyText ? `
-              <div class="bg-slate-50/90 border-2 border-slate-200 rounded-2xl p-4 font-bold text-xs text-slate-900 transition-all shadow-xs leading-relaxed" style="background-color: #f8fafc !important; color: #0f172a !important; border-color: #e2e8f0 !important;">
-                <div class="whitespace-pre-wrap select-text text-sm leading-relaxed text-slate-900 font-bold">${formatBodyTextWithClickableLinks(c.body_text)}</div>
-                <div onclick="openUnifiedModal('${c.id}')" class="mt-3 pt-2.5 border-t border-slate-200 flex items-center justify-between text-xs text-blue-700 hover:text-blue-900 font-black cursor-pointer select-none">
-                  <span class="inline-flex items-center gap-1.5"><i class="fa-solid fa-book-open text-amber-600 text-sm"></i> قراءة وطباعة التعليمات والتوجيهات كاملة</span>
-                  <span class="text-slate-500 font-bold">عرض مكبر وتنسيق طباعة 🖨️</span>
+            <!-- صندوق التعليمات وبجانبه مصغر المرفق -->
+            <div class="bg-slate-50/90 border-2 border-slate-200 rounded-2xl p-4 font-bold text-xs text-slate-900 transition-all shadow-xs leading-relaxed" style="background-color: #f8fafc !important; color: #0f172a !important; border-color: #e2e8f0 !important;">
+              <div class="flex flex-col lg:flex-row items-start justify-between gap-4">
+                <!-- النص المكتوب (يأخذ المساحة المرنة كلها) -->
+                <div class="flex-1 min-w-0">
+                  ${hasBodyText ? `
+                    <div class="whitespace-pre-wrap select-text text-sm leading-relaxed text-slate-900 font-bold">${formatBodyTextWithClickableLinks(c.body_text)}</div>
+                  ` : `
+                    <div class="text-xs text-slate-500 font-bold py-2">لا توجد توجيهات نصية إضافية - يرجى استعراض الملف المرفق بجانب النص.</div>
+                  `}
                 </div>
+
+                <!-- مصغر المرفق بجانب التعليمات النصية -->
+                ${hasFile ? `
+                  <div class="shrink-0 w-full sm:w-64 bg-white border-2 border-slate-300 rounded-xl p-3 shadow-sm hover:border-blue-500 transition-all flex flex-col gap-2">
+                    <div class="flex items-center gap-2.5">
+                      ${isImage && c.file_url ? `
+                        <div onclick="openSheetModal('${c.id}')" class="w-14 h-14 rounded-lg overflow-hidden border border-slate-300 shrink-0 cursor-pointer shadow-xs hover:scale-105 transition-transform bg-slate-100 relative group" title="اضغط لتكبير الصورة">
+                          <img src="${c.file_url}" alt="${escapeHtml(c.title)}" class="w-full h-full object-cover" />
+                          <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs">
+                            <i class="fa-solid fa-magnifying-glass-plus"></i>
+                          </div>
+                        </div>
+                      ` : `
+                        <div onclick="openSheetModal('${c.id}')" class="w-14 h-14 rounded-lg ${fTileBg} border-2 border-slate-300 flex flex-col items-center justify-center shrink-0 cursor-pointer shadow-xs hover:scale-105 transition-transform" title="اضغط لاستعراض الملف">
+                          <i class="fa-solid ${fIcon} text-xl"></i>
+                          <span class="text-[9px] font-black uppercase mt-0.5">${ext || 'FILE'}</span>
+                        </div>
+                      `}
+                      <div class="min-w-0 flex-1 text-right">
+                        <div class="text-[10px] font-black text-slate-500">الملف المرفق:</div>
+                        <div onclick="openSheetModal('${c.id}')" class="truncate text-xs font-black text-slate-900 cursor-pointer hover:text-blue-600 hover:underline" title="${escapeHtml(c.file_name || fLabel)}" style="color: #0f172a !important;">
+                          ${escapeHtml(c.file_name || fLabel)}
+                        </div>
+                        <div class="text-[10px] font-mono font-bold text-slate-600 mt-0.5">
+                          ${c.file_size ? (String(c.file_size).toUpperCase().includes('B') ? c.file_size : `KB ${c.file_size}`) : fLabel}
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- أزرار تفاعلية سريعة للمرفق -->
+                    <div class="flex items-center gap-1.5 pt-2 border-t border-slate-100">
+                      <button type="button" onclick="openSheetModal('${c.id}')" class="flex-1 py-1.5 px-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-black text-xs flex items-center justify-center gap-1 shadow-xs transition-all cursor-pointer" style="background-color: #2563eb !important; color: #ffffff !important;">
+                        <i class="fa-solid fa-eye text-xs"></i>
+                        <span>استعراض المرفق</span>
+                      </button>
+                      <a href="${c.file_url}" download="${escapeHtml(c.file_name || 'attachment')}" target="_blank" class="py-1.5 px-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg font-bold text-xs flex items-center justify-center gap-1 border border-slate-200 transition-all shadow-xs" title="تنزيل الملف" onclick="event.stopPropagation()">
+                        <i class="fa-solid fa-download text-slate-600"></i>
+                        <span>تنزيل</span>
+                      </a>
+                    </div>
+                  </div>
+                ` : ''}
               </div>
-            ` : `
-              <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-600 font-bold flex items-center gap-2">
-                <i class="fa-solid fa-circle-info text-blue-500"></i>
-                <span>مرفق رسمي متوفر للاستعراض والإدارة في بطاقة الخيارات المجاورة.</span>
+
+              <!-- الرابط السفلي للمطالعة والطباعة كاملة -->
+              <div onclick="openUnifiedModal('${c.id}')" class="mt-3 pt-2.5 border-t border-slate-200 flex items-center justify-between text-xs text-blue-700 hover:text-blue-900 font-black cursor-pointer select-none">
+                <span class="inline-flex items-center gap-1.5"><i class="fa-solid fa-book-open text-amber-600 text-sm"></i> قراءة وطباعة التعليمات والتوجيهات كاملة</span>
+                <span class="text-slate-500 font-bold">عرض مكبر وتنسيق طباعة 🖨️</span>
               </div>
-            `}
+            </div>
           </div>
         </td>
 
-        <!-- 2. بطاقة موحدة تجمع كافة الأعمدة الأخرى والخيارات وإدارة المحتوى -->
+        <!-- 2. بطاقة موحدة تجمع بيانات المنشور وإدارة المحتوى -->
         <td class="p-4 align-top w-80 min-w-[280px] max-w-[320px]">
           <div class="flex flex-col gap-2.5 p-3 rounded-2xl bg-slate-50 border-2 border-slate-200 shadow-sm text-right">
             <!-- الشعبة والناشر -->
@@ -3358,25 +3404,6 @@
                 </span>
               `}
             </div>
-
-            <!-- مصغرة المرفق إن وجد -->
-            ${hasFile ? `
-              <div class="p-2 rounded-xl bg-white border border-slate-200 flex items-center gap-2.5 shadow-xs">
-                ${isImage && c.file_url ? `
-                  <div onclick="openSheetModal('${c.id}')" class="w-11 h-11 rounded-lg overflow-hidden border border-slate-300 shrink-0 cursor-pointer shadow-xs hover:scale-105 transition-transform bg-slate-100">
-                    <img src="${c.file_url}" alt="${escapeHtml(c.title)}" class="w-full h-full object-cover" />
-                  </div>
-                ` : `
-                  <div onclick="openSheetModal('${c.id}')" class="w-11 h-11 rounded-lg ${fTileBg} border border-slate-300 flex items-center justify-center shrink-0 cursor-pointer shadow-xs hover:scale-105 transition-transform">
-                    <i class="fa-solid ${fIcon} text-base"></i>
-                  </div>
-                `}
-                <div class="min-w-0 flex-1 text-right">
-                  <div onclick="openSheetModal('${c.id}')" class="truncate text-xs font-black text-slate-900 cursor-pointer hover:text-blue-600" title="${escapeHtml(c.file_name || fLabel)}">${escapeHtml(c.file_name || fLabel)}</div>
-                  <div class="text-[10px] text-slate-500 font-bold">${c.file_size ? (String(c.file_size).toUpperCase().includes('B') ? c.file_size : `KB ${c.file_size}`) : fLabel}</div>
-                </div>
-              </div>
-            ` : ''}
 
             <!-- تاريخ النشر والحالة -->
             <div class="flex items-center justify-between text-xs font-black px-1">
