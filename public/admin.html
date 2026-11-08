@@ -6526,6 +6526,7 @@ syncLiveAdminVersion();
 
     function normalizePath(p) {
       if (!p) return '';
+      if (p.startsWith('/local-docs/')) return p;
       if (p.startsWith('/sheets/')) return './sheets/' + p.substring(8);
       if (p.startsWith('/uploads/')) return './uploads/' + p.substring(9);
       if (p.startsWith('/')) return '.' + p;
@@ -6854,6 +6855,9 @@ syncLiveAdminVersion();
 
     function resolveLocalSheetPages(form) {
       if (!form) return [];
+      // If the form has an actual uploaded file URL, it must NEVER be resolved to static sheets!
+      if (form.file_url || form.fileUrl) return [];
+
       const rawKeys = [
         form.id,
         form.file_name,
@@ -6869,230 +6873,10 @@ syncLiveAdminVersion();
           if (OFFICIAL_FORM_SHEETS_MAP[lk]) return [...OFFICIAL_FORM_SHEETS_MAP[lk]];
         }
       }
-
-      const combined = normalizeArabicText((form.title || '') + ' ' + (form.fileName || '') + ' ' + (form.file_name || ''));
-
-      // Priority-ordered keyword matching directly to high-fidelity local sheets on PC
-      if (combined.includes('استقطاع')) {
-        return ['./sheets/form_17_page_1.png'];
-      }
-      if (combined.includes('مباشر')) {
-        return ['./sheets/form_1792790662356_page_1.png'];
-      }
-      if (combined.includes('انفكاك')) {
-        return ['./sheets/form_1792783929926_page_1.png'];
-      }
-      if (combined.includes('زمني')) {
-        return ['./sheets/form_1792961892317_page_1.png'];
-      }
-      if (combined.includes('براء') || combined.includes('ذم')) {
-        return ['./sheets/form_09_page_1.png'];
-      }
-      if (combined.includes('اخبار') || combined.includes('اِخبار')) {
-        return ['./sheets/form_11_page_1.png'];
-      }
-      if (combined.includes('تعهد')) {
-        return ['./sheets/form_12_page_1.png'];
-      }
-      if (combined.includes('حضور') || combined.includes('انصراف')) {
-        return [
-          './sheets/form_18_page_1.png',
-          './sheets/form_18_page_2.png',
-          './sheets/form_18_page_3.png'
-        ];
-      }
-      if (combined.includes('تسلسل')) {
-        return Array.from({ length: 13 }, (_, i) => `./sheets/form_19_page_${i + 1}.png`);
-      }
-      if (combined.includes('فحص') || combined.includes('معالج')) {
-        return ['./sheets/form_1792790583961_page_1.png'];
-      }
-      if (combined.includes('واجب') || combined.includes('خروج')) {
-        return ['./sheets/form_1792961847784_page_1.png'];
-      }
-      if (combined.includes('خاص')) {
-        return ['./sheets/form_1792780898589_page_1.png'];
-      }
-      if (combined.includes('6') || combined.includes('ست')) {
-        return ['./sheets/form_1792957024209_page_1.png'];
-      }
-      if (combined.includes('4') || combined.includes('5') || combined.includes('اربع') || combined.includes('خمس')) {
-        return ['./sheets/form_1792960378733_page_1.png'];
-      }
-      if (combined.includes('اجاز') || combined.includes('اعتيادي')) {
-        return ['./sheets/form_1792961704382_page_1.png'];
-      }
-
-      if (typeof OFFICIAL_FORM_SHEETS_MAP !== 'undefined') {
-        for (const [key, pList] of Object.entries(OFFICIAL_FORM_SHEETS_MAP)) {
-          const cleanKey = normalizeArabicText(key);
-          if (cleanKey.length > 3 && (combined.includes(cleanKey) || cleanKey.includes(combined))) {
-            return [...pList];
-          }
-        }
-      }
-
       return [];
     }
 
-    function preloadOfficialSheets() {
-      const sheetFiles = [
-        './sheets/form_1792790662356_page_1.png',
-        './sheets/form_1792783929926_page_1.png',
-        './sheets/form_1792961892317_page_1.png',
-        './sheets/form_09_page_1.png',
-        './sheets/form_11_page_1.png',
-        './sheets/form_12_page_1.png',
-        './sheets/form_17_page_1.png',
-        './sheets/form_18_page_1.png',
-        './sheets/form_1792790583961_page_1.png',
-        './sheets/form_1792961847784_page_1.png',
-        './sheets/form_1792780898589_page_1.png',
-        './sheets/form_1792957024209_page_1.png',
-        './sheets/form_1792960378733_page_1.png',
-        './sheets/form_1792961704382_page_1.png'
-      ];
-      if (typeof window !== 'undefined' && typeof Image !== 'undefined') {
-        sheetFiles.forEach(src => {
-          const im = new Image();
-          im.src = src;
-        });
-      }
-    }
-    try { preloadOfficialSheets(); } catch(e) {}
-
-    async function handleSheetImgError(img, fileName, origSrc) {
-      const cleanKey = (origSrc || '').split('/').pop();
-      if (typeof BasraOfflineDB !== 'undefined') {
-        const blobUrl = await BasraOfflineDB.getBlobUrl(cleanKey);
-        if (blobUrl && img.src !== blobUrl) {
-          img.src = blobUrl;
-          return;
-        }
-      }
-      const active = (typeof activeAdminForm !== 'undefined' ? activeAdminForm : null) || (typeof activeForm !== 'undefined' ? activeForm : null);
-      if (!img._errStep) img._errStep = 1;
-      else img._errStep++;
-
-      // Step 1: Try alternate local sheet path (_sheet.png vs _page_1.png or relative prefix)
-      if (img._errStep === 1 && origSrc) {
-        if (origSrc.includes('_page_1.png')) {
-          img.src = origSrc.replace('_page_1.png', '_sheet.png');
-          return;
-        }
-        if (origSrc.includes('_sheet.png')) {
-          img.src = origSrc.replace('_sheet.png', '_page_1.png');
-          return;
-        }
-        if (!origSrc.startsWith('./sheets/') && !origSrc.startsWith('/sheets/')) {
-          img.src = './sheets/' + origSrc.split('/').pop();
-          return;
-        }
-      }
-
-      // Step 2: Resolve alternate local sheet directly from form metadata
-      if (img._errStep === 2 && active) {
-        const altPages = resolveLocalSheetPages(active);
-        if (altPages && altPages.length > 0 && altPages[0] !== origSrc && altPages[0] !== img.src) {
-          img.src = altPages[0];
-          return;
-        }
-      }
-
-      // Step 3: Fast PDF render if applicable
-      const isPdf = (active && active.fileType === 'pdf') || (fileName && fileName.toLowerCase().endsWith('.pdf'));
-      if (isPdf && window.pdfjsLib && !img._pdfRenderAttempted) {
-        img._pdfRenderAttempted = true;
-        const pdfUrl = (active && active.fileUrl) ? active.fileUrl : `./uploads/${fileName}`;
-        try {
-          const loadingTask = pdfjsLib.getDocument(pdfUrl);
-          const pdf = await loadingTask.promise;
-          const pNum = parseInt((img.id || '').replace('sheetImage_', '')) || 1;
-          const targetPageNum = Math.min(Math.max(1, pNum), pdf.numPages);
-          const page = await pdf.getPage(targetPageNum);
-          const viewport = page.getViewport({ scale: 1.8 });
-
-          const canvas = document.createElement('canvas');
-          canvas.width = viewport.width;
-          canvas.height = viewport.height;
-          const ctx = canvas.getContext('2d');
-          await page.render({ canvasContext: ctx, viewport }).promise;
-          img.src = canvas.toDataURL('image/png');
-          return;
-        } catch (pdfErr) {
-          console.warn('PDF fallback attempt warning:', pdfErr);
-        }
-      }
-
-      // Step 4: In-browser canvas rendering fallback (zero network delay)
-      if (active && !img._officeRenderAttempted) {
-        img._officeRenderAttempted = true;
-        try {
-          const dataUrls = await renderOfficeBufferToDataUrls(new ArrayBuffer(0), active.fileType || 'docx', active.title || '');
-          if (dataUrls && dataUrls.length > 0) {
-            img.src = dataUrls[0];
-            return;
-          }
-        } catch(offErr) {
-          console.warn('Local canvas render warning:', offErr);
-        }
-      }
-
-      console.warn('Could not load sheet image locally:', origSrc);
-    }
-
     
-
-    // ================= DOWNLOAD & FILE PICKER =================
-    async function downloadFileWithPicker(downloadUrl, originalFileName) {
-      if (!downloadUrl) {
-        alert('لا يوجد رابط لتحميل هذا الملف');
-        return;
-      }
-      if (window.showSaveFilePicker) {
-        try {
-          const dotIdx = originalFileName.lastIndexOf('.');
-          const ext = dotIdx !== -1 ? originalFileName.substring(dotIdx).toLowerCase() : '';
-
-          let mime = 'application/octet-stream';
-          let desc = 'ملف النموذج الأصلي (*' + ext + ')';
-          if (ext === '.docx') mime = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
-          else if (ext === '.doc') mime = 'application/msword';
-          else if (ext === '.xlsx') mime = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-          else if (ext === '.xls') mime = 'application/vnd.ms-excel';
-          else if (ext === '.pdf') mime = 'application/pdf';
-          else if (ext === '.jpg' || ext === '.jpeg') mime = 'image/jpeg';
-          else if (ext === '.png') mime = 'image/png';
-
-          const fileHandle = await window.showSaveFilePicker({
-            suggestedName: originalFileName,
-            types: [{
-              description: desc,
-              accept: { [mime]: [ext] }
-            }]
-          });
-
-          const res = await fetch(normalizePath(downloadUrl));
-          const blob = await res.blob();
-          const writable = await fileHandle.createWritable();
-          await writable.write(blob);
-          await writable.close();
-          return;
-        } catch (err) {
-          if (err.name === 'AbortError') return; // User cancelled
-          console.warn('showSaveFilePicker fallback:', err);
-        }
-      }
-
-      // Fallback if browser doesn't support showSaveFilePicker
-      const a = document.createElement('a');
-      a.href = normalizePath(downloadUrl);
-      a.download = originalFileName;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-    }
-
     function getFormDownloadName(form) {
       if (!form) return 'النموذج.docx';
       let ext = 'docx';
@@ -7203,34 +6987,30 @@ syncLiveAdminVersion();
 
       let pages = [];
 
+      const hasActualUploadedFile = Boolean((activeForm.fileUrl && activeForm.fileUrl.trim() && activeForm.file_type !== 'text_only') || (activeForm.file_url && activeForm.file_url.trim() && activeForm.file_type !== 'text_only'));
+
       try {
-        // 1. Instant local sheet resolution from program files on PC
-        pages = resolveLocalSheetPages(activeForm);
+        // 1. If this is a custom uploaded file, NEVER use pre-rendered sheets
+        if (!hasActualUploadedFile) {
+          pages = resolveLocalSheetPages(activeForm);
 
-        // 2. Check official pre-rendered sheets map fallback
-        if (pages.length === 0 && typeof OFFICIAL_FORM_SHEETS_MAP !== 'undefined') {
-          const cleanT = (activeForm.title || '').trim().toLowerCase();
-          const cleanFN = (activeForm.fileName || '').trim().toLowerCase();
-          const cleanID = String(activeForm.id || '');
+          if (pages.length === 0 && typeof OFFICIAL_FORM_SHEETS_MAP !== 'undefined') {
+            const cleanT = (activeForm.title || '').trim().toLowerCase();
+            const cleanFN = (activeForm.fileName || '').trim().toLowerCase();
+            const cleanID = String(activeForm.id || '');
 
-          if (OFFICIAL_FORM_SHEETS_MAP[cleanID]) {
-            pages = [...OFFICIAL_FORM_SHEETS_MAP[cleanID]];
-          } else if (OFFICIAL_FORM_SHEETS_MAP[cleanFN]) {
-            pages = [...OFFICIAL_FORM_SHEETS_MAP[cleanFN]];
-          } else if (OFFICIAL_FORM_SHEETS_MAP[cleanT]) {
-            pages = [...OFFICIAL_FORM_SHEETS_MAP[cleanT]];
-          } else {
-            for (const [key, pList] of Object.entries(OFFICIAL_FORM_SHEETS_MAP)) {
-              if (key.length > 3 && (cleanT.includes(key) || key.includes(cleanT) || cleanFN.includes(key))) {
-                pages = [...pList];
-                break;
-              }
+            if (OFFICIAL_FORM_SHEETS_MAP[cleanID]) {
+              pages = [...OFFICIAL_FORM_SHEETS_MAP[cleanID]];
+            } else if (OFFICIAL_FORM_SHEETS_MAP[cleanFN]) {
+              pages = [...OFFICIAL_FORM_SHEETS_MAP[cleanFN]];
+            } else if (OFFICIAL_FORM_SHEETS_MAP[cleanT]) {
+              pages = [...OFFICIAL_FORM_SHEETS_MAP[cleanT]];
             }
           }
         }
 
-        // 3. If dynamic rendering needed for custom uploaded file, use fast timeout to never freeze interface
-        if (pages.length === 0 && activeForm.fileUrl) {
+        // 2. Dynamic rendering for actual uploaded file from Supabase
+        if ((hasActualUploadedFile || pages.length === 0) && activeForm.fileUrl) {
           if (isImg) {
             pages = [activeForm.fileUrl];
           } else if (isPdf && window.pdfjsLib) {
@@ -8237,7 +8017,7 @@ syncLiveAdminVersion();
         let mediaBannerHtml = '';
         if (hasFile && isImage && c.file_url) {
           mediaBannerHtml = `
-            <div onclick="openSheetModal('${c.id}')" class="relative group cursor-pointer overflow-hidden rounded-xl border border-slate-700/70 mb-3 bg-slate-900 h-32 flex items-center justify-center shadow-inner" title="اضغط لمعاينة وتكبير وتحميل الصورة">
+            <div onclick="openUnifiedModal('${c.id}')" class="relative group cursor-pointer overflow-hidden rounded-xl border border-slate-700/70 mb-3 bg-slate-900 h-32 flex items-center justify-center shadow-inner" title="اضغط لمعاينة وتكبير وتحميل الصورة">
               <img src="${c.file_url}" alt="${escapeHtml(c.title)}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
               <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 text-white text-xs font-black backdrop-blur-[2px]">
                 <i class="fa-solid fa-magnifying-glass-plus text-base text-amber-300"></i>
@@ -8247,7 +8027,7 @@ syncLiveAdminVersion();
           `;
         } else if (hasFile) {
           mediaBannerHtml = `
-            <div onclick="openSheetModal('${c.id}')" class="cursor-pointer rounded-xl border border-slate-700/70 bg-slate-800/40 p-2.5 mb-3 flex items-center gap-3 hover:border-blue-500 transition-all shadow-sm group" title="اضغط لفتح الملف، المعاينة، الطباعة، أو التنزيل">
+            <div onclick="openUnifiedModal('${c.id}')" class="cursor-pointer rounded-xl border border-slate-700/70 bg-slate-800/40 p-2.5 mb-3 flex items-center gap-3 hover:border-blue-500 transition-all shadow-sm group" title="اضغط لفتح الملف، المعاينة، الطباعة، أو التنزيل">
               <div class="w-10 h-10 rounded-lg bg-blue-600/20 text-blue-400 border border-blue-500/30 flex items-center justify-center text-lg font-black shrink-0 shadow-sm group-hover:scale-105 transition-transform">
                 <i class="fa-solid ${fileIcon}"></i>
               </div>

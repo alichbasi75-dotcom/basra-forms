@@ -3310,7 +3310,7 @@
         let mediaBannerHtml = '';
         if (hasFile && isImage && f.file_url) {
           mediaBannerHtml = `
-            <div onclick="openSheetModal('${f.id}')" class="relative group cursor-pointer overflow-hidden rounded-xl border border-slate-700/70 mb-3 bg-slate-900 h-32 flex items-center justify-center shadow-inner" title="اضغط لمعاينة وتكبير وتحميل الصورة">
+            <div onclick="openUnifiedModal('${f.id}')" class="relative group cursor-pointer overflow-hidden rounded-xl border border-slate-700/70 mb-3 bg-slate-900 h-32 flex items-center justify-center shadow-inner" title="اضغط لمعاينة وتكبير وتحميل الصورة">
               <img src="${f.file_url}" alt="${escapeHtml(f.title)}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
               <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 text-white text-xs font-black backdrop-blur-[2px]">
                 <i class="fa-solid fa-magnifying-glass-plus text-base text-amber-300"></i>
@@ -3320,7 +3320,7 @@
           `;
         } else if (hasFile) {
           mediaBannerHtml = `
-            <div onclick="openSheetModal('${f.id}')" class="cursor-pointer rounded-xl border border-slate-700/70 bg-slate-800/40 p-2.5 mb-3 flex items-center gap-3 hover:border-blue-500 transition-all shadow-sm group" title="اضغط لفتح الملف، المعاينة، الطباعة، أو التنزيل">
+            <div onclick="openUnifiedModal('${f.id}')" class="cursor-pointer rounded-xl border border-slate-700/70 bg-slate-800/40 p-2.5 mb-3 flex items-center gap-3 hover:border-blue-500 transition-all shadow-sm group" title="اضغط لفتح الملف، المعاينة، الطباعة، أو التنزيل">
               <div class="w-10 h-10 rounded-lg bg-blue-600/20 text-blue-400 border border-blue-500/30 flex items-center justify-center text-lg font-black shrink-0 shadow-sm group-hover:scale-105 transition-transform">
                 <i class="fa-solid ${fileIcon}"></i>
               </div>
@@ -4347,6 +4347,7 @@
 
     function normalizePath(p) {
       if (!p) return '';
+      if (p.startsWith('/local-docs/')) return p;
       if (p.startsWith('/sheets/')) return './sheets/' + p.substring(8);
       if (p.startsWith('/uploads/')) return './uploads/' + p.substring(9);
       if (p.startsWith('/')) return '.' + p;
@@ -4922,31 +4923,28 @@
 
       let pages = [];
 
-      try {
-        // 1. Check official pre-rendered sheets map first for crystal-clear fidelity
-        const cleanT = (activeForm.title || '').trim().toLowerCase();
-        const cleanFN = (activeForm.fileName || '').trim().toLowerCase();
-        const cleanID = String(activeForm.id || '');
+      const hasActualUploadedFile = Boolean((activeForm.fileUrl && activeForm.fileUrl.trim() && activeForm.file_type !== 'text_only') || (activeForm.file_url && activeForm.file_url.trim() && activeForm.file_type !== 'text_only'));
 
-        if (typeof OFFICIAL_FORM_SHEETS_MAP !== 'undefined') {
-          if (OFFICIAL_FORM_SHEETS_MAP[cleanID]) {
-            pages = [...OFFICIAL_FORM_SHEETS_MAP[cleanID]];
-          } else if (OFFICIAL_FORM_SHEETS_MAP[cleanFN]) {
-            pages = [...OFFICIAL_FORM_SHEETS_MAP[cleanFN]];
-          } else if (OFFICIAL_FORM_SHEETS_MAP[cleanT]) {
-            pages = [...OFFICIAL_FORM_SHEETS_MAP[cleanT]];
-          } else {
-            for (const [key, pList] of Object.entries(OFFICIAL_FORM_SHEETS_MAP)) {
-              if (key.length > 3 && (cleanT.includes(key) || key.includes(cleanT) || cleanFN.includes(key))) {
-                pages = [...pList];
-                break;
-              }
+      try {
+        // 1. Only check official pre-rendered sheets if this is NOT a custom uploaded file
+        if (!hasActualUploadedFile) {
+          const cleanT = (activeForm.title || '').trim().toLowerCase();
+          const cleanFN = (activeForm.fileName || '').trim().toLowerCase();
+          const cleanID = String(activeForm.id || '');
+
+          if (typeof OFFICIAL_FORM_SHEETS_MAP !== 'undefined') {
+            if (OFFICIAL_FORM_SHEETS_MAP[cleanID]) {
+              pages = [...OFFICIAL_FORM_SHEETS_MAP[cleanID]];
+            } else if (OFFICIAL_FORM_SHEETS_MAP[cleanFN]) {
+              pages = [...OFFICIAL_FORM_SHEETS_MAP[cleanFN]];
+            } else if (OFFICIAL_FORM_SHEETS_MAP[cleanT]) {
+              pages = [...OFFICIAL_FORM_SHEETS_MAP[cleanT]];
             }
           }
         }
 
-        // 2. If not in official map, handle dynamic file rendering
-        if (pages.length === 0 && activeForm.fileUrl) {
+        // 2. Dynamic file rendering for actual uploaded file from Supabase
+        if ((hasActualUploadedFile || pages.length === 0) && activeForm.fileUrl) {
           if (isImg) {
             pages = [activeForm.fileUrl];
           } else if (isPdf && window.pdfjsLib) {
