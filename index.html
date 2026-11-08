@@ -766,7 +766,7 @@
     }
 
     #sheetScrollArea {
-      direction: ltr !important;
+      /* natural rtl */
       overflow-x: auto !important;
       overflow-y: auto !important;
       scroll-behavior: smooth;
@@ -1343,95 +1343,99 @@
     
 
   
+    
+
+  
     /* =========================================================================
-       ULTRA-CLEAR, WIDE HIGH-CONTRAST DUAL SCROLLBARS (PDF & INTERFACE)
+       ULTRA-WIDE (18px) HIGH-CONTRAST DUAL SCROLLBARS FOR ATTACHMENT MODAL
        ========================================================================= */
-    /* 1. شريط التمرير الداخلي لملف الـ PDF (على اليسار) - بعرض بارز ولون أزرق ساطع */
-    .custom-pdf-scroll {
-      scrollbar-width: auto !important;
-      scrollbar-color: #2563eb #0b1120 !important;
-    }
-    .custom-pdf-scroll::-webkit-scrollbar {
-      width: 15px !important;
+    /* 1. شريط التمرير الخارجي للنافذة والواجهة (في المربع الأحمر) - عريض جداً 18px بلون كهرماني ذهبي فائق الوضوح */
+    #unifiedPrintableArea::-webkit-scrollbar,
+    .custom-modal-scroll::-webkit-scrollbar {
+      width: 18px !important;
+      height: 18px !important;
       display: block !important;
     }
-    .custom-pdf-scroll::-webkit-scrollbar-track {
-      background: #0b1120 !important;
+    #unifiedPrintableArea::-webkit-scrollbar-track,
+    .custom-modal-scroll::-webkit-scrollbar-track {
+      background: #020617 !important;
       border-radius: 9999px !important;
-      border: 1px solid #1e293b !important;
+      border: 2px solid #1e293b !important;
+      margin: 4px 0 !important;
     }
+    #unifiedPrintableArea::-webkit-scrollbar-thumb,
+    .custom-modal-scroll::-webkit-scrollbar-thumb {
+      background: #f59e0b !important;
+      border-radius: 9999px !important;
+      border: 3px solid #020617 !important;
+      box-shadow: 0 0 10px rgba(245, 158, 11, 0.4) !important;
+    }
+    #unifiedPrintableArea::-webkit-scrollbar-thumb:hover,
+    .custom-modal-scroll::-webkit-scrollbar-thumb:hover {
+      background: #fbbf24 !important;
+      box-shadow: 0 0 14px rgba(251, 191, 36, 0.6) !important;
+    }
+    #unifiedPrintableArea::-webkit-scrollbar-thumb:active,
+    .custom-modal-scroll::-webkit-scrollbar-thumb:active {
+      background: #fde047 !important;
+    }
+
+    /* 2. شريط التمرير الداخلي لملف الـ PDF - عريض جداً 18px بلون أزرق ملكي ساطع */
+    #unifiedPdfCanvasContainer::-webkit-scrollbar,
+    .custom-pdf-scroll::-webkit-scrollbar {
+      width: 18px !important;
+      height: 18px !important;
+      display: block !important;
+    }
+    #unifiedPdfCanvasContainer::-webkit-scrollbar-track,
+    .custom-pdf-scroll::-webkit-scrollbar-track {
+      background: #020617 !important;
+      border-radius: 9999px !important;
+      border: 2px solid #1e293b !important;
+      margin: 4px 0 !important;
+    }
+    #unifiedPdfCanvasContainer::-webkit-scrollbar-thumb,
     .custom-pdf-scroll::-webkit-scrollbar-thumb {
       background: #2563eb !important;
       border-radius: 9999px !important;
-      border: 3px solid #0b1120 !important;
+      border: 3px solid #020617 !important;
+      box-shadow: 0 0 10px rgba(37, 99, 235, 0.4) !important;
     }
+    #unifiedPdfCanvasContainer::-webkit-scrollbar-thumb:hover,
     .custom-pdf-scroll::-webkit-scrollbar-thumb:hover {
       background: #3b82f6 !important;
+      box-shadow: 0 0 14px rgba(59, 130, 246, 0.6) !important;
     }
+    #unifiedPdfCanvasContainer::-webkit-scrollbar-thumb:active,
     .custom-pdf-scroll::-webkit-scrollbar-thumb:active {
       background: #60a5fa !important;
     }
 
-    body.light-theme .custom-pdf-scroll {
-      background: #f8fafc !important;
-      scrollbar-color: #2563eb #f1f5f9 !important;
-    }
+    /* الوضع النهاري لكلا الشريطين */
+    body.light-theme #unifiedPrintableArea::-webkit-scrollbar-track,
+    body.light-theme .custom-modal-scroll::-webkit-scrollbar-track,
+    body.light-theme #unifiedPdfCanvasContainer::-webkit-scrollbar-track,
     body.light-theme .custom-pdf-scroll::-webkit-scrollbar-track {
       background: #f1f5f9 !important;
-      border: 1px solid #cbd5e1 !important;
+      border: 2px solid #cbd5e1 !important;
     }
-    body.light-theme .custom-pdf-scroll::-webkit-scrollbar-thumb {
-      background: #2563eb !important;
-      border: 3px solid #f1f5f9 !important;
-    }
-    body.light-theme .custom-pdf-scroll::-webkit-scrollbar-thumb:hover {
-      background: #1d4ed8 !important;
-    }
-
-    /* 2. شريط التمرير الخارجي للواجهة بالكامل (على اليمين) - بعرض بارز ولون كحلي/أزرق ساطع */
-    .custom-modal-scroll {
-      direction: ltr !important;
-      overflow-y: scroll !important;
-      scrollbar-width: auto !important;
-      scrollbar-color: #0284c7 #0b1120 !important;
-    }
-    .custom-modal-scroll > * {
-      direction: rtl !important;
-    }
-    .custom-modal-scroll::-webkit-scrollbar {
-      width: 15px !important;
-      display: block !important;
-    }
-    .custom-modal-scroll::-webkit-scrollbar-track {
-      background: #0b1120 !important;
-      border-radius: 9999px !important;
-      border: 1px solid #1e293b !important;
-    }
-    .custom-modal-scroll::-webkit-scrollbar-thumb {
-      background: #0284c7 !important;
-      border-radius: 9999px !important;
-      border: 3px solid #0b1120 !important;
-    }
-    .custom-modal-scroll::-webkit-scrollbar-thumb:hover {
-      background: #38bdf8 !important;
-    }
-    .custom-modal-scroll::-webkit-scrollbar-thumb:active {
-      background: #7dd3fc !important;
-    }
-
-    body.light-theme .custom-modal-scroll {
-      scrollbar-color: #0284c7 #f1f5f9 !important;
-    }
-    body.light-theme .custom-modal-scroll::-webkit-scrollbar-track {
-      background: #f1f5f9 !important;
-      border: 1px solid #cbd5e1 !important;
-    }
+    body.light-theme #unifiedPrintableArea::-webkit-scrollbar-thumb,
     body.light-theme .custom-modal-scroll::-webkit-scrollbar-thumb {
-      background: #0284c7 !important;
+      background: #d97706 !important;
       border: 3px solid #f1f5f9 !important;
     }
+    body.light-theme #unifiedPrintableArea::-webkit-scrollbar-thumb:hover,
     body.light-theme .custom-modal-scroll::-webkit-scrollbar-thumb:hover {
-      background: #0369a1 !important;
+      background: #b45309 !important;
+    }
+    body.light-theme #unifiedPdfCanvasContainer::-webkit-scrollbar-thumb,
+    body.light-theme .custom-pdf-scroll::-webkit-scrollbar-thumb {
+      background: #1d4ed8 !important;
+      border: 3px solid #f1f5f9 !important;
+    }
+    body.light-theme #unifiedPdfCanvasContainer::-webkit-scrollbar-thumb:hover,
+    body.light-theme .custom-pdf-scroll::-webkit-scrollbar-thumb:hover {
+      background: #1e40af !important;
     }
 
   </style>
