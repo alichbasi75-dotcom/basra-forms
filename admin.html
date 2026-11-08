@@ -1448,6 +1448,50 @@
       border: 2px solid #e2e8f0 !important;
     }
 
+  
+    /* شريط التمرير العمودي الثاني المخصص لنافذة العرض والواجهة كاملة */
+    .custom-modal-scroll {
+      direction: ltr !important;
+      overflow-y: scroll !important;
+      scrollbar-width: thin !important;
+      scrollbar-color: #3b82f6 #0f172a !important;
+    }
+    .custom-modal-scroll > * {
+      direction: rtl !important;
+    }
+    .custom-modal-scroll::-webkit-scrollbar {
+      width: 12px !important;
+      display: block !important;
+    }
+    .custom-modal-scroll::-webkit-scrollbar-track {
+      background: #0f172a !important;
+      border-radius: 8px !important;
+      border: 1px solid #1e293b !important;
+    }
+    .custom-modal-scroll::-webkit-scrollbar-thumb {
+      background: #3b82f6 !important;
+      border-radius: 8px !important;
+      border: 2px solid #0f172a !important;
+    }
+    .custom-modal-scroll::-webkit-scrollbar-thumb:hover {
+      background: #60a5fa !important;
+    }
+
+    body.light-theme .custom-modal-scroll {
+      scrollbar-color: #2563eb #f1f5f9 !important;
+    }
+    body.light-theme .custom-modal-scroll::-webkit-scrollbar-track {
+      background: #f1f5f9 !important;
+      border: 1px solid #cbd5e1 !important;
+    }
+    body.light-theme .custom-modal-scroll::-webkit-scrollbar-thumb {
+      background: #2563eb !important;
+      border: 2px solid #f1f5f9 !important;
+    }
+    body.light-theme .custom-modal-scroll::-webkit-scrollbar-thumb:hover {
+      background: #1d4ed8 !important;
+    }
+
   </style>
 
   <!-- PDF.js, Mammoth.js & XLSX.js for in-browser sheet rendering -->
@@ -2483,7 +2527,7 @@ syncLiveAdminVersion();
       </div>
 
       <!-- Modal Body (Printable Area & Scrollable) -->
-      <div id="unifiedPrintableArea" class="p-5 overflow-y-auto custom-scrollbar flex-1 space-y-4">
+      <div id="unifiedPrintableArea" class="p-4 sm:p-5 overflow-y-auto custom-modal-scroll flex-1 space-y-4">
         <!-- Section: Attached Text & Instructions -->
         <div id="unifiedTextSection" class="space-y-2">
           <div class="flex items-center gap-2 text-xs font-black text-blue-400">
@@ -2523,7 +2567,7 @@ syncLiveAdminVersion();
             </div>
 
             <!-- PDF Canvas Container (Renders smoothly on Mobile Edge/Chrome/Safari & Desktop) -->
-            <div id="unifiedPdfCanvasContainer" class="w-full max-h-[72vh] min-h-[350px] overflow-y-auto overflow-x-hidden p-3 sm:p-5 flex flex-col items-center gap-6 bg-slate-950 rounded-b-2xl border-t border-slate-800 custom-pdf-scroll">
+            <div id="unifiedPdfCanvasContainer" class="w-full max-h-[72vh] min-h-[350px] overflow-y-auto overflow-x-hidden p-3 sm:p-5 flex flex-col items-center gap-6 bg-slate-950 rounded-b-2xl border-t border-slate-800 custom-pdf-scroll" style="padding-bottom: 40px;">
               <div id="unifiedPdfLoadingSpinner" class="py-10 flex flex-col items-center gap-2 text-slate-300">
                 <i class="fa-solid fa-circle-notch fa-spin text-2xl text-blue-500"></i>
                 <span class="text-xs font-bold">جاري معالجة وعرض صفحات الـ PDF...</span>
@@ -3201,6 +3245,12 @@ syncLiveAdminVersion();
             loginErrorMsg = 'اسم المستخدم أو كلمة المرور غير صحيحة.';
           }
         }
+
+        // الشارة الختامية لنهاية صفحات المستند لتمكين ظهور أسفل آخر صفحة بالكامل
+        const endBadge = document.createElement('div');
+        endBadge.className = 'w-full py-3 px-4 text-center text-xs font-black text-emerald-400 bg-emerald-950/40 border border-emerald-500/30 rounded-2xl select-none flex items-center justify-center gap-2 shrink-0 my-3 shadow-sm';
+        endBadge.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-400"></i> نهاية المستند المرفق (تم استعراض كافة الصفحات الـ ${numPages} بنجاح)`;
+        if (container) container.appendChild(endBadge);
       } catch (err) {
         loginErrorMsg = 'خطأ أثناء تسجيل الدخول: ' + (err.message || 'خطأ غير معروف');
       } finally {
