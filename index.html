@@ -3450,7 +3450,7 @@
 
 
     // Render PDF onto HTML5 Canvas for universal compatibility across mobile & desktop browsers
-    async function renderUnifiedPdfDocument(pdfUrl) {
+    async function renderUnifiedPdfDocument(pdfUrl, directFallbackUrl) {
       const container = document.getElementById('unifiedPdfCanvasContainer');
       const fallbackBox = document.getElementById('unifiedPdfFallbackBox');
       const fallbackLink = document.getElementById('unifiedPdfFallbackLink');
@@ -3458,8 +3458,8 @@
       const pageBadge = document.getElementById('unifiedPdfPageBadge');
       const pdfIframe = document.getElementById('unifiedPdfIframe');
 
-      if (directOpenBtn) directOpenBtn.href = pdfUrl;
-      if (fallbackLink) fallbackLink.href = pdfUrl;
+      if (directOpenBtn) directOpenBtn.href = directFallbackUrl || pdfUrl;
+      if (fallbackLink) fallbackLink.href = directFallbackUrl || pdfUrl;
       if (fallbackBox) fallbackBox.classList.add('hidden');
       if (pdfIframe) pdfIframe.classList.add('hidden');
 
@@ -3478,7 +3478,41 @@
         }
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-        const loadingTask = pdfjsLib.getDocument({ url: pdfUrl, withCredentials: false });
+        let loadingTask = null;
+        let pdfBytes = null;
+
+        // Try primary URL first
+        try {
+          const resp = await fetch(pdfUrl);
+          const cType = (resp.headers.get('content-type') || '').toLowerCase();
+          if (resp.ok && !cType.includes('text/plain')) {
+            pdfBytes = await resp.arrayBuffer();
+          }
+        } catch (fetchErr) {
+          console.warn('Primary PDF fetch failed, trying direct URL:', fetchErr);
+        }
+
+        // If primary fetch was not valid PDF and fallback exists, try direct URL
+        if (!pdfBytes && directFallbackUrl && directFallbackUrl !== pdfUrl) {
+          try {
+            const resp2 = await fetch(directFallbackUrl);
+            if (resp2.ok) {
+              pdfBytes = await resp2.arrayBuffer();
+            }
+          } catch (e2) {
+            console.warn('Direct PDF fetch failed:', e2);
+          }
+        }
+
+        if (pdfBytes) {
+          loadingTask = pdfjsLib.getDocument({
+            data: pdfBytes,
+            cMapUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/cmaps/',
+            cMapPacked: true
+          });
+        } else {
+          loadingTask = pdfjsLib.getDocument({ url: directFallbackUrl || pdfUrl, withCredentials: false });
+        }
         const pdf = await loadingTask.promise;
 
         if (pageBadge) {

@@ -5614,7 +5614,7 @@ syncLiveAdminVersion();
     // ==========================================================================
     // Multi-Engine Mobile & Desktop PDF Viewer (No Plugins Required)
     // ==========================================================================
-    async function renderUnifiedPdfDocument(pdfUrl) {
+    async function renderUnifiedPdfDocument(pdfUrl, directFallbackUrl) {
       const container = document.getElementById('unifiedPdfCanvasContainer');
       const fallbackBox = document.getElementById('unifiedPdfFallbackBox');
       const pageBadge = document.getElementById('unifiedPdfPageBadge');
@@ -5622,8 +5622,8 @@ syncLiveAdminVersion();
       const fallbackLink = document.getElementById('unifiedPdfFallbackLink');
       const pdfIframe = document.getElementById('unifiedPdfIframe');
 
-      if (directBtn) directBtn.href = pdfUrl;
-      if (fallbackLink) fallbackLink.href = pdfUrl;
+      if (directBtn) directBtn.href = directFallbackUrl || pdfUrl;
+      if (fallbackLink) fallbackLink.href = directFallbackUrl || pdfUrl;
       if (pdfIframe) { pdfIframe.src = ''; pdfIframe.classList.add('hidden'); }
       if (fallbackBox) fallbackBox.classList.add('hidden');
 
@@ -5653,21 +5653,40 @@ syncLiveAdminVersion();
           pdfjsLib.GlobalWorkerOptions.workerSrc = './libs/pdf.worker.min.js';
         } catch (e) {}
 
-        let loadingTask;
+        let loadingTask = null;
+        let pdfBytes = null;
+
+        // Try primary URL first
         try {
           const resp = await fetch(pdfUrl);
-          if (resp.ok) {
-            const buf = await resp.arrayBuffer();
-            loadingTask = pdfjsLib.getDocument({
-              data: buf,
-              cMapUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/cmaps/',
-              cMapPacked: true
-            });
-          } else {
-            loadingTask = pdfjsLib.getDocument({ url: pdfUrl });
+          const cType = (resp.headers.get('content-type') || '').toLowerCase();
+          if (resp.ok && !cType.includes('text/plain')) {
+            pdfBytes = await resp.arrayBuffer();
           }
         } catch (fetchErr) {
-          loadingTask = pdfjsLib.getDocument({ url: pdfUrl });
+          console.warn('Primary PDF fetch failed, trying direct URL:', fetchErr);
+        }
+
+        // If primary fetch was not valid PDF and fallback exists, try direct URL
+        if (!pdfBytes && directFallbackUrl && directFallbackUrl !== pdfUrl) {
+          try {
+            const resp2 = await fetch(directFallbackUrl);
+            if (resp2.ok) {
+              pdfBytes = await resp2.arrayBuffer();
+            }
+          } catch (e2) {
+            console.warn('Direct PDF fetch failed:', e2);
+          }
+        }
+
+        if (pdfBytes) {
+          loadingTask = pdfjsLib.getDocument({
+            data: pdfBytes,
+            cMapUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/cmaps/',
+            cMapPacked: true
+          });
+        } else {
+          loadingTask = pdfjsLib.getDocument({ url: directFallbackUrl || pdfUrl });
         }
 
         const pdf = await loadingTask.promise;
@@ -5840,7 +5859,7 @@ syncLiveAdminVersion();
         if (ext === 'pdf' || (url && url.match(/\.pdf$/i))) {
           if (url) {
             pdfWrapper.classList.remove("hidden");
-            renderUnifiedPdfDocument(url);
+            renderUnifiedPdfDocument(url, item.file_url);
           } else {
             officeWrapper.classList.remove('hidden');
             setupOfficeBox(item, 'fa-file-pdf text-rose-500', 'bg-rose-500/20 text-rose-400 border-rose-500/30', 'مستند PDF');
