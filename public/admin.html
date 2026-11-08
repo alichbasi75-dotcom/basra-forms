@@ -1416,80 +1416,102 @@
     }
 
     /* Dedicated Visible Scrollbar for Multi-Page PDF Viewer */
-    .custom-pdf-scroll {
-      scrollbar-width: thin !important;
-      scrollbar-color: #3b82f6 #0f172a !important;
-    }
-    .custom-pdf-scroll::-webkit-scrollbar {
-      width: 10px !important;
-      display: block !important;
-    }
-    .custom-pdf-scroll::-webkit-scrollbar-track {
-      background: #0f172a !important;
-      border-radius: 8px !important;
-    }
-    .custom-pdf-scroll::-webkit-scrollbar-thumb {
-      background: #3b82f6 !important;
-      border-radius: 8px !important;
-      border: 2px solid #0f172a !important;
-    }
-    .custom-pdf-scroll::-webkit-scrollbar-thumb:hover {
-      background: #60a5fa !important;
-    }
-    body.light-theme .custom-pdf-scroll {
-      background: #f8fafc !important;
-      scrollbar-color: #2563eb #e2e8f0 !important;
-    }
-    body.light-theme .custom-pdf-scroll::-webkit-scrollbar-track {
-      background: #e2e8f0 !important;
-    }
-    body.light-theme .custom-pdf-scroll::-webkit-scrollbar-thumb {
-      background: #2563eb !important;
-      border: 2px solid #e2e8f0 !important;
-    }
+    
 
   
     /* شريط التمرير العمودي الثاني المخصص لنافذة العرض والواجهة كاملة */
+    
+
+  
+    /* =========================================================================
+       ULTRA-CLEAR, WIDE HIGH-CONTRAST DUAL SCROLLBARS (PDF & INTERFACE)
+       ========================================================================= */
+    /* 1. شريط التمرير الداخلي لملف الـ PDF (على اليسار) - بعرض بارز ولون أزرق ساطع */
+    .custom-pdf-scroll {
+      scrollbar-width: auto !important;
+      scrollbar-color: #2563eb #0b1120 !important;
+    }
+    .custom-pdf-scroll::-webkit-scrollbar {
+      width: 15px !important;
+      display: block !important;
+    }
+    .custom-pdf-scroll::-webkit-scrollbar-track {
+      background: #0b1120 !important;
+      border-radius: 9999px !important;
+      border: 1px solid #1e293b !important;
+    }
+    .custom-pdf-scroll::-webkit-scrollbar-thumb {
+      background: #2563eb !important;
+      border-radius: 9999px !important;
+      border: 3px solid #0b1120 !important;
+    }
+    .custom-pdf-scroll::-webkit-scrollbar-thumb:hover {
+      background: #3b82f6 !important;
+    }
+    .custom-pdf-scroll::-webkit-scrollbar-thumb:active {
+      background: #60a5fa !important;
+    }
+
+    body.light-theme .custom-pdf-scroll {
+      background: #f8fafc !important;
+      scrollbar-color: #2563eb #f1f5f9 !important;
+    }
+    body.light-theme .custom-pdf-scroll::-webkit-scrollbar-track {
+      background: #f1f5f9 !important;
+      border: 1px solid #cbd5e1 !important;
+    }
+    body.light-theme .custom-pdf-scroll::-webkit-scrollbar-thumb {
+      background: #2563eb !important;
+      border: 3px solid #f1f5f9 !important;
+    }
+    body.light-theme .custom-pdf-scroll::-webkit-scrollbar-thumb:hover {
+      background: #1d4ed8 !important;
+    }
+
+    /* 2. شريط التمرير الخارجي للواجهة بالكامل (على اليمين) - بعرض بارز ولون كحلي/أزرق ساطع */
     .custom-modal-scroll {
       direction: ltr !important;
       overflow-y: scroll !important;
-      scrollbar-width: thin !important;
-      scrollbar-color: #3b82f6 #0f172a !important;
+      scrollbar-width: auto !important;
+      scrollbar-color: #0284c7 #0b1120 !important;
     }
     .custom-modal-scroll > * {
       direction: rtl !important;
     }
     .custom-modal-scroll::-webkit-scrollbar {
-      width: 12px !important;
+      width: 15px !important;
       display: block !important;
     }
     .custom-modal-scroll::-webkit-scrollbar-track {
-      background: #0f172a !important;
-      border-radius: 8px !important;
+      background: #0b1120 !important;
+      border-radius: 9999px !important;
       border: 1px solid #1e293b !important;
     }
     .custom-modal-scroll::-webkit-scrollbar-thumb {
-      background: #3b82f6 !important;
-      border-radius: 8px !important;
-      border: 2px solid #0f172a !important;
+      background: #0284c7 !important;
+      border-radius: 9999px !important;
+      border: 3px solid #0b1120 !important;
     }
     .custom-modal-scroll::-webkit-scrollbar-thumb:hover {
-      background: #60a5fa !important;
+      background: #38bdf8 !important;
+    }
+    .custom-modal-scroll::-webkit-scrollbar-thumb:active {
+      background: #7dd3fc !important;
     }
 
     body.light-theme .custom-modal-scroll {
-      scrollbar-color: #2563eb #f1f5f9 !important;
+      scrollbar-color: #0284c7 #f1f5f9 !important;
     }
     body.light-theme .custom-modal-scroll::-webkit-scrollbar-track {
       background: #f1f5f9 !important;
       border: 1px solid #cbd5e1 !important;
     }
     body.light-theme .custom-modal-scroll::-webkit-scrollbar-thumb {
-      background: #2563eb !important;
-      border: 2px solid #f1f5f9 !important;
+      background: #0284c7 !important;
+      border: 3px solid #f1f5f9 !important;
     }
     body.light-theme .custom-modal-scroll::-webkit-scrollbar-thumb:hover {
-      background: #1d4ed8 !important;
+      background: #0369a1 !important;
     }
 
   </style>
@@ -5006,7 +5028,13 @@ syncLiveAdminVersion();
       if (badge) badge.innerText = adminContents.length;
 
       if (typeof syncAllContrasts === 'function') {
-        setTimeout(syncAllContrasts, 30);
+        setTimeout(() => {
+        syncAllContrasts();
+        const pArea = document.getElementById('unifiedPrintableArea');
+        if (pArea) { pArea.scrollTop = 0; pArea.scrollLeft = 0; }
+        const cCont = document.getElementById('unifiedPdfCanvasContainer');
+        if (cCont) { cCont.scrollTop = 0; cCont.scrollLeft = 0; }
+      }, 35);
       }
     }
 
@@ -5781,7 +5809,12 @@ syncLiveAdminVersion();
           pageBadge.innerText = `مستند PDF (${numPages} ${numPages === 1 ? 'صفحة' : 'صفحات'})`;
         }
 
-        if (container) container.innerHTML = '';
+        if (container) {
+          container.innerHTML = '';
+          container.scrollTop = 0;
+        }
+        const initialPrintable = document.getElementById('unifiedPrintableArea');
+        if (initialPrintable) initialPrintable.scrollTop = 0;
 
         // Calculate responsive target width
         const clientW = (container && container.clientWidth && container.clientWidth > 100)
@@ -5855,6 +5888,11 @@ syncLiveAdminVersion();
     }
     
     function openUnifiedModal(itemId) {
+      // إعادة أشرطة التمرير الرأسية لوضعها الطبيعي فوراً عند الفتح
+      const initPrintableArea = document.getElementById('unifiedPrintableArea');
+      if (initPrintableArea) { initPrintableArea.scrollTop = 0; initPrintableArea.scrollLeft = 0; }
+      const initCanvasContainer = document.getElementById('unifiedPdfCanvasContainer');
+      if (initCanvasContainer) { initCanvasContainer.scrollTop = 0; initCanvasContainer.scrollLeft = 0; }
       const item = adminContents.find(c => c.id === itemId);
       if (!item) return;
       currentUnifiedItem = item;
@@ -6014,7 +6052,13 @@ syncLiveAdminVersion();
       }
 
       document.getElementById('unifiedPreviewModal').classList.remove('hidden');
-      setTimeout(syncAllContrasts, 30);
+      setTimeout(() => {
+        syncAllContrasts();
+        const pArea = document.getElementById('unifiedPrintableArea');
+        if (pArea) { pArea.scrollTop = 0; pArea.scrollLeft = 0; }
+        const cCont = document.getElementById('unifiedPdfCanvasContainer');
+        if (cCont) { cCont.scrollTop = 0; cCont.scrollLeft = 0; }
+      }, 35);
     }
 
     function setupOfficeBox(item, iconClass, iconBoxClass, typeLabel = 'مستند رسمي') {
@@ -6038,11 +6082,24 @@ syncLiveAdminVersion();
     }
 
     function closeUnifiedPreviewModal() {
+      if (typeof window.closeUnifiedPreviewModal === 'function' && window.closeUnifiedPreviewModal !== closeUnifiedPreviewModal) {
+        window.closeUnifiedPreviewModal = closeUnifiedPreviewModal;
+      }
+      const container = document.getElementById('unifiedPdfCanvasContainer');
+      if (container) {
+        container.innerHTML = '';
+        container.scrollTop = 0;
+        container.scrollLeft = 0;
+      }
+      const printableArea = document.getElementById('unifiedPrintableArea');
+      if (printableArea) {
+        printableArea.scrollTop = 0;
+        printableArea.scrollLeft = 0;
+      }
       const pdfIframe = document.getElementById('unifiedPdfIframe');
       if (pdfIframe) pdfIframe.src = '';
-      const container = document.getElementById('unifiedPdfCanvasContainer');
-      if (container) container.innerHTML = '';
-      document.getElementById('unifiedPreviewModal').classList.add('hidden');
+      const modal = document.getElementById('unifiedPreviewModal');
+      if (modal) modal.classList.add('hidden');
     }
 
     // ==========================================================================
@@ -8259,7 +8316,13 @@ syncLiveAdminVersion();
         `;
       }).join('');
 
-      setTimeout(syncAllContrasts, 30);
+      setTimeout(() => {
+        syncAllContrasts();
+        const pArea = document.getElementById('unifiedPrintableArea');
+        if (pArea) { pArea.scrollTop = 0; pArea.scrollLeft = 0; }
+        const cCont = document.getElementById('unifiedPdfCanvasContainer');
+        if (cCont) { cCont.scrollTop = 0; cCont.scrollLeft = 0; }
+      }, 35);
     }
 
 
