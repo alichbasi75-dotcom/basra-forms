@@ -121,17 +121,9 @@
       transition: background-color 0.2s ease, color 0.2s ease;
     }
 
-    .custom-scrollbar::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
-    }
-    .custom-scrollbar::-webkit-scrollbar-track {
-      background: var(--theme-bg-subsurface);
-    }
-    .custom-scrollbar::-webkit-scrollbar-thumb {
-      background: var(--theme-border);
-      border-radius: 4px;
-    }
+    
+    
+    
 
     /* ========================================================================== */
     /* 2. ثوابت الوضع الليلي الصارمة (STRICT DARK MODE RULES)                     */
@@ -774,22 +766,10 @@
     #sheetScrollArea > * {
       direction: rtl !important;
     }
-    #sheetScrollArea::-webkit-scrollbar {
-      width: 12px;
-      height: 14px;
-    }
-    #sheetScrollArea::-webkit-scrollbar-track {
-      background: #cbd5e1;
-      border-radius: 8px;
-    }
-    #sheetScrollArea::-webkit-scrollbar-thumb {
-      background: #475569;
-      border-radius: 8px;
-      border: 3px solid #cbd5e1;
-    }
-    #sheetScrollArea::-webkit-scrollbar-thumb:hover {
-      background: #1e293b;
-    }
+    
+    
+    
+    
 
     .drag-box {
       position: absolute;
@@ -1438,6 +1418,166 @@
       background: #1e40af !important;
     }
 
+  
+    /* =========================================================================
+       UNIVERSAL SYSTEM-WIDE ULTRA-CLEAR HIGH-CONTRAST SCROLLBAR ENGINE (14px)
+       Applies to EVERY vertical and horizontal scrollbar anywhere in the entire system
+       ========================================================================= */
+    * {
+      scrollbar-width: auto !important;
+      scrollbar-color: #2563eb #090d16 !important;
+    }
+    body.light-theme * {
+      scrollbar-color: #2563eb #f1f5f9 !important;
+    }
+
+    /* Universal Dimensions for ANY Scrollbar (Vertical: 14px wide, Horizontal: 14px high) */
+    *::-webkit-scrollbar,
+    html::-webkit-scrollbar,
+    body::-webkit-scrollbar,
+    div::-webkit-scrollbar,
+    textarea::-webkit-scrollbar,
+    form::-webkit-scrollbar,
+    main::-webkit-scrollbar,
+    section::-webkit-scrollbar,
+    .custom-scrollbar::-webkit-scrollbar,
+    .custom-modal-scroll::-webkit-scrollbar,
+    .custom-pdf-scroll::-webkit-scrollbar,
+    .modal-header-actions-scroll::-webkit-scrollbar,
+    #sheetScrollArea::-webkit-scrollbar,
+    #unifiedPrintableArea::-webkit-scrollbar,
+    #unifiedPdfCanvasContainer::-webkit-scrollbar {
+      width: 14px !important;
+      height: 14px !important;
+      display: block !important;
+    }
+
+    /* Universal Dark Track */
+    *::-webkit-scrollbar-track,
+    html::-webkit-scrollbar-track,
+    body::-webkit-scrollbar-track,
+    div::-webkit-scrollbar-track,
+    textarea::-webkit-scrollbar-track,
+    .custom-scrollbar::-webkit-scrollbar-track,
+    .custom-modal-scroll::-webkit-scrollbar-track,
+    .custom-pdf-scroll::-webkit-scrollbar-track,
+    .modal-header-actions-scroll::-webkit-scrollbar-track,
+    #sheetScrollArea::-webkit-scrollbar-track,
+    #unifiedPrintableArea::-webkit-scrollbar-track,
+    #unifiedPdfCanvasContainer::-webkit-scrollbar-track {
+      background: #090d16 !important;
+      border-radius: 9999px !important;
+      border: 1px solid #1e293b !important;
+    }
+
+    /* Universal Dark Thumb: Vibrant Royal Blue Pill with Deep Border & Ambient Glow */
+    *::-webkit-scrollbar-thumb,
+    html::-webkit-scrollbar-thumb,
+    body::-webkit-scrollbar-thumb,
+    div::-webkit-scrollbar-thumb,
+    textarea::-webkit-scrollbar-thumb,
+    .custom-scrollbar::-webkit-scrollbar-thumb,
+    .custom-modal-scroll::-webkit-scrollbar-thumb,
+    .custom-pdf-scroll::-webkit-scrollbar-thumb,
+    .modal-header-actions-scroll::-webkit-scrollbar-thumb,
+    #sheetScrollArea::-webkit-scrollbar-thumb,
+    #unifiedPrintableArea::-webkit-scrollbar-thumb,
+    #unifiedPdfCanvasContainer::-webkit-scrollbar-thumb {
+      background: #2563eb !important;
+      border-radius: 9999px !important;
+      border: 3px solid #090d16 !important;
+      box-shadow: 0 0 8px rgba(37, 99, 235, 0.45) !important;
+    }
+
+    *::-webkit-scrollbar-thumb:hover,
+    html::-webkit-scrollbar-thumb:hover,
+    body::-webkit-scrollbar-thumb:hover,
+    div::-webkit-scrollbar-thumb:hover,
+    textarea::-webkit-scrollbar-thumb:hover,
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover,
+    .custom-modal-scroll::-webkit-scrollbar-thumb:hover,
+    .custom-pdf-scroll::-webkit-scrollbar-thumb:hover,
+    .modal-header-actions-scroll::-webkit-scrollbar-thumb:hover,
+    #sheetScrollArea::-webkit-scrollbar-thumb:hover,
+    #unifiedPrintableArea::-webkit-scrollbar-thumb:hover,
+    #unifiedPdfCanvasContainer::-webkit-scrollbar-thumb:hover {
+      background: #3b82f6 !important;
+      box-shadow: 0 0 12px rgba(59, 130, 246, 0.75) !important;
+    }
+
+    *::-webkit-scrollbar-thumb:active,
+    html::-webkit-scrollbar-thumb:active,
+    body::-webkit-scrollbar-thumb:active,
+    div::-webkit-scrollbar-thumb:active,
+    textarea::-webkit-scrollbar-thumb:active,
+    .custom-scrollbar::-webkit-scrollbar-thumb:active,
+    .custom-modal-scroll::-webkit-scrollbar-thumb:active,
+    .custom-pdf-scroll::-webkit-scrollbar-thumb:active,
+    .modal-header-actions-scroll::-webkit-scrollbar-thumb:active,
+    #sheetScrollArea::-webkit-scrollbar-thumb:active,
+    #unifiedPrintableArea::-webkit-scrollbar-thumb:active,
+    #unifiedPdfCanvasContainer::-webkit-scrollbar-thumb:active {
+      background: #60a5fa !important;
+    }
+
+    *::-webkit-scrollbar-corner {
+      background: #090d16 !important;
+    }
+
+    /* Universal Light Mode Scrollbars */
+    body.light-theme *::-webkit-scrollbar-track,
+    body.light-theme html::-webkit-scrollbar-track,
+    body.light-theme body::-webkit-scrollbar-track,
+    body.light-theme div::-webkit-scrollbar-track,
+    body.light-theme textarea::-webkit-scrollbar-track,
+    body.light-theme .custom-scrollbar::-webkit-scrollbar-track,
+    body.light-theme .custom-modal-scroll::-webkit-scrollbar-track,
+    body.light-theme .custom-pdf-scroll::-webkit-scrollbar-track,
+    body.light-theme .modal-header-actions-scroll::-webkit-scrollbar-track,
+    body.light-theme #sheetScrollArea::-webkit-scrollbar-track,
+    body.light-theme #unifiedPrintableArea::-webkit-scrollbar-track,
+    body.light-theme #unifiedPdfCanvasContainer::-webkit-scrollbar-track {
+      background: #f1f5f9 !important;
+      border: 1px solid #cbd5e1 !important;
+    }
+
+    body.light-theme *::-webkit-scrollbar-thumb,
+    body.light-theme html::-webkit-scrollbar-thumb,
+    body.light-theme body::-webkit-scrollbar-thumb,
+    body.light-theme div::-webkit-scrollbar-thumb,
+    body.light-theme textarea::-webkit-scrollbar-thumb,
+    body.light-theme .custom-scrollbar::-webkit-scrollbar-thumb,
+    body.light-theme .custom-modal-scroll::-webkit-scrollbar-thumb,
+    body.light-theme .custom-pdf-scroll::-webkit-scrollbar-thumb,
+    body.light-theme .modal-header-actions-scroll::-webkit-scrollbar-thumb,
+    body.light-theme #sheetScrollArea::-webkit-scrollbar-thumb,
+    body.light-theme #unifiedPrintableArea::-webkit-scrollbar-thumb,
+    body.light-theme #unifiedPdfCanvasContainer::-webkit-scrollbar-thumb {
+      background: #2563eb !important;
+      border-radius: 9999px !important;
+      border: 3px solid #f1f5f9 !important;
+      box-shadow: 0 0 6px rgba(37, 99, 235, 0.35) !important;
+    }
+
+    body.light-theme *::-webkit-scrollbar-thumb:hover,
+    body.light-theme html::-webkit-scrollbar-thumb:hover,
+    body.light-theme body::-webkit-scrollbar-thumb:hover,
+    body.light-theme div::-webkit-scrollbar-thumb:hover,
+    body.light-theme textarea::-webkit-scrollbar-thumb:hover,
+    body.light-theme .custom-scrollbar::-webkit-scrollbar-thumb:hover,
+    body.light-theme .custom-modal-scroll::-webkit-scrollbar-thumb:hover,
+    body.light-theme .custom-pdf-scroll::-webkit-scrollbar-thumb:hover,
+    body.light-theme .modal-header-actions-scroll::-webkit-scrollbar-thumb:hover,
+    body.light-theme #sheetScrollArea::-webkit-scrollbar-thumb:hover,
+    body.light-theme #unifiedPrintableArea::-webkit-scrollbar-thumb:hover,
+    body.light-theme #unifiedPdfCanvasContainer::-webkit-scrollbar-thumb:hover {
+      background: #1d4ed8 !important;
+    }
+
+    body.light-theme *::-webkit-scrollbar-corner {
+      background: #f1f5f9 !important;
+    }
+
   </style>
 
   <!-- PDF.js, Mammoth.js & XLSX.js for in-browser sheet rendering -->
@@ -1843,20 +1983,10 @@
       padding-bottom: 2px !important;
       touch-action: pan-x;
     }
-    .modal-header-actions-scroll::-webkit-scrollbar {
-      height: 4px;
-    }
-    .modal-header-actions-scroll::-webkit-scrollbar-track {
-      background: transparent;
-    }
-    body:not(.light-theme) .modal-header-actions-scroll::-webkit-scrollbar-thumb {
-      background: #475569;
-      border-radius: 4px;
-    }
-    body.light-theme .modal-header-actions-scroll::-webkit-scrollbar-thumb {
-      background: #cbd5e1;
-      border-radius: 4px;
-    }
+    
+    
+    
+    
     .modal-header-actions-scroll > * {
       flex-shrink: 0 !important;
       white-space: nowrap !important;
