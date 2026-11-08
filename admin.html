@@ -1658,7 +1658,49 @@
       background: #f1f5f9 !important;
     }
 
-  </style>
+  
+    /* =========================================================================
+       ULTRA-WIDE (18px) PROMINENT SCROLLBAR FOR DOCUMENT & SHEET VIEWER
+       ========================================================================= */
+    #sheetScrollArea {
+      overflow-y: scroll !important;
+      overflow-x: auto !important;
+      min-height: 0 !important;
+      height: 100% !important;
+      scrollbar-gutter: stable !important;
+      scrollbar-width: auto !important;
+      scrollbar-color: #2563eb #0f172a !important;
+    }
+    #sheetScrollArea::-webkit-scrollbar {
+      width: 18px !important;
+      height: 18px !important;
+      display: block !important;
+    }
+    #sheetScrollArea::-webkit-scrollbar-track {
+      background: #0f172a !important;
+      border: 2px solid #334155 !important;
+      border-radius: 9999px !important;
+      margin: 4px 0 !important;
+    }
+    #sheetScrollArea::-webkit-scrollbar-thumb {
+      background: #2563eb !important;
+      border-radius: 9999px !important;
+      border: 3px solid #0f172a !important;
+      box-shadow: 0 0 12px rgba(37, 99, 235, 0.75) !important;
+      min-height: 60px !important;
+    }
+    #sheetScrollArea::-webkit-scrollbar-thumb:hover {
+      background: #3b82f6 !important;
+      box-shadow: 0 0 16px rgba(59, 130, 246, 0.95) !important;
+    }
+    #sheetScrollArea::-webkit-scrollbar-thumb:active {
+      background: #60a5fa !important;
+    }
+    #sheetScrollArea::-webkit-scrollbar-corner {
+      background: #0f172a !important;
+    }
+
+</style>
 
   <!-- PDF.js, Mammoth.js & XLSX.js for in-browser sheet rendering -->
   <script src="./libs/pdf.min.js"></script>
@@ -8241,7 +8283,7 @@ syncLiveAdminVersion();
         ctx.direction = 'rtl';
         ctx.textAlign = 'right';
 
-        // Right Block: Republic & IHEC & Dept
+                // Right Block: Republic & IHEC & Dept
         ctx.fillStyle = '#0f172a';
         ctx.font = 'bold 24px "Cairo", "Traditional Arabic", serif';
         ctx.fillText('جمهورية العراق', pageW - marginX, 88);
@@ -8251,25 +8293,14 @@ syncLiveAdminVersion();
         ctx.fillStyle = '#1e40af';
         ctx.fillText(deptName, pageW - marginX, 155);
 
-        // Center Block: Basra Office & Tagline
-        ctx.textAlign = 'center';
-        ctx.fillStyle = '#0f172a';
-        ctx.font = 'bold 22px "Cairo", "Traditional Arabic", serif';
-        ctx.fillText('مكتب انتخابات محافظة البصرة', pageW / 2, 95);
-        ctx.font = 'bold 16px "Cairo", sans-serif';
-        ctx.fillStyle = '#475569';
-        ctx.fillText('The Independent High Electoral Commission - Basra Office', pageW / 2, 124);
-        ctx.fillStyle = '#b45309';
-        ctx.font = 'bold 16px "Cairo", sans-serif';
-        ctx.fillText('« وثيقة توجيهات وتعليمات إدارية رسمية »', pageW / 2, 154);
+        // Center Block: Deleted per user request
 
-        // Left Block: Reference Number & Date
+        // Left Block: Date & Category (docNum / العدد deleted per user request)
         ctx.textAlign = 'left';
         ctx.fillStyle = '#0f172a';
-        ctx.font = 'bold 18px "Cairo", "Traditional Arabic", sans-serif';
-        ctx.fillText('العدد: ' + docNum, marginX, 90);
-        ctx.fillText('التاريخ: ' + dateStr, marginX, 122);
-        ctx.fillText('التصنيف: ' + catName, marginX, 154);
+        ctx.font = 'bold 19px "Cairo", "Traditional Arabic", sans-serif';
+        ctx.fillText('التاريخ: ' + dateStr, marginX, 105);
+        ctx.fillText('التصنيف: ' + catName, marginX, 142);
 
         // Header Divider Double Lines
         ctx.strokeStyle = '#0f172a';
@@ -8609,7 +8640,7 @@ syncLiveAdminVersion();
       </div>
 
       <!-- Interactive Canvas Area (شاشة كاملة، شريط التمرير على اليمين) -->
-      <div class="flex-1 bg-slate-200 overflow-auto p-2 sm:p-4 select-none" id="sheetScrollArea">
+      <div class="flex-1 bg-slate-200 p-2 sm:p-4 select-none" id="sheetScrollArea" style="overflow-y: scroll !important; overflow-x: auto !important; min-height: 0 !important; scrollbar-gutter: stable;">
         <!-- Rendered page sheets dynamically injected here -->
       </div>
 
