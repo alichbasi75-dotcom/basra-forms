@@ -1334,6 +1334,40 @@
       color: #38bdf8 !important;
     }
 
+  
+    /* Dedicated Visible Scrollbar for Multi-Page PDF Viewer */
+    .custom-pdf-scroll {
+      scrollbar-width: thin !important;
+      scrollbar-color: #3b82f6 #0f172a !important;
+    }
+    .custom-pdf-scroll::-webkit-scrollbar {
+      width: 10px !important;
+      display: block !important;
+    }
+    .custom-pdf-scroll::-webkit-scrollbar-track {
+      background: #0f172a !important;
+      border-radius: 8px !important;
+    }
+    .custom-pdf-scroll::-webkit-scrollbar-thumb {
+      background: #3b82f6 !important;
+      border-radius: 8px !important;
+      border: 2px solid #0f172a !important;
+    }
+    .custom-pdf-scroll::-webkit-scrollbar-thumb:hover {
+      background: #60a5fa !important;
+    }
+    body.light-theme .custom-pdf-scroll {
+      background: #f8fafc !important;
+      scrollbar-color: #2563eb #e2e8f0 !important;
+    }
+    body.light-theme .custom-pdf-scroll::-webkit-scrollbar-track {
+      background: #e2e8f0 !important;
+    }
+    body.light-theme .custom-pdf-scroll::-webkit-scrollbar-thumb {
+      background: #2563eb !important;
+      border: 2px solid #e2e8f0 !important;
+    }
+
   </style>
 
   <!-- PDF.js, Mammoth.js & XLSX.js for in-browser sheet rendering -->
@@ -2159,7 +2193,7 @@
             </div>
 
             <!-- PDF Canvas Container (Renders smoothly on Mobile Edge/Chrome/Safari & Desktop) -->
-            <div id="unifiedPdfCanvasContainer" class="w-full max-h-[550px] overflow-y-auto p-2 sm:p-3 flex flex-col items-center gap-3 bg-slate-950">
+            <div id="unifiedPdfCanvasContainer" class="w-full max-h-[72vh] min-h-[350px] overflow-y-auto overflow-x-hidden p-3 sm:p-5 flex flex-col items-center gap-6 bg-slate-950 rounded-b-2xl border-t border-slate-800 custom-pdf-scroll">
               <div id="unifiedPdfLoadingSpinner" class="py-10 flex flex-col items-center gap-2 text-slate-300">
                 <i class="fa-solid fa-circle-notch fa-spin text-2xl text-blue-500"></i>
                 <span class="text-xs font-bold">جاري معالجة وعرض صفحات الـ PDF...</span>
@@ -3453,30 +3487,41 @@
     async function renderUnifiedPdfDocument(pdfUrl, directFallbackUrl) {
       const container = document.getElementById('unifiedPdfCanvasContainer');
       const fallbackBox = document.getElementById('unifiedPdfFallbackBox');
-      const fallbackLink = document.getElementById('unifiedPdfFallbackLink');
-      const directOpenBtn = document.getElementById('unifiedPdfDirectOpenBtn');
       const pageBadge = document.getElementById('unifiedPdfPageBadge');
+      const directBtn = document.getElementById('unifiedPdfDirectOpenBtn');
+      const fallbackLink = document.getElementById('unifiedPdfFallbackLink');
       const pdfIframe = document.getElementById('unifiedPdfIframe');
 
-      if (directOpenBtn) directOpenBtn.href = directFallbackUrl || pdfUrl;
+      if (directBtn) directBtn.href = directFallbackUrl || pdfUrl;
       if (fallbackLink) fallbackLink.href = directFallbackUrl || pdfUrl;
+      if (pdfIframe) { pdfIframe.src = ''; pdfIframe.classList.add('hidden'); }
       if (fallbackBox) fallbackBox.classList.add('hidden');
-      if (pdfIframe) pdfIframe.classList.add('hidden');
 
-      if (!container) return;
-      container.classList.remove('hidden');
-      container.innerHTML = `
-        <div id="unifiedPdfLoadingSpinner" class="py-10 flex flex-col items-center gap-2 text-slate-300">
-          <i class="fa-solid fa-circle-notch fa-spin text-2xl text-blue-500"></i>
-          <span class="text-xs font-bold">جاري تجهيز وعرض صفحات المستند...</span>
-        </div>
-      `;
+      if (container) {
+        container.classList.remove('hidden');
+        container.innerHTML = `
+          <div class="py-12 flex flex-col items-center gap-3 text-slate-300">
+            <i class="fa-solid fa-circle-notch fa-spin text-3xl text-blue-500"></i>
+            <span class="text-xs sm:text-sm font-bold text-slate-300">جاري معالجة وتجهيز صفحات الـ PDF بالتتالي وبدقة عالية...</span>
+          </div>
+        `;
+      }
+
+      if (typeof pdfjsLib === 'undefined') {
+        console.warn('PDF.js not available, using fallback');
+        if (container) container.classList.add('hidden');
+        if (fallbackBox) fallbackBox.classList.remove('hidden');
+        if (window.innerWidth > 768 && pdfIframe) {
+          pdfIframe.src = pdfUrl;
+          pdfIframe.classList.remove('hidden');
+        }
+        return;
+      }
 
       try {
-        if (typeof pdfjsLib === 'undefined') {
-          throw new Error('PDF.js library is not loaded');
-        }
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        try {
+          pdfjsLib.GlobalWorkerOptions.workerSrc = './libs/pdf.worker.min.js';
+        } catch (e) {}
 
         let loadingTask = null;
         let pdfBytes = null;
@@ -3511,45 +3556,78 @@
             cMapPacked: true
           });
         } else {
-          loadingTask = pdfjsLib.getDocument({ url: directFallbackUrl || pdfUrl, withCredentials: false });
+          loadingTask = pdfjsLib.getDocument({ url: directFallbackUrl || pdfUrl });
         }
+
         const pdf = await loadingTask.promise;
+        if (!pdf || pdf.numPages === 0) throw new Error('Empty PDF');
 
+        const numPages = pdf.numPages;
         if (pageBadge) {
-          pageBadge.innerText = `${pdf.numPages} ${pdf.numPages === 1 ? 'صفحة' : 'صفحات'}`;
+          pageBadge.innerText = `مستند PDF (${numPages} ${numPages === 1 ? 'صفحة' : 'صفحات'})`;
         }
 
-        container.innerHTML = '';
-        for (let pNum = 1; pNum <= pdf.numPages; pNum++) {
+        if (container) container.innerHTML = '';
+
+        // Calculate responsive target width
+        const clientW = (container && container.clientWidth && container.clientWidth > 100)
+          ? container.clientWidth
+          : (window.innerWidth > 768 ? 750 : window.innerWidth - 40);
+        const targetW = Math.max(320, Math.min(clientW - 36, 850));
+
+        // Render each page sequentially as an independent non-shrinking card block
+        for (let pNum = 1; pNum <= numPages; pNum++) {
           const page = await pdf.getPage(pNum);
-          const baseViewport = page.getViewport({ scale: 1.0 });
+          const unscaledVp = page.getViewport({ scale: 1.0 });
 
-          const clientW = container.clientWidth || window.innerWidth || 800;
-          const targetW = Math.min(clientW - 32, 760);
-          const scale = targetW > 100 ? (targetW / baseViewport.width) : 1.2;
-          const viewport = page.getViewport({ scale: Math.max(0.6, scale) });
+          // Crisp, high-resolution rendering scale
+          const fitScale = targetW / unscaledVp.width;
+          const renderScale = Math.min(2.5, Math.max(1.25, fitScale * (window.devicePixelRatio > 1 ? 1.5 : 1.75)));
+          const vp = page.getViewport({ scale: renderScale });
 
+          // Page Card Wrapper: flex-shrink MUST BE 0 to prevent vertical squashing/overlapping
           const wrapper = document.createElement('div');
-          wrapper.className = 'w-full flex flex-col items-center mb-3 bg-white rounded-xl shadow-md overflow-hidden border border-slate-700/50';
+          wrapper.className = 'w-full shrink-0 flex flex-col items-center bg-white rounded-2xl shadow-xl border border-slate-300 dark:border-slate-700 overflow-hidden';
+          wrapper.style.flexShrink = '0';
+          wrapper.style.width = '100%';
+          wrapper.style.maxWidth = `${targetW}px`;
+          wrapper.style.boxSizing = 'border-box';
+          wrapper.style.margin = '0 auto';
 
+          // Sequential Page Header Badge
+          const header = document.createElement('div');
+          header.className = 'w-full py-2 px-4 bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-200 select-none';
+          header.innerHTML = `
+            <span class="flex items-center gap-1.5 text-blue-600 dark:text-blue-400 font-black">
+              <i class="fa-solid fa-file-lines text-xs"></i>
+              <span>الصفحة ${pNum} من ${numPages}</span>
+            </span>
+            <span class="text-[10px] text-slate-500 font-mono tracking-wider">صفحة متتالية بدقة عالية</span>
+          `;
+          wrapper.appendChild(header);
+
+          // Canvas Element
           const canvas = document.createElement('canvas');
-          canvas.className = 'max-w-full h-auto block';
-          const context = canvas.getContext('2d');
-          canvas.height = viewport.height;
-          canvas.width = viewport.width;
-
+          canvas.width = vp.width;
+          canvas.height = vp.height;
+          canvas.style.width = '100%';
+          canvas.style.height = 'auto';
+          canvas.style.display = 'block';
           wrapper.appendChild(canvas);
 
-          const renderContext = { canvasContext: context, viewport: viewport };
-          await page.render(renderContext).promise;
-
-          if (pdf.numPages > 1) {
+          // Page Footer Divider
+          if (numPages > 1) {
             const footer = document.createElement('div');
-            footer.className = 'w-full py-1 text-center text-[10px] font-bold bg-slate-100 text-slate-600 border-t border-slate-200';
-            footer.innerText = `صفحة ${pNum} من ${pdf.numPages}`;
+            footer.className = 'w-full py-1.5 px-4 text-center text-[11px] font-bold bg-slate-50 dark:bg-slate-800/80 text-slate-500 border-t border-slate-100 dark:border-slate-700 select-none';
+            footer.innerText = `( صفحة ${pNum} من أصل ${numPages} )`;
             wrapper.appendChild(footer);
           }
+
           if (container) container.appendChild(wrapper);
+
+          // Execute rendering
+          const ctx = canvas.getContext('2d');
+          await page.render({ canvasContext: ctx, viewport: vp }).promise;
         }
       } catch (err) {
         console.error('PDF Canvas Render Error:', err);
