@@ -2393,14 +2393,9 @@
   <main class="max-w-7xl mx-auto px-4 py-6 flex-1 w-full">
     
     <!-- Active Filter Info (Hidden when clean / empty) -->
-    <div id="filterInfoBar" class="flex flex-wrap items-center justify-between gap-3 mb-5 text-xs text-slate-400 hidden">
-      <div class="flex items-center gap-2">
-        <span class="font-bold text-slate-300" id="filterTitle">كافة المواد المتاحة</span>
-        <span class="text-slate-500">•</span>
-        <span id="itemsFoundCount" class="font-bold text-amber-500">0</span>
-      </div>
+    <!-- View Mode & Sorting Toolbar -->
+    <div id="filterInfoBar" class="flex flex-wrap items-center justify-end gap-3 mb-4 text-xs text-slate-400">
       <div class="flex items-center gap-3">
-        <!-- View Mode: Cards vs Table -->
         <div class="view-mode-toggle flex items-center gap-1 p-1 rounded-xl border">
           <button type="button" id="viewGridBtn" onclick="setViewMode('grid')" class="view-toggle-btn view-toggle-active px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer">
             <i class="fa-solid fa-table-cells"></i>
