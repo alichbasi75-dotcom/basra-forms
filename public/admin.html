@@ -2425,31 +2425,57 @@ syncLiveAdminVersion();
         <div class="flex items-center gap-3 flex-1 min-w-[280px]">
           <div class="relative flex-1">
             <i class="fa-solid fa-magnifying-glass absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-            <input type="text" id="adminSearchInput" oninput="filterAdminContents()" placeholder="بحث في المحتويات والتعليمات..." class="w-full bg-slate-800 border border-slate-700 rounded-xl pr-10 pl-4 py-2 text-xs text-white focus:outline-none focus:border-blue-500">
+            <input type="text" id="adminSearchInput" oninput="filterAdminContents()" placeholder="بحث في العناوين والتعليمات والناشرين..." class="w-full bg-slate-800 border border-slate-700 rounded-xl pr-10 pl-4 py-2 text-xs text-white focus:outline-none focus:border-blue-500">
           </div>
-          <select id="adminDeptFilter" onchange="filterAdminContents()" class="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-xl px-3 py-2 focus:outline-none">
-            <option value="all">كافة الشعب</option>
-          </select>
-        </div>
-
-        <div class="flex items-center gap-2 text-xs">
-          <span class="text-slate-400 font-bold">الحالة:</span>
           <div class="flex items-center gap-1.5 text-xs">
-          <span class="text-slate-400 font-bold flex items-center gap-1 select-none">
-            <i class="fa-solid fa-user-shield text-indigo-400 text-[11px]"></i> الناشر:
-          </span>
-          <select id="adminPublisherFilter" onchange="filterAdminContents()" class="bg-slate-800 border border-slate-700 text-slate-100 text-xs rounded-xl px-3 py-2 font-bold focus:outline-none focus:border-indigo-500 cursor-pointer shadow-sm">
-            <option value="all">كل المسؤولين</option>
-          </select>
+            <span class="text-slate-400 font-bold flex items-center gap-1 select-none">
+              <i class="fa-solid fa-building-columns text-amber-400 text-[11px]"></i> الشعبة:
+            </span>
+            <select id="adminDeptFilter" onchange="filterAdminContents()" class="bg-slate-800 border border-slate-700 text-slate-100 text-xs rounded-xl px-3 py-2 font-bold focus:outline-none focus:border-amber-500 cursor-pointer shadow-sm">
+              <option value="all">كل الشعب</option>
+            </select>
+          </div>
         </div>
 
-        <select id="adminStatusFilter" onchange="filterAdminContents()" class="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-xl px-3 py-2 focus:outline-none">
-            <option value="all">الكل</option>
-            <option value="visible">الظاهرة فقط</option>
-            <option value="hidden">المخفية فقط</option>
-          </select>
+        <div class="flex flex-wrap items-center gap-3 text-xs">
+          <!-- 1. التصنيف -->
+          <div class="flex items-center gap-1.5">
+            <span class="text-slate-400 font-bold flex items-center gap-1 select-none">
+              <i class="fa-solid fa-tags text-sky-400 text-[11px]"></i> التصنيف:
+            </span>
+            <select id="adminCategoryFilter" onchange="filterAdminContents()" class="bg-slate-800 border border-slate-700 text-slate-100 text-xs rounded-xl px-3 py-2 font-bold focus:outline-none focus:border-sky-500 cursor-pointer shadow-sm">
+              <option value="all">كل التصنيفات</option>
+            </select>
+          </div>
+
+          <!-- 2. الناشر -->
+          <div class="flex items-center gap-1.5">
+            <span class="text-slate-400 font-bold flex items-center gap-1 select-none">
+              <i class="fa-solid fa-user-shield text-indigo-400 text-[11px]"></i> الناشر:
+            </span>
+            <select id="adminPublisherFilter" onchange="filterAdminContents()" class="bg-slate-800 border border-slate-700 text-slate-100 text-xs rounded-xl px-3 py-2 font-bold focus:outline-none focus:border-indigo-500 cursor-pointer shadow-sm">
+              <option value="all">كل الناشرين</option>
+            </select>
+          </div>
+
+          <!-- 3. الحالة -->
+          <div class="flex items-center gap-1.5">
+            <span class="text-slate-400 font-bold flex items-center gap-1 select-none">
+              <i class="fa-solid fa-eye text-emerald-400 text-[11px]"></i> الحالة:
+            </span>
+            <select id="adminStatusFilter" onchange="filterAdminContents()" class="bg-slate-800 border border-slate-700 text-slate-100 text-xs rounded-xl px-3 py-2 font-bold focus:outline-none focus:border-emerald-500 cursor-pointer shadow-sm">
+              <option value="all">كل الحالات</option>
+              <option value="visible">ظاهر للمراكز</option>
+              <option value="hidden">مخفي عن المراكز</option>
+            </select>
+          </div>
+
+          <!-- Reset Filter Button -->
+          <button type="button" onclick="resetAdminFilters()" class="text-slate-400 hover:text-rose-400 text-xs font-bold flex items-center gap-1 px-2.5 py-2 rounded-xl border border-slate-700 hover:border-rose-500/50 transition-all cursor-pointer" title="إعادة ضبط الفلاتر">
+            <i class="fa-solid fa-filter-circle-xmark"></i>
+            <span>إعادة الضبط</span>
+          </button>
         </div>
-        <!-- View Switcher (بطاقات / جدول) -->
         <div class="view-mode-toggle flex items-center gap-1 p-1 rounded-xl border mr-auto">
           <button type="button" id="adminViewGridBtn" onclick="setAdminViewMode('grid')" class="view-toggle-btn view-toggle-active px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer">
             <i class="fa-solid fa-table-cells"></i>
@@ -4638,6 +4664,7 @@ syncLiveAdminVersion();
       const badge = document.getElementById('badgeContentsCount');
       if (badge) badge.innerText = adminContents.length;
       if (typeof updateAdminPublisherFilterOptions === 'function') updateAdminPublisherFilterOptions();
+      if (typeof updateAdminCategoryFilterOptions === 'function') updateAdminCategoryFilterOptions();
       if (typeof updateStorageQuotaDisplay === 'function') updateStorageQuotaDisplay();
       if (typeof updateServerHealthStatus === 'function') updateServerHealthStatus(true);
 
@@ -5081,6 +5108,45 @@ syncLiveAdminVersion();
     }
 
     // Filter and Render Admin Contents (Table & Cards)
+        function updateAdminCategoryFilterOptions() {
+      const select = document.getElementById('adminCategoryFilter');
+      if (!select) return;
+      const currentVal = select.value || 'all';
+
+      const catSet = new Set();
+      if (typeof adminContents !== 'undefined' && Array.isArray(adminContents)) {
+        adminContents.forEach(c => {
+          if (c.category_name && c.category_name.trim()) catSet.add(c.category_name.trim());
+        });
+      }
+
+      const sortedCats = Array.from(catSet).sort((a, b) => a.localeCompare(b, 'ar'));
+      let html = '<option value="all">كل التصنيفات</option>';
+      sortedCats.forEach(cName => {
+        html += `<option value="${escapeHtml(cName)}">${escapeHtml(cName)}</option>`;
+      });
+      select.innerHTML = html;
+      if (catSet.has(currentVal)) {
+        select.value = currentVal;
+      } else {
+        select.value = 'all';
+      }
+    }
+
+    function resetAdminFilters() {
+      const sInput = document.getElementById('adminSearchInput');
+      if (sInput) sInput.value = '';
+      const dFilter = document.getElementById('adminDeptFilter');
+      if (dFilter) dFilter.value = 'all';
+      const cFilter = document.getElementById('adminCategoryFilter');
+      if (cFilter) cFilter.value = 'all';
+      const pFilter = document.getElementById('adminPublisherFilter');
+      if (pFilter) pFilter.value = 'all';
+      const stFilter = document.getElementById('adminStatusFilter');
+      if (stFilter) stFilter.value = 'all';
+      filterAdminContents();
+    }
+
     function updateAdminPublisherFilterOptions() {
       const select = document.getElementById('adminPublisherFilter');
       if (!select) return;
@@ -5114,18 +5180,22 @@ syncLiveAdminVersion();
     function filterAdminContents() {
       const searchInput = document.getElementById('adminSearchInput');
       const deptFilter = document.getElementById('adminDeptFilter');
+      const categoryFilter = document.getElementById('adminCategoryFilter');
       const statusFilter = document.getElementById('adminStatusFilter');
       const publisherFilter = document.getElementById('adminPublisherFilter');
 
       const q = (searchInput && searchInput.value ? searchInput.value : '').trim().toLowerCase();
       const dept = (deptFilter && deptFilter.value) ? deptFilter.value : 'all';
+      const cat = (categoryFilter && categoryFilter.value) ? categoryFilter.value : 'all';
       const st = (statusFilter && statusFilter.value) ? statusFilter.value : 'all';
-
       const pub = (publisherFilter && publisherFilter.value) ? publisherFilter.value : 'all';
 
       let filtered = [...adminContents];
       if (dept !== 'all') {
         filtered = filtered.filter(c => c.department_id === dept);
+      }
+      if (cat !== 'all') {
+        filtered = filtered.filter(c => (c.category_name || '').trim() === cat.trim());
       }
       if (st === 'visible') {
         filtered = filtered.filter(c => !c.is_hidden);
@@ -5133,14 +5203,16 @@ syncLiveAdminVersion();
         filtered = filtered.filter(c => c.is_hidden);
       }
       if (pub !== 'all') {
-        filtered = filtered.filter(c => ((c.updated_by_name && c.updated_by_name.trim()) ? c.updated_by_name.trim() : 'إدارة المنظومة') === pub.trim());
+        filtered = filtered.filter(c => ((c.updated_by_name && c.updated_by_name.trim()) ? c.updated_by_name.trim() : 'غير محدد') === pub.trim());
       }
       if (q) {
         filtered = filtered.filter(c => 
           (c.title || '').toLowerCase().includes(q) || 
           (c.body_text || '').toLowerCase().includes(q) || 
           (c.category_name || '').toLowerCase().includes(q) ||
-          (c.department_name || '').toLowerCase().includes(q)
+          (c.department_name || '').toLowerCase().includes(q) ||
+          (c.updated_by_name || '').toLowerCase().includes(q) ||
+          (c.file_name || '').toLowerCase().includes(q)
         );
       }
 

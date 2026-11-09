@@ -2329,16 +2329,53 @@
 
     </div>
 
-    <!-- Department and Category Filter Tabs (Rendered dynamically only when contents exist) -->
+    <!-- Filters Bar (Departments, Categories, Publishers Dropdowns) -->
     <div id="filterBarWrapper" class="bg-slate-900 border-t border-slate-800/80 px-4 py-2.5 hidden">
-      <div class="max-w-7xl mx-auto flex items-center justify-between gap-3 overflow-x-auto custom-scrollbar whitespace-nowrap">
+      <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3 text-xs">
         
-        <!-- Dynamic Category Tabs (Empty when clean / no categories exist) -->
-        <div id="categoryTabsContainer" class="flex items-center gap-2">
+        <div class="flex flex-wrap items-center gap-3">
+          <!-- 1. الشعبة -->
+          <div class="flex items-center gap-1.5">
+            <span class="text-slate-400 font-bold flex items-center gap-1 select-none">
+              <i class="fa-solid fa-building-columns text-amber-400 text-xs"></i> الشعبة:
+            </span>
+            <select id="centerDeptFilter" onchange="setCenterDeptFilter(this.value)" class="bg-slate-800 border border-slate-700 text-slate-100 text-xs rounded-xl px-3 py-1.5 font-bold focus:outline-none focus:border-amber-400 cursor-pointer shadow-sm">
+              <option value="all">كل الشعب</option>
+            </select>
+          </div>
+
+          <!-- 2. التصنيف -->
+          <div class="flex items-center gap-1.5">
+            <span class="text-slate-400 font-bold flex items-center gap-1 select-none">
+              <i class="fa-solid fa-tags text-sky-400 text-xs"></i> التصنيف:
+            </span>
+            <select id="centerCategoryFilter" onchange="setCenterCategoryFilter(this.value)" class="bg-slate-800 border border-slate-700 text-slate-100 text-xs rounded-xl px-3 py-1.5 font-bold focus:outline-none focus:border-sky-400 cursor-pointer shadow-sm">
+              <option value="all">كل التصنيفات</option>
+            </select>
+          </div>
+
+          <!-- 3. الناشر -->
+          <div class="flex items-center gap-1.5">
+            <span class="text-slate-400 font-bold flex items-center gap-1 select-none">
+              <i class="fa-solid fa-user-shield text-indigo-400 text-xs"></i> الناشر:
+            </span>
+            <select id="centerPublisherFilter" onchange="setCenterPublisherFilter(this.value)" class="bg-slate-800 border border-slate-700 text-slate-100 text-xs rounded-xl px-3 py-1.5 font-bold focus:outline-none focus:border-indigo-400 cursor-pointer shadow-sm">
+              <option value="all">كل الناشرين</option>
+            </select>
+          </div>
+
+          <!-- Reset Filter Button -->
+          <button type="button" onclick="resetAllCenterFilters()" class="text-slate-400 hover:text-rose-400 text-xs font-bold flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-slate-700 hover:border-rose-500/50 transition-all cursor-pointer" title="إعادة ضبط الفلاتر">
+            <i class="fa-solid fa-filter-circle-xmark"></i>
+            <span>إعادة الضبط</span>
+          </button>
         </div>
 
-        <!-- Department Quick Filters -->
-        <div id="deptFiltersContainer" class="flex items-center gap-1.5">
+        <!-- Filter Count Status -->
+        <div class="flex items-center gap-2 text-xs text-slate-400">
+          <span class="font-bold text-slate-300" id="filterTitle">كل المنشورات</span>
+          <span class="text-slate-500">•</span>
+          <span id="itemsFoundCount" class="font-bold text-amber-400">0</span>
         </div>
 
       </div>
@@ -2717,6 +2754,7 @@
     let allDepartments = [];
     let selectedCategory = 'all';
     let selectedDeptId = 'all';
+    let selectedPublisher = 'all';
     let searchQuery = '';
     let currentSort = 'latest';
     let syncCountdown = 60;
@@ -2833,83 +2871,112 @@
     }
 
     // Render Dynamic Categories (Only if contents exist with categories)
-    function renderCategoryTabs() {
-      const container = document.getElementById('categoryTabsContainer');
-      if (!container) return;
-
-      if (allContents.length === 0) {
-        container.innerHTML = '';
-        return;
+    // Populate Dynamic Filter Dropdowns for Centers App
+    function populateCenterFilterDropdowns() {
+      // 1. Department Dropdown (الشعب)
+      const deptSelect = document.getElementById('centerDeptFilter');
+      if (deptSelect) {
+        const curDept = selectedDeptId || 'all';
+        let deptHtml = '<option value="all">كل الشعب</option>';
+        if (Array.isArray(allDepartments) && allDepartments.length > 0) {
+          allDepartments.forEach(d => {
+            const isSel = (d.id === curDept) ? 'selected' : '';
+            deptHtml += `<option value="${d.id}" ${isSel}>${escapeHtml(d.name)}</option>`;
+          });
+        }
+        deptSelect.innerHTML = deptHtml;
+        deptSelect.value = curDept;
       }
 
-      const uniqueCategories = [...new Set(allContents.map(c => (c.category_name || '').trim()).filter(Boolean))];
-
-      if (uniqueCategories.length === 0) {
-        container.innerHTML = '';
-        return;
+      // 2. Category Dropdown (التصنيفات)
+      const catSelect = document.getElementById('centerCategoryFilter');
+      if (catSelect) {
+        const curCat = selectedCategory || 'all';
+        const catsSet = new Set();
+        if (Array.isArray(allContents)) {
+          allContents.forEach(c => {
+            if (c.category_name && c.category_name.trim()) catsSet.add(c.category_name.trim());
+          });
+        }
+        const sortedCats = Array.from(catsSet).sort((a, b) => a.localeCompare(b, 'ar'));
+        let catHtml = '<option value="all">كل التصنيفات</option>';
+        sortedCats.forEach(cName => {
+          const isSel = (cName === curCat) ? 'selected' : '';
+          catHtml += `<option value="${escapeHtml(cName)}" ${isSel}>${escapeHtml(cName)}</option>`;
+        });
+        catSelect.innerHTML = catHtml;
+        if (catsSet.has(curCat)) {
+          catSelect.value = curCat;
+        } else {
+          catSelect.value = 'all';
+        }
       }
 
-      let html = `
-        <button onclick="setCategoryFilter('all')" class="tab-nav-btn px-3.5 py-1.5 rounded-xl text-xs font-black transition-all flex items-center gap-2 ${selectedCategory === 'all' ? 'active' : 'tab-btn-inactive'}">
-          <i class="fa-solid fa-border-all"></i>
-          <span>كافة التصنيفات</span>
-          <span class="badge-counter px-2 py-0.5 rounded-full text-[10px] font-black">${allContents.length}</span>
-        </button>
-      `;
-
-      uniqueCategories.forEach(cat => {
-        const count = allContents.filter(c => (c.category_name || '').trim() === cat).length;
-        const isActive = selectedCategory === cat;
-        html += `
-          <button onclick="setCategoryFilter('${escapeHtml(cat)}')" class="tab-nav-btn px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${isActive ? 'active' : 'tab-btn-inactive'}">
-            <i class="fa-solid fa-layer-group"></i>
-            <span>${escapeHtml(cat)}</span>
-            <span class="badge-counter px-2 py-0.5 rounded-full text-[10px] font-black">${count}</span>
-          </button>
-        `;
-      });
-
-      container.innerHTML = html;
+      // 3. Publisher Dropdown (المسؤول الناشر)
+      const pubSelect = document.getElementById('centerPublisherFilter');
+      if (pubSelect) {
+        const curPub = selectedPublisher || 'all';
+        const pubSet = new Set();
+        if (Array.isArray(allContents)) {
+          allContents.forEach(c => {
+            if (c.updated_by_name && c.updated_by_name.trim()) pubSet.add(c.updated_by_name.trim());
+          });
+        }
+        const sortedPubs = Array.from(pubSet).sort((a, b) => a.localeCompare(b, 'ar'));
+        let pubHtml = '<option value="all">كل الناشرين</option>';
+        sortedPubs.forEach(pName => {
+          const isSel = (pName === curPub) ? 'selected' : '';
+          pubHtml += `<option value="${escapeHtml(pName)}" ${isSel}>${escapeHtml(pName)}</option>`;
+        });
+        pubSelect.innerHTML = pubHtml;
+        if (pubSet.has(curPub)) {
+          pubSelect.value = curPub;
+        } else {
+          pubSelect.value = 'all';
+        }
+      }
     }
 
-    function setCategoryFilter(cat) {
-      selectedCategory = cat;
-      renderCategoryTabs();
+    function setCenterDeptFilter(deptId) {
+      selectedDeptId = deptId || 'all';
       filterAndRenderContent();
     }
 
-    function renderDepartmentFilters() {
-      const container = document.getElementById('deptFiltersContainer');
-      if (!container) return;
-
-      if (allDepartments.length === 0 || allContents.length === 0) {
-        container.innerHTML = '';
-        return;
-      }
-
-      let html = `
-        <button onclick="setDeptFilter('all')" class="dept-btn px-2.5 py-1 rounded-lg text-[11px] font-bold ${selectedDeptId === 'all' ? 'bg-amber-400/20 text-amber-300 border border-amber-400/40' : 'bg-slate-800 text-slate-400 hover:text-slate-200 border border-slate-700/60'} transition-all">
-          كافة الشعب
-        </button>
-      `;
-
-      allDepartments.forEach(dept => {
-        const isActive = selectedDeptId === dept.id;
-        html += `
-          <button onclick="setDeptFilter('${dept.id}')" class="dept-btn px-2.5 py-1 rounded-lg text-[11px] font-bold ${isActive ? 'bg-amber-400/20 text-amber-300 border border-amber-400/40' : 'bg-slate-800 text-slate-400 hover:text-slate-200 border border-slate-700/60'} transition-all">
-            ${escapeHtml(dept.name)}
-          </button>
-        `;
-      });
-
-      container.innerHTML = html;
-    }
-
-    function setDeptFilter(deptId) {
-      selectedDeptId = deptId;
-      renderDepartmentFilters();
+    function setCenterCategoryFilter(cat) {
+      selectedCategory = cat || 'all';
       filterAndRenderContent();
     }
+
+    function setCenterPublisherFilter(pub) {
+      selectedPublisher = pub || 'all';
+      filterAndRenderContent();
+    }
+
+    function resetAllCenterFilters() {
+      selectedDeptId = 'all';
+      selectedCategory = 'all';
+      selectedPublisher = 'all';
+      searchQuery = '';
+      const sInput = document.getElementById('searchInput');
+      if (sInput) sInput.value = '';
+      const clearBtn = document.getElementById('clearSearchBtn');
+      if (clearBtn) clearBtn.classList.add('hidden');
+
+      const deptSelect = document.getElementById('centerDeptFilter');
+      if (deptSelect) deptSelect.value = 'all';
+      const catSelect = document.getElementById('centerCategoryFilter');
+      if (catSelect) catSelect.value = 'all';
+      const pubSelect = document.getElementById('centerPublisherFilter');
+      if (pubSelect) pubSelect.value = 'all';
+
+      filterAndRenderContent();
+    }
+
+    // Compatibility aliases
+    function renderCategoryTabs() { populateCenterFilterDropdowns(); }
+    function setCategoryFilter(cat) { setCenterCategoryFilter(cat); }
+    function renderDepartmentFilters() { populateCenterFilterDropdowns(); }
+    function setDeptFilter(deptId) { setCenterDeptFilter(deptId); }
 
     // ==========================================================================
     // إدارة التخزين المؤقت المحلي للمستندات على حاسوب المراكز V2
@@ -3204,15 +3271,8 @@
       if (allContents.length === 0) {
         if (wrapper) wrapper.classList.add('hidden');
         if (infoBar) infoBar.classList.add('hidden');
-        const container = document.getElementById('categoryTabsContainer');
-        if (container) {
-          container.innerHTML = '';
-          container.scrollTop = 0;
-        }
         const initialPrintable = document.getElementById('unifiedPrintableArea');
         if (initialPrintable) initialPrintable.scrollTop = 0;
-        const deptContainer = document.getElementById('deptFiltersContainer');
-        if (deptContainer) deptContainer.innerHTML = '';
         renderGrid([]);
         return;
       }
@@ -3220,30 +3280,35 @@
       if (wrapper) wrapper.classList.remove('hidden');
       if (infoBar) infoBar.classList.remove('hidden');
 
-      renderCategoryTabs();
-      renderDepartmentFilters();
+      populateCenterFilterDropdowns();
 
       let filtered = [...allContents];
 
-      // Dynamic Category filter
-      if (selectedCategory !== 'all') {
-        filtered = filtered.filter(item => (item.category_name || '').trim() === selectedCategory);
-      }
-
-      // Department filter
+      // 1. Department filter
       if (selectedDeptId !== 'all') {
         filtered = filtered.filter(item => item.department_id === selectedDeptId);
       }
 
-      // Search query filter
+      // 2. Category filter
+      if (selectedCategory !== 'all') {
+        filtered = filtered.filter(item => (item.category_name || '').trim() === selectedCategory);
+      }
+
+      // 3. Publisher filter
+      if (selectedPublisher !== 'all') {
+        filtered = filtered.filter(item => ((item.updated_by_name && item.updated_by_name.trim()) ? item.updated_by_name.trim() : 'غير محدد') === selectedPublisher.trim());
+      }
+
+      // 4. Search query filter
       if (searchQuery) {
         filtered = filtered.filter(item => {
           const t = (item.title || '').toLowerCase();
           const b = (item.body_text || '').toLowerCase();
           const d = (item.department_name || '').toLowerCase();
           const c = (item.category_name || '').toLowerCase();
+          const p = (item.updated_by_name || '').toLowerCase();
           const f = (item.file_name || '').toLowerCase();
-          return t.includes(searchQuery) || b.includes(searchQuery) || d.includes(searchQuery) || c.includes(searchQuery) || f.includes(searchQuery);
+          return t.includes(searchQuery) || b.includes(searchQuery) || d.includes(searchQuery) || c.includes(searchQuery) || p.includes(searchQuery) || f.includes(searchQuery);
         });
       }
 
@@ -3261,14 +3326,19 @@
 
       const filterTitle = document.getElementById('filterTitle');
       if (filterTitle) {
-        if (selectedCategory !== 'all') {
-          filterTitle.innerText = `تصنيف: ${selectedCategory}`;
-        } else if (selectedDeptId !== 'all') {
+        const parts = [];
+        if (selectedDeptId !== 'all') {
           const dObj = allDepartments.find(d => d.id === selectedDeptId);
-          filterTitle.innerText = dObj ? `شعبة: ${dObj.name}` : 'كافة المواد المتاحة';
-        } else {
-          filterTitle.innerText = 'كافة المواد المتاحة';
+          parts.push(`شعبة: ${dObj ? dObj.name : selectedDeptId}`);
         }
+        if (selectedCategory !== 'all') {
+          parts.push(`تصنيف: ${selectedCategory}`);
+        }
+        if (selectedPublisher !== 'all') {
+          parts.push(`الناشر: ${selectedPublisher}`);
+        }
+        filterTitle.innerText = parts.length > 0 ? parts.join(' | ') : 'كل المنشورات';
+      }
       }
 
       renderGrid(filtered);
