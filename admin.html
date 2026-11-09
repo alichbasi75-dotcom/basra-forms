@@ -2807,39 +2807,64 @@ syncLiveAdminVersion();
 
 
   <!-- Modal: Add New Admin User (Super Admin Only) -->
+  <!-- Modal: Add / Edit Admin User (Super Admin Only) -->
   <div id="userModal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-slate-900 border border-slate-700 w-full max-w-md rounded-3xl shadow-2xl p-6">
       <div class="flex items-center justify-between mb-4 border-b border-slate-800 pb-3">
-        <h3 class="text-sm font-black text-white">إضافة مسؤول شعبة جديد</h3>
-        <button onclick="closeUserModal()" class="text-slate-400 hover:text-white">
+        <div class="flex items-center gap-2">
+          <i id="userModalIcon" class="fa-solid fa-user-plus text-purple-400 text-lg"></i>
+          <h3 id="userModalTitle" class="text-sm font-black text-white">إضافة حساب مسؤول جديد</h3>
+        </div>
+        <button onclick="closeUserModal()" class="text-slate-400 hover:text-white transition-colors">
           <i class="fa-solid fa-xmark"></i>
         </button>
       </div>
 
-      <form onsubmit="saveUserSubmit(event)" class="space-y-4 text-xs">
+      <form onsubmit="saveUserSubmit(event)" class="space-y-4 text-xs" autocomplete="off">
+        <input type="hidden" id="userEditId" value="">
         <div>
           <label class="block text-slate-300 font-bold mb-1">الاسم الكامل للمسؤول: *</label>
-          <input type="text" id="userFullNameInput" required placeholder="مثال: أحمد عبد الحسين" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2 text-white focus:outline-none focus:border-purple-500">
+          <input type="text" id="userFullNameInput" required placeholder="مثال: شهاب أحمد علي" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2 text-white focus:outline-none focus:border-purple-500">
         </div>
         <div>
-          <label class="block text-slate-300 font-bold mb-1">اسم المستخدم للدخول: *</label>
-          <input type="text" id="userUsernameInput" required placeholder="اسم المستخدم بالإنجليزية..." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2 text-white font-mono focus:outline-none focus:border-purple-500">
+          <label class="block text-slate-300 font-bold mb-1">اسم المستخدم (لتسجيل الدخول): *</label>
+          <input type="text" id="userUsernameInput" required placeholder="اسم المستخدم بالإنجليزية أو الأرقام..." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2 text-white font-mono focus:outline-none focus:border-purple-500">
         </div>
-        <div>
-          <label class="block text-slate-300 font-bold mb-1">الشعبة المسندة: *</label>
+        <div id="userDeptSelectWrapper">
+          <label class="block text-slate-300 font-bold mb-1">الشعبة التابع لها: *</label>
           <select id="userDeptSelect" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2 text-white focus:outline-none focus:border-purple-500">
           </select>
         </div>
-        <div class="p-3 rounded-xl bg-purple-950/40 border border-purple-500/40 space-y-1.5">
+
+        <!-- Mode Add: Notice about default password 123456 -->
+        <div id="userDefaultPassNotice" class="p-3 rounded-xl bg-purple-950/40 border border-purple-500/40 space-y-1.5">
           <div class="flex items-center justify-between text-xs font-bold text-purple-300">
             <span class="flex items-center gap-1.5"><i class="fa-solid fa-key text-amber-400"></i> كلمة المرور الافتراضية:</span>
             <span class="font-mono bg-purple-600/30 text-amber-300 px-2.5 py-0.5 rounded text-xs font-black tracking-wider">123456</span>
           </div>
-          <p class="text-[11px] text-slate-400">ستكون كلمة المرور الافتراضية للحساب هي 123456، ولا يمكن تغييرها إلا من صاحب الحساب نفسه بعد تسجيل دخوله (3 مراتب على الأقل).</p>
+          <p class="text-[11px] text-slate-400">سيتم إنشاء الحساب بكلمة مرور أولية 123456، ويُطلب من المسؤول تغييرها عند أول تسجيل دخول.</p>
         </div>
+
+        <!-- Mode Edit: Optional new password field -->
+        <div id="userEditPassWrapper" class="hidden space-y-1">
+          <label class="block text-slate-300 font-bold mb-1">تعيين كلمة مرور جديدة (اختياري):</label>
+          <div class="relative">
+            <input type="password" id="userEditNewPassword" placeholder="اتركه فارغاً للحفاظ على كلمة المرور الحالية..." class="w-full bg-slate-800 border border-slate-700 rounded-xl pr-3.5 pl-10 py-2 text-white font-mono focus:outline-none focus:border-purple-500">
+            <button type="button" onclick="togglePasswordVisibility('userEditNewPassword', 'userEditEyeIcon')" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors p-1" title="إظهار / إخفاء">
+              <span id="userEditEyeIcon" class="flex items-center">
+                <svg class="w-4 h-4 text-slate-400 hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+              </span>
+            </button>
+          </div>
+          <p class="text-[10px] text-slate-400">اترك الحقل فارغاً إذا كنت تريد إبقاء كلمة مرور الحساب الحالية دون تغيير.</p>
+        </div>
+
         <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
-          <button type="button" onclick="closeUserModal()" class="bg-slate-800 text-slate-300 px-3 py-1.5 rounded-xl text-xs">إلغاء</button>
-          <button type="submit" class="bg-purple-600 hover:bg-purple-500 text-white font-bold px-4 py-1.5 rounded-xl text-xs">إنشاء الحساب</button>
+          <button type="button" onclick="closeUserModal()" class="bg-slate-800 text-slate-300 px-3 py-1.5 rounded-xl text-xs hover:bg-slate-700 transition-colors">إلغاء</button>
+          <button id="userSubmitBtn" type="submit" class="bg-purple-600 hover:bg-purple-500 text-white font-bold px-4 py-1.5 rounded-xl text-xs flex items-center gap-1.5 shadow-md active:scale-95 transition-all">
+            <i id="userSubmitBtnIcon" class="fa-solid fa-floppy-disk"></i>
+            <span id="userSubmitBtnText">حفظ الحساب</span>
+          </button>
         </div>
       </form>
     </div>
@@ -5464,14 +5489,76 @@ syncLiveAdminVersion();
     }
 
     // Users Management (Super Admin Only)
+    // Users Management (Super Admin Only)
     function openNewUserModal() {
       if (adminDepartments.length === 0) {
         AudioEngine.warning();
-        showToast('يرجى إنشاء شعبة إدارية أولاً من تبويب "إدارة الشعب" قبل إضافة مسؤولي الشعب.', 'warning', 'تنبيه إداري');
+        showToast('يجب أولاً إضافة أقسام أو شعب من تبويب "إدارة الشعب" قبل إنشاء حسابات المسؤولين.', 'warning', 'تنبيه');
         return;
       }
+      document.getElementById('userEditId').value = '';
+      document.getElementById('userModalTitle').innerText = 'إضافة حساب مسؤول جديد';
+      const icon = document.getElementById('userModalIcon');
+      if (icon) icon.className = 'fa-solid fa-user-plus text-purple-400 text-lg';
       document.getElementById('userFullNameInput').value = '';
       document.getElementById('userUsernameInput').value = '';
+      const editPassInp = document.getElementById('userEditNewPassword');
+      if (editPassInp) editPassInp.value = '';
+
+      const deptSelect = document.getElementById('userDeptSelect');
+      if (deptSelect && deptSelect.options.length > 0) {
+        deptSelect.selectedIndex = 0;
+        deptSelect.disabled = false;
+      }
+      const deptWrapper = document.getElementById('userDeptSelectWrapper');
+      if (deptWrapper) deptWrapper.classList.remove('hidden');
+
+      const passNotice = document.getElementById('userDefaultPassNotice');
+      if (passNotice) passNotice.classList.remove('hidden');
+
+      const editPassWrap = document.getElementById('userEditPassWrapper');
+      if (editPassWrap) editPassWrap.classList.add('hidden');
+
+      const submitText = document.getElementById('userSubmitBtnText');
+      if (submitText) submitText.innerText = 'إنشاء الحساب';
+
+      document.getElementById('userModal').classList.remove('hidden');
+    }
+
+    function openEditUserModal(userId) {
+      const u = adminUsers.find(x => String(x.id) === String(userId));
+      if (!u) {
+        showToast('لم يتم العثور على بيانات المستخدم المطلوب تعديله.', 'error', 'خطأ');
+        return;
+      }
+
+      document.getElementById('userEditId').value = u.id;
+      document.getElementById('userModalTitle').innerText = `تعديل حساب: ${u.full_name}`;
+      const icon = document.getElementById('userModalIcon');
+      if (icon) icon.className = 'fa-solid fa-user-pen text-amber-400 text-lg';
+
+      document.getElementById('userFullNameInput').value = u.full_name || '';
+      document.getElementById('userUsernameInput').value = u.username || '';
+      const editPassInp = document.getElementById('userEditNewPassword');
+      if (editPassInp) editPassInp.value = '';
+
+      const deptSelect = document.getElementById('userDeptSelect');
+      if (deptSelect) {
+        deptSelect.value = u.department_id || '';
+        deptSelect.disabled = (u.role === 'super_admin');
+      }
+      const deptWrapper = document.getElementById('userDeptSelectWrapper');
+      if (deptWrapper) deptWrapper.classList.remove('hidden');
+
+      const passNotice = document.getElementById('userDefaultPassNotice');
+      if (passNotice) passNotice.classList.add('hidden');
+
+      const editPassWrap = document.getElementById('userEditPassWrapper');
+      if (editPassWrap) editPassWrap.classList.remove('hidden');
+
+      const submitText = document.getElementById('userSubmitBtnText');
+      if (submitText) submitText.innerText = 'حفظ التعديلات';
+
       document.getElementById('userModal').classList.remove('hidden');
     }
 
@@ -5481,98 +5568,133 @@ syncLiveAdminVersion();
 
     async function saveUserSubmit(e) {
       e.preventDefault();
+      const editId = (document.getElementById('userEditId').value || '').trim();
       const full_name = (document.getElementById('userFullNameInput').value || '').trim();
       const username = (document.getElementById('userUsernameInput').value || '').trim().toLowerCase();
       const dept_id = document.getElementById('userDeptSelect').value;
+      const editPassInp = document.getElementById('userEditNewPassword');
+      const newPassword = editPassInp ? editPassInp.value.trim() : '';
 
-      if (!full_name || !username || !dept_id) {
+      if (!full_name || !username || (!dept_id && !editId)) {
         AudioEngine.warning();
-        showToast('يرجى ملء كافة الحقول الإلزامية المطلوبة (الاسم الكامل، اسم المستخدم، الشعبة).', 'warning', 'بيانات ناقصة');
+        showToast('يرجى ملء جميع الحقول المطلوبة (الاسم الكامل، اسم المستخدم، الشعبة).', 'warning', 'حقول ناقصة');
         return;
       }
 
-      // 1. فحص محلي فوري لمنع تكرار اسم الحساب (Username)
-      const existsLocally = adminUsers.some(u => (u.username || '').toLowerCase() === username);
+      // 1. فحص تكرار اسم المستخدم محلياً مع استثناء الحساب الحالي عند التعديل
+      const existsLocally = adminUsers.some(u => 
+        String(u.id) !== String(editId) && 
+        (u.username || '').toLowerCase() === username
+      );
       if (existsLocally) {
         AudioEngine.error();
-        showToast(`اسم المستخدم للدخول (${username}) مسجل وموجود مسبقاً! يرجى اختيار اسم مستخدم آخر مختلف.`, 'error', 'تكرار اسم المستخدم');
+        showToast(`اسم المستخدم (${username}) مستخدم بالفعل من قِبل مسؤول آخر! يرجى اختيار اسم مستخدم مختلف.`, 'error', 'اسم مستخدم مكرر');
         const userInp = document.getElementById('userUsernameInput');
         if (userInp) { userInp.focus(); userInp.select(); }
         return;
       }
 
-      // 2. فحص محلي فوري لمنع تكرار اسم المسؤول (Full Name) في نفس الشعبة
-      const nameInDeptLocally = adminUsers.some(u => 
-        u.department_id === dept_id && 
-        (u.full_name || '').trim().toLowerCase() === full_name.toLowerCase()
-      );
-      if (nameInDeptLocally) {
-        AudioEngine.error();
-        showToast(`يوجد بالفعل حساب مسؤول مسجل باسم (${full_name}) في هذه الشعبة! لا يُسمح بقبول أكثر من حساب بنفس اسم المسؤول لنفس الشعبة.`, 'error', 'تكرار اسم المسؤول في الشعبة');
-        const nameInp = document.getElementById('userFullNameInput');
-        if (nameInp) { nameInp.focus(); nameInp.select(); }
-        return;
+      // 2. فحص تكرار الاسم الكامل في نفس الشعبة مع استثناء الحساب الحالي
+      if (dept_id) {
+        const nameInDeptLocally = adminUsers.some(u => 
+          String(u.id) !== String(editId) && 
+          u.department_id === dept_id && 
+          (u.full_name || '').trim().toLowerCase() === full_name.toLowerCase()
+        );
+        if (nameInDeptLocally) {
+          AudioEngine.error();
+          showToast(`الاسم الكامل (${full_name}) موجود مسبقاً في هذه الشعبة! يرجى إضافة اسم مميز أو لقب.`, 'error', 'اسم مكرر في الشعبة');
+          const nameInp = document.getElementById('userFullNameInput');
+          if (nameInp) { nameInp.focus(); nameInp.select(); }
+          return;
+        }
       }
 
       try {
         if (!supabaseClient) initSupabase();
 
-        // 3. فحص استعلامي مباشر في قاعدة البيانات Supabase للتأكد من عدم تكرار اسم المستخدم
-        const { data: existingUserCheck, error: checkErr } = await supabaseClient
+        // 3. فحص قاعدة البيانات للتأكد من عدم وجود تعارض في اسم المستخدم
+        const { data: existingUserCheck } = await supabaseClient
           .from('admin_users_v2')
           .select('id, username')
           .ilike('username', username);
 
-        if (existingUserCheck && existingUserCheck.length > 0) {
+        if (existingUserCheck && existingUserCheck.some(u => String(u.id) !== String(editId))) {
           AudioEngine.error();
-          showToast(`اسم المستخدم للدخول (${username}) محجوز ومسجل بالفعل في السيرفر! لا يُسمح بتكرار أسماء الحسابات.`, 'error', 'اسم مستخدم مكرر');
+          showToast(`اسم المستخدم (${username}) مسجل في قاعدة البيانات لمستخدم آخر!`, 'error', 'اسم مستخدم مكرر');
           const userInp = document.getElementById('userUsernameInput');
           if (userInp) { userInp.focus(); userInp.select(); }
           return;
         }
 
-        // 4. فحص استعلامي مباشر في قاعدة البيانات Supabase للتأكد من عدم تكرار اسم المسؤول في نفس الشعبة
-        const { data: existingNameInDept } = await supabaseClient
-          .from('admin_users_v2')
-          .select('id, full_name')
-          .eq('department_id', dept_id)
-          .ilike('full_name', full_name);
-
-        if (existingNameInDept && existingNameInDept.length > 0) {
-          AudioEngine.error();
-          showToast(`يوجد بالفعل حساب مسؤول مسجل باسم (${full_name}) في هذه الشعبة على السيرفر! لا يمكن إضافة أكثر من حساب بنفس اسم المسؤول في نفس الشعبة.`, 'error', 'تكرار اسم المسؤول في الشعبة');
-          const nameInp = document.getElementById('userFullNameInput');
-          if (nameInp) { nameInp.focus(); nameInp.select(); }
-          return;
-        }
-
-        // 5. إنشاء الحساب بكلمة المرور الافتراضية 123456
-        const defaultPasswordHash = '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92';
-        const { data: insData, error: insErr } = await supabaseClient.from('admin_users_v2').insert({
-          full_name,
-          username,
-          department_id: dept_id,
-          password_hash: defaultPasswordHash,
-          role: 'dept_admin'
-        });
-
-        if (insErr) {
-          AudioEngine.error();
-          if (insErr.code === '23505' || (insErr.message && insErr.message.toLowerCase().includes('duplicate'))) {
-            showToast(`اسم المستخدم (${username}) موجود مسبقاً في النظام. اختر اسماً آخر.`, 'error', 'تكرار اسم الحساب');
-          } else {
-            showToast('خطأ أثناء إضافة الحساب: ' + insErr.message, 'error', 'فشل الإضافة');
+        if (editId) {
+          // --- وضع التعديل (UPDATE) ---
+          const updatePayload = {
+            full_name,
+            username
+          };
+          if (dept_id) {
+            updatePayload.department_id = dept_id;
           }
-          return;
-        }
+          if (newPassword) {
+            if (newPassword.length < 4) {
+              AudioEngine.warning();
+              showToast('يجب أن تكون كلمة المرور 4 خانات على الأقل.', 'warning', 'كلمة مرور ضعيفة');
+              return;
+            }
+            updatePayload.password_hash = await sha256(newPassword);
+          }
 
-        AudioEngine.success();
-        showToast(`تم إنشاء حساب مسؤول الشعبة (${full_name}) بكلمة المرور الافتراضية (123456) بنجاح!`, 'success', 'إضافة حساب جديد');
-        closeUserModal();
-        await fetchAdminData();
+          const { error: updErr } = await supabaseClient
+            .from('admin_users_v2')
+            .update(updatePayload)
+            .eq('id', editId);
+
+          if (updErr) {
+            AudioEngine.error();
+            showToast('خطأ في تعديل الحساب: ' + updErr.message, 'error', 'فشل التعديل');
+            return;
+          }
+
+          await logActivity('تعديل حساب مسؤول', `قام المسؤول الأعلى بتعديل بيانات حساب المسؤول (${full_name}) - اسم المستخدم: ${username}`);
+
+          AudioEngine.success();
+          showToast(`تم حفظ وتحديث بيانات حساب المسؤول (${full_name}) بنجاح!`, 'success', 'تم التعديل بنجاح');
+          closeUserModal();
+          await fetchAdminData();
+
+        } else {
+          // --- وضع الإضافة (INSERT) ---
+          const defaultPasswordHash = '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92'; // 123456
+          const { error: insErr } = await supabaseClient.from('admin_users_v2').insert({
+            full_name,
+            username,
+            department_id: dept_id,
+            password_hash: defaultPasswordHash,
+            role: 'dept_admin',
+            is_active: true
+          });
+
+          if (insErr) {
+            AudioEngine.error();
+            if (insErr.code === '23505' || (insErr.message && insErr.message.toLowerCase().includes('duplicate'))) {
+              showToast(`اسم المستخدم (${username}) مستخدم بالفعل. يرجى اختيار اسم آخر.`, 'error', 'اسم مستخدم مكرر');
+            } else {
+              showToast('خطأ في إنشاء الحساب: ' + insErr.message, 'error', 'فشل إنشاء الحساب');
+            }
+            return;
+          }
+
+          await logActivity('إنشاء حساب مسؤول', `قام المسؤول الأعلى بإنشاء حساب مسؤول جديد (${full_name}) في الشعبة`);
+
+          AudioEngine.success();
+          showToast(`تم إنشاء حساب المسؤول (${full_name}) بكلمة مرور أولية (123456) بنجاح!`, 'success', 'تم إنشاء الحساب');
+          closeUserModal();
+          await fetchAdminData();
+        }
       } catch (err) {
         AudioEngine.error();
-        showToast('خطأ أثناء إنشاء الحساب: ' + err.message, 'error', 'خطأ في العملية');
+        showToast('خطأ غير متوقع: ' + err.message, 'error', 'خطأ في العملية');
       }
     }
 
@@ -5613,6 +5735,10 @@ syncLiveAdminVersion();
             <td class="p-4 text-slate-400 font-mono text-[11px]">${dateStr}</td>
             <td class="p-4 text-center">
               <div class="flex items-center justify-center gap-1.5 flex-wrap">
+                <button onclick="openEditUserModal('${u.id}')" class="btn-edit-user flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-purple-600/20 hover:bg-purple-600 text-purple-300 hover:text-white border border-purple-500/40 text-xs font-bold transition-all shadow-sm active:scale-95" title="تعديل بيانات الحساب">
+                  <i class="fa-solid fa-user-pen"></i>
+                  <span>تعديل الحساب</span>
+                </button>
                 <button onclick="resetUserPasswordToDefault('${u.id}', '${escapeHtml(u.full_name)}')" class="btn-reset-pass flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500 text-amber-300 hover:text-slate-950 border border-amber-500/40 text-xs font-bold transition-all shadow-sm active:scale-95" title="تصفير كلمة المرور إلى الافتراضية (123456)">
                   <i class="fa-solid fa-key"></i>
                   <span>تصفير كلمة المرور</span>
