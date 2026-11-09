@@ -1423,12 +1423,15 @@
        UNIVERSAL SYSTEM-WIDE ULTRA-CLEAR HIGH-CONTRAST SCROLLBAR ENGINE (14px)
        Applies to EVERY vertical and horizontal scrollbar anywhere in the entire system
        ========================================================================= */
-    * {
-      scrollbar-width: auto !important;
-      scrollbar-color: #2563eb #090d16 !important;
-    }
-    body.light-theme * {
-      scrollbar-color: #2563eb #f1f5f9 !important;
+    /* Firefox standard scrollbars only; Chrome/Edge will use rich ::-webkit-scrollbar without auto-hiding */
+    @supports (-moz-appearance: none) {
+      * {
+        scrollbar-width: auto !important;
+        scrollbar-color: #2563eb #090d16 !important;
+      }
+      body.light-theme * {
+        scrollbar-color: #2563eb #f1f5f9 !important;
+      }
     }
 
     /* Universal Dimensions for ANY Scrollbar (Vertical: 14px wide, Horizontal: 14px high) */
@@ -1579,45 +1582,59 @@
     }
 
   
+    /* =======================================================================
     /* =========================================================================
-       ULTRA-WIDE (18px) PROMINENT SCROLLBAR FOR DOCUMENT & SHEET VIEWER
+       PERMANENT 20px ULTRA-VISIBLE SCROLLBAR FOR #sheetScrollArea (NEVER AUTO-HIDES)
        ========================================================================= */
     #sheetScrollArea {
       overflow-y: scroll !important;
       overflow-x: auto !important;
       min-height: 0 !important;
       height: 100% !important;
-      scrollbar-gutter: stable !important;
-      scrollbar-width: auto !important;
-      scrollbar-color: #2563eb #0f172a !important;
+      direction: rtl !important;
     }
-    #sheetScrollArea::-webkit-scrollbar {
-      width: 18px !important;
-      height: 18px !important;
+    #sheetScrollArea::-webkit-scrollbar,
+    body.light-theme #sheetScrollArea::-webkit-scrollbar,
+    body:not(.light-theme) #sheetScrollArea::-webkit-scrollbar {
+      width: 20px !important;
+      height: 20px !important;
       display: block !important;
+      background: #090d16 !important;
+      -webkit-appearance: none !important;
     }
-    #sheetScrollArea::-webkit-scrollbar-track {
-      background: #0f172a !important;
-      border: 2px solid #334155 !important;
-      border-radius: 9999px !important;
-      margin: 4px 0 !important;
+    #sheetScrollArea::-webkit-scrollbar-track,
+    body.light-theme #sheetScrollArea::-webkit-scrollbar-track,
+    body:not(.light-theme) #sheetScrollArea::-webkit-scrollbar-track {
+      background: #090d16 !important;
+      border-left: 2px solid #334155 !important;
+      border-right: 2px solid #334155 !important;
+      border-radius: 0 !important;
+      box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.8) !important;
     }
-    #sheetScrollArea::-webkit-scrollbar-thumb {
+    #sheetScrollArea::-webkit-scrollbar-thumb,
+    body.light-theme #sheetScrollArea::-webkit-scrollbar-thumb,
+    body:not(.light-theme) #sheetScrollArea::-webkit-scrollbar-thumb {
       background: #2563eb !important;
+      border: 3px solid #090d16 !important;
       border-radius: 9999px !important;
-      border: 3px solid #0f172a !important;
-      box-shadow: 0 0 12px rgba(37, 99, 235, 0.75) !important;
-      min-height: 60px !important;
+      box-shadow: 0 0 14px rgba(37, 99, 235, 0.95), inset 0 0 6px rgba(255, 255, 255, 0.5) !important;
+      min-height: 70px !important;
     }
-    #sheetScrollArea::-webkit-scrollbar-thumb:hover {
+    #sheetScrollArea::-webkit-scrollbar-thumb:hover,
+    body.light-theme #sheetScrollArea::-webkit-scrollbar-thumb:hover,
+    body:not(.light-theme) #sheetScrollArea::-webkit-scrollbar-thumb:hover {
       background: #3b82f6 !important;
-      box-shadow: 0 0 16px rgba(59, 130, 246, 0.95) !important;
+      box-shadow: 0 0 20px rgba(59, 130, 246, 1), inset 0 0 8px rgba(255, 255, 255, 0.7) !important;
     }
-    #sheetScrollArea::-webkit-scrollbar-thumb:active {
+    #sheetScrollArea::-webkit-scrollbar-thumb:active,
+    body.light-theme #sheetScrollArea::-webkit-scrollbar-thumb:active,
+    body:not(.light-theme) #sheetScrollArea::-webkit-scrollbar-thumb:active {
       background: #60a5fa !important;
     }
-    #sheetScrollArea::-webkit-scrollbar-corner {
-      background: #0f172a !important;
+    #sheetScrollArea::-webkit-scrollbar-corner,
+    body.light-theme #sheetScrollArea::-webkit-scrollbar-corner,
+    body:not(.light-theme) #sheetScrollArea::-webkit-scrollbar-corner {
+      background: #090d16 !important;
     }
 
 </style>
@@ -6138,7 +6155,11 @@
         ctx.fillStyle = '#1e40af';
         ctx.fillText(deptName, pageW - marginX, 155);
 
-        // Center Block: Deleted per user request
+        // Center Block: (User requested: اضافة اسم مكتب انتخابات البصرة في منصف اعلى الصفحة)
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#0f172a';
+        ctx.font = 'bold 24px "Cairo", "Traditional Arabic", serif';
+        ctx.fillText('مكتب انتخابات البصرة', pageW / 2, 115);
 
         // Left Block: Date & Category (docNum / العدد deleted per user request)
         ctx.textAlign = 'left';
@@ -6488,7 +6509,7 @@
       </div>
 
       <!-- Interactive Canvas Area (شاشة كاملة، شريط التمرير على اليمين) -->
-      <div class="flex-1 bg-slate-200 p-2 sm:p-4 select-none" id="sheetScrollArea" style="overflow-y: scroll !important; overflow-x: auto !important; min-height: 0 !important; scrollbar-gutter: stable;">
+      <div class="flex-1 bg-slate-200 p-2 sm:p-4 select-none" id="sheetScrollArea" style="overflow-y: scroll !important; overflow-x: auto !important; min-height: 0 !important; height: 100% !important; direction: rtl !important;">
         <!-- Rendered page sheets dynamically injected here -->
       </div>
 
