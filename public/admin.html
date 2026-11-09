@@ -2264,6 +2264,13 @@ syncLiveAdminVersion();
           <span id="themeToggleText">ليلي</span>
         </button>
 
+        <!-- Fullscreen Toggle Button (ملء الشاشة) -->
+        <button id="fullscreenToggleBtn" type="button" onclick="toggleFullscreen()" class="bg-slate-800 hover:bg-slate-700 text-sky-400 border border-slate-700 px-3 py-1.5 rounded-xl sm:rounded-2xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm active:scale-95" title="ملء الشاشة (F11)">
+          <i id="fullscreenToggleIcon" class="fa-solid fa-expand"></i>
+          <span id="fullscreenToggleText">ملء الشاشة</span>
+        </button>
+
+
         <!-- Change Password Button -->
         <button onclick="openChangePasswordModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 p-2 rounded-xl border border-slate-700 transition-colors" title="تغيير كلمة المرور الخاصة بي">
           <i class="fa-solid fa-key"></i>
@@ -8577,6 +8584,41 @@ syncLiveAdminVersion();
     window.openViewTextModal = function(id) { openSheetModal(id, 'text'); };
     window.closeUnifiedPreviewModal = function() { closeSheetModal(); };
     
+
+
+    // ================= FULLSCREEN CONTROLLER =================
+    function toggleFullscreen() {
+      try {
+        if (!document.fullscreenElement) {
+          if (document.documentElement.requestFullscreen) {
+            document.documentElement.requestFullscreen().catch(() => {});
+          } else if (document.documentElement.webkitRequestFullscreen) {
+            document.documentElement.webkitRequestFullscreen();
+          }
+        } else {
+          if (document.exitFullscreen) {
+            document.exitFullscreen().catch(() => {});
+          } else if (document.webkitExitFullscreen) {
+            document.webkitExitFullscreen();
+          }
+        }
+      } catch (err) {
+        console.warn('Fullscreen toggle:', err);
+      }
+    }
+
+    document.addEventListener('fullscreenchange', () => {
+      const icon = document.getElementById('fullscreenToggleIcon');
+      const txt = document.getElementById('fullscreenToggleText');
+      if (document.fullscreenElement) {
+        if (icon) icon.className = 'fa-solid fa-compress';
+        if (txt) txt.innerText = 'تصغير الشاشة';
+      } else {
+        if (icon) icon.className = 'fa-solid fa-expand';
+        if (txt) txt.innerText = 'ملء الشاشة';
+      }
+    });
+
 </script>
 
 

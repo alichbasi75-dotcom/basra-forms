@@ -2238,6 +2238,13 @@
           <span id="themeToggleText">ليلي</span>
         </button>
 
+        <!-- Fullscreen Toggle Button (ملء الشاشة) -->
+        <button id="fullscreenToggleBtn" type="button" onclick="toggleFullscreen()" class="bg-slate-800 hover:bg-slate-700 text-sky-400 border border-slate-700 px-3 py-1.5 rounded-xl sm:rounded-2xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm active:scale-95" title="ملء الشاشة (F11)">
+          <i id="fullscreenToggleIcon" class="fa-solid fa-expand"></i>
+          <span id="fullscreenToggleText">ملء الشاشة</span>
+        </button>
+
+
         <div id="syncPill" class="flex items-center">
           <button type="button" onclick="fetchLatestData(true)" class="bg-blue-600 hover:bg-blue-500 text-white px-3.5 py-1.5 rounded-xl text-xs font-black transition-all flex items-center gap-2 shadow-md active:scale-95 cursor-pointer" style="background-color: #2563eb !important; color: #ffffff !important;" title="تحديث فوري للاستمارات (مزامنة تلقائية مستمرة)">
             <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse inline-block" title="متصل بالخادم"></span>
@@ -6422,6 +6429,41 @@
     window.openViewTextModal = function(id) { openSheetModal(id, 'text'); };
     window.closeUnifiedPreviewModal = function() { closeSheetModal(); };
     
+
+
+    // ================= FULLSCREEN CONTROLLER =================
+    function toggleFullscreen() {
+      try {
+        if (!document.fullscreenElement) {
+          if (document.documentElement.requestFullscreen) {
+            document.documentElement.requestFullscreen().catch(() => {});
+          } else if (document.documentElement.webkitRequestFullscreen) {
+            document.documentElement.webkitRequestFullscreen();
+          }
+        } else {
+          if (document.exitFullscreen) {
+            document.exitFullscreen().catch(() => {});
+          } else if (document.webkitExitFullscreen) {
+            document.webkitExitFullscreen();
+          }
+        }
+      } catch (err) {
+        console.warn('Fullscreen toggle:', err);
+      }
+    }
+
+    document.addEventListener('fullscreenchange', () => {
+      const icon = document.getElementById('fullscreenToggleIcon');
+      const txt = document.getElementById('fullscreenToggleText');
+      if (document.fullscreenElement) {
+        if (icon) icon.className = 'fa-solid fa-compress';
+        if (txt) txt.innerText = 'تصغير الشاشة';
+      } else {
+        if (icon) icon.className = 'fa-solid fa-expand';
+        if (txt) txt.innerText = 'ملء الشاشة';
+      }
+    });
+
 </script>
 
   <!-- Floating Toast Notifications Container -->
