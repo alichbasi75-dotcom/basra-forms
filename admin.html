@@ -2686,15 +2686,7 @@ syncLiveAdminVersion();
             </button>
           </div>
 
-          <!-- Interactive Paste & Drop Zone -->
-          <div id="contentPasteDropZone" onclick="pasteAttachmentFromClipboard()" class="border-2 border-dashed border-slate-700/90 hover:border-indigo-400 rounded-xl p-3 text-center cursor-pointer transition-all bg-slate-900/40 hover:bg-indigo-950/20 group">
-            <div class="flex items-center justify-center gap-2.5 text-xs text-slate-400 group-hover:text-slate-200">
-              <div class="w-7 h-7 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-sm">
-                <i class="fa-regular fa-clipboard"></i>
-              </div>
-              <span class="font-bold">يمكنك نسخ أي صورة أو لقطة شاشة والضغط هنا أو <kbd class="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-600 text-slate-200 font-mono text-[11px] font-black">Ctrl + V</kbd> للصق المرفق فوراً</span>
-            </div>
-          </div>
+
 
           <!-- Active Attached / Pasted File Preview Card -->
           <div id="activeFilePreviewCard" class="hidden p-3 rounded-xl border border-indigo-500/40 bg-indigo-950/30 flex items-center justify-between gap-3 flex-wrap">
@@ -4817,44 +4809,60 @@ syncLiveAdminVersion();
           const clipboardItems = await navigator.clipboard.read();
           for (const item of clipboardItems) {
             for (const type of item.types) {
+              // 1. Image
               if (type.startsWith('image/')) {
                 const blob = await item.getType(type);
                 const ext = type.includes('png') ? 'png' : (type.includes('webp') ? 'webp' : 'jpg');
                 const now = new Date();
                 const pad = n => String(n).padStart(2, '0');
                 const timestamp = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}_${pad(now.getHours())}-${pad(now.getMinutes())}-${pad(now.getSeconds())}`;
-                const pastedFile = new File([blob], `مرفق_ملصق_${timestamp}.${ext}`, { type: blob.type });
+                const pastedFile = new File([blob], `مرفق_صورة_${timestamp}.${ext}`, { type: blob.type });
+                await setAttachedFile(pastedFile, 'clipboard');
+                return;
+              }
+              // 2. Audio or other binary media
+              else if (type.startsWith('audio/') || type.includes('pdf') || type.includes('document')) {
+                const blob = await item.getType(type);
+                let ext = 'opus';
+                if (type.includes('ogg')) ext = 'ogg';
+                else if (type.includes('mp3') || type.includes('mpeg')) ext = 'mp3';
+                else if (type.includes('wav')) ext = 'wav';
+                else if (type.includes('pdf')) ext = 'pdf';
+                const now = new Date();
+                const pad = n => String(n).padStart(2, '0');
+                const timestamp = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}_${pad(now.getHours())}-${pad(now.getMinutes())}-${pad(now.getSeconds())}`;
+                const pastedFile = new File([blob], `مرفق_صوتي_${timestamp}.${ext}`, { type: blob.type });
                 await setAttachedFile(pastedFile, 'clipboard');
                 return;
               }
             }
           }
         }
-        if (typeof AudioEngine !== 'undefined') AudioEngine.warning();
-        showToast('لم يتم العثور على صورة في الحافظة. انسخ أي صورة أو التقط شاشة (Win + Shift + S) ثم اضغط Ctrl + V أو على هذا الزر للصقها.', 'warning', 'الحافظة فارغة');
+        if (typeof AudioEngine !== 'undefined') AudioEngine.info();
+        showToast('لصق الملفات المنسوخة من الحاسبة (مثل البصمات والـ PDF) يتطلب الضغط على (Ctrl + V) لأسباب أمان المتصفح، أو يمكنك اختيار الملف عبر زر "اختيار ملف".', 'info', 'تنبيه اللصق');
       } catch (err) {
         console.warn('Clipboard read error:', err);
         if (typeof AudioEngine !== 'undefined') AudioEngine.info();
-        showToast('يرجى الضغط على مفتاحي Ctrl + V من لوحة المفاتيح للصق الصورة مباشرة.', 'info', 'لصق سريع');
+        showToast('يرجى الضغط على مفتاحي (Ctrl + V) من لوحة المفاتيح للصق الملف، أو استخدام زر "اختيار ملف".', 'info', 'لصق سريع');
       }
     }
 
     // Setup Global Paste & Drag-Drop listeners for Content Modal
     function setupContentPasteAndDrop() {
-      const dropZone = document.getElementById('contentPasteDropZone');
+      const dropZone = document.getElementById('fileUploadContainer') || document.getElementById('contentModal');
       if (dropZone) {
         ['dragenter', 'dragover'].forEach(eventName => {
           dropZone.addEventListener(eventName, (e) => {
             e.preventDefault();
             e.stopPropagation();
-            dropZone.classList.add('border-indigo-500', 'bg-indigo-950/40');
+            dropZone.classList.add('border-indigo-500', 'bg-indigo-950/20');
           });
         });
         ['dragleave', 'drop'].forEach(eventName => {
           dropZone.addEventListener(eventName, (e) => {
             e.preventDefault();
             e.stopPropagation();
-            dropZone.classList.remove('border-indigo-500', 'bg-indigo-950/40');
+            dropZone.classList.remove('border-indigo-500', 'bg-indigo-950/20');
           });
         });
         dropZone.addEventListener('drop', (e) => {
@@ -4863,6 +4871,8 @@ syncLiveAdminVersion();
           }
         });
       }
+
+
 
       window.addEventListener('paste', async (e) => {
         const modal = document.getElementById('contentModal');
