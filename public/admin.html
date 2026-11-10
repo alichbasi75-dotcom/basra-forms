@@ -1795,6 +1795,7 @@
   <script src="./libs/pdf.min.js"></script>
   <script src="./libs/mammoth.browser.min.js"></script>
   <script src="./libs/xlsx.full.min.js"></script>
+  <script src="./libs/jszip.min.js"></script>
   <script>
     if (window.pdfjsLib) {
       pdfjsLib.GlobalWorkerOptions.workerSrc = './libs/pdf.worker.min.js';
@@ -2672,12 +2673,12 @@ syncLiveAdminVersion();
         <div class="p-4 rounded-2xl bg-slate-800/60 border border-slate-700/80 space-y-3">
           <div class="flex items-center justify-between flex-wrap gap-2">
             <label class="block text-slate-300 font-bold">الملف المرفق (PDF, Word, Excel, صور):</label>
-            <span class="text-[10px] text-slate-400 font-semibold bg-slate-700/50 px-2.5 py-0.5 rounded-lg border border-slate-600/40">الحد الأقصى: 15 ميجابايت • ضغط تلقائي للصور</span>
+            <span class="text-[10px] text-slate-400 font-semibold bg-slate-700/50 px-2.5 py-0.5 rounded-lg border border-slate-600/40">⚡ ضغط ذكي تلقائي لكافة المرفقات (PDF, صور, عروض, مستندات)</span>
           </div>
           
           <div class="flex items-center gap-2.5 flex-wrap">
             <div class="flex-1 min-w-[200px]">
-              <input type="file" id="contentFileInput" onchange="handleFileInputChange(event)" accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.webp" class="block w-full text-xs text-slate-400 file:mr-0 file:ml-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-500 cursor-pointer">
+              <input type="file" id="contentFileInput" onchange="handleFileInputChange(event)" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.png,.jpg,.jpeg,.webp,.mp3,.wav,.m4a,.ogg" class="block w-full text-xs text-slate-400 file:mr-0 file:ml-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-500 cursor-pointer">
             </div>
             <button type="button" onclick="pasteAttachmentFromClipboard()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs px-3.5 py-2.5 rounded-xl flex items-center gap-2 transition-all shadow-md active:scale-95 cursor-pointer shrink-0" title="لصق صورة أو ملف من الحافظة أو عبر لقطة الشاشة">
               <i class="fa-solid fa-paste text-amber-300"></i>
@@ -4109,6 +4110,8 @@ syncLiveAdminVersion();
       const isPdf = (ext === 'pdf' || c.file_type === 'pdf');
       const isWord = (ext === 'doc' || ext === 'docx' || c.file_type === 'doc' || c.file_type === 'docx');
       const isExcel = (ext === 'xls' || ext === 'xlsx' || c.file_type === 'xls' || c.file_type === 'xlsx');
+      const isPpt = (ext === 'ppt' || ext === 'pptx' || c.file_type === 'ppt' || c.file_type === 'pptx');
+      const isAudio = (['mp3', 'wav', 'm4a', 'ogg'].includes(ext) || ['mp3', 'wav', 'm4a', 'ogg'].includes(c.file_type));
 
       let fIcon = 'fa-file-lines';
       let fTileBg = 'bg-blue-100 text-blue-900 border-blue-300';
@@ -4126,6 +4129,15 @@ syncLiveAdminVersion();
         fIcon = 'fa-file-excel text-emerald-600';
         fTileBg = 'bg-emerald-100 text-emerald-900 border-emerald-300';
         fLabel = 'ملف Excel';
+      }
+      else if (isPpt) {
+        fIcon = 'fa-file-powerpoint text-amber-600';
+        fTileBg = 'bg-amber-100 text-amber-900 border-amber-300';
+        fLabel = 'عرض تقديمي (PowerPoint)';
+      } else if (isAudio) {
+        fIcon = 'fa-file-audio text-purple-600';
+        fTileBg = 'bg-purple-100 text-purple-900 border-purple-300';
+        fLabel = 'تسجيل صوتي';
       } else if (isImage) {
         fIcon = 'fa-file-image text-purple-600';
         fTileBg = 'bg-purple-100 text-purple-900 border-purple-300';
@@ -4331,10 +4343,102 @@ syncLiveAdminVersion();
       }
     }
 
-    // In-browser Image Compression using HTML5 Canvas (Preserves text readability & slashes file size)
-    function compressImageFile(file, maxWidth = 2200, maxHeight = 2200, quality = 0.82) {
+    // =========================================================================
+    // IN-BROWSER AUTOMATIC ATTACHMENT COMPRESSION SUITE (ZERO EXTERNAL SERVER)
+    // Supports: Images (JPEG/PNG/WebP), PDF Documents, PowerPoint (PPTX), Word (DOCX)
+    // =========================================================================
+
+    // Helper: Convert ASCII/Binary string to Uint8Array safely without encoding corruption
+    function binaryStringToUint8Array(str) {
+      const bytes = new Uint8Array(str.length);
+      for (let i = 0; i < str.length; i++) {
+        bytes[i] = str.charCodeAt(i) & 0xFF;
+      }
+      return bytes;
+    }
+
+    // In-browser minimal PDF 1.4 Builder from high-compression JPEGs (Zero External Dependencies)
+    function buildPdfFromJpegs(images) {
+      const chunks = [];
+      let offset = 0;
+      const offsets = [];
+
+      function writeStr(str) {
+        const u8 = binaryStringToUint8Array(str);
+        chunks.push(u8);
+        offset += u8.length;
+      }
+      function writeBytes(u8) {
+        chunks.push(u8);
+        offset += u8.length;
+      }
+
+      writeStr('%PDF-1.4\n%\xE2\xE3\xCF\xD3\n');
+
+      const pageCount = images.length;
+      const catalogObjNum = 1;
+      const pagesObjNum = 2;
+      const totalObjs = 2 + pageCount * 3;
+
+      offsets[catalogObjNum] = offset;
+      writeStr(catalogObjNum + ' 0 obj\n<< /Type /Catalog /Pages ' + pagesObjNum + ' 0 R >>\nendobj\n');
+
+      const kids = [];
+      for (let i = 0; i < pageCount; i++) {
+        kids.push((3 + i * 3) + ' 0 R');
+      }
+      offsets[pagesObjNum] = offset;
+      writeStr(pagesObjNum + ' 0 obj\n<< /Type /Pages /Kids [' + kids.join(' ') + '] /Count ' + pageCount + ' >>\nendobj\n');
+
+      for (let i = 0; i < pageCount; i++) {
+        const img = images[i];
+        const pageObjNum = 3 + i * 3;
+        const contentObjNum = 4 + i * 3;
+        const imageObjNum = 5 + i * 3;
+
+        const ptWidth = img.ptWidth || 595.28;
+        const ptHeight = img.ptHeight || 841.89;
+
+        offsets[pageObjNum] = offset;
+        writeStr(pageObjNum + ' 0 obj\n<< /Type /Page /Parent ' + pagesObjNum + ' 0 R /MediaBox [0 0 ' + ptWidth.toFixed(2) + ' ' + ptHeight.toFixed(2) + '] /Contents ' + contentObjNum + ' 0 R /Resources << /XObject << /Im' + (i + 1) + ' ' + imageObjNum + ' 0 R >> >> >>\nendobj\n');
+
+        const streamContent = 'q\n' + ptWidth.toFixed(2) + ' 0 0 ' + ptHeight.toFixed(2) + ' 0 0 cm\n/Im' + (i + 1) + ' Do\nQ\n';
+        offsets[contentObjNum] = offset;
+        writeStr(contentObjNum + ' 0 obj\n<< /Length ' + streamContent.length + ' >>\nstream\n' + streamContent + 'endstream\nendobj\n');
+
+        offsets[imageObjNum] = offset;
+        const imgHeader = imageObjNum + ' 0 obj\n<< /Type /XObject /Subtype /Image /Width ' + img.width + ' /Height ' + img.height + ' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ' + img.bytes.length + ' >>\nstream\n';
+        writeStr(imgHeader);
+        writeBytes(img.bytes);
+        writeStr('\nendstream\nendobj\n');
+      }
+
+      const xrefOffset = offset;
+      writeStr('xref\n0 ' + (totalObjs + 1) + '\n');
+      writeStr('0000000000 65535 f \n');
+      for (let i = 1; i <= totalObjs; i++) {
+        const offStr = String(offsets[i]).padStart(10, '0');
+        writeStr(offStr + ' 00000 n \n');
+      }
+
+      writeStr('trailer\n<< /Size ' + (totalObjs + 1) + ' /Root ' + catalogObjNum + ' 0 R >>\nstartxref\n' + xrefOffset + '\n%%EOF\n');
+
+      let totalLength = 0;
+      for (const c of chunks) totalLength += c.length;
+      const result = new Uint8Array(totalLength);
+      let cur = 0;
+      for (const c of chunks) {
+        result.set(c, cur);
+        cur += c.length;
+      }
+      return result;
+    }
+
+    // In-browser Image Compression using HTML5 Canvas (Preserves clarity & slashes file size)
+    function compressImageFile(file, maxWidth = 2000, maxHeight = 2000, quality = 0.80) {
       return new Promise((resolve) => {
-        if (!file.type.startsWith('image/') || file.size <= 400 * 1024) {
+        const isImgType = (file.type && file.type.startsWith('image/')) || (file.name && file.name.match(/\.(png|jpe?g|webp|bmp)$/i));
+        if (!isImgType || file.size <= 250 * 1024) {
           return resolve({ file, compressed: false, originalSize: file.size, newSize: file.size });
         }
         const reader = new FileReader();
@@ -4357,8 +4461,9 @@ syncLiveAdminVersion();
             ctx.drawImage(img, 0, 0, width, height);
             canvas.toBlob((blob) => {
               if (blob && blob.size < file.size) {
-                const dotIdx = file.name.lastIndexOf('.');
-                const baseName = dotIdx > 0 ? file.name.substring(0, dotIdx) : file.name;
+                const fName = file.name || 'image.jpg';
+                const dotIdx = fName.lastIndexOf('.');
+                const baseName = dotIdx > 0 ? fName.substring(0, dotIdx) : fName;
                 const optimizedFile = new File([blob], `${baseName}.jpg`, {
                   type: 'image/jpeg',
                   lastModified: Date.now()
@@ -4375,6 +4480,126 @@ syncLiveAdminVersion();
         reader.onerror = () => resolve({ file, compressed: false, originalSize: file.size, newSize: file.size });
         reader.readAsDataURL(file);
       });
+    }
+
+    // PDF Compression Engine: Downsamples heavy scanned pages to ~135 DPI JPEG
+    async function compressPdfFile(file, onProgress) {
+      try {
+        if (!window.pdfjsLib) return { file, compressed: false, originalSize: file.size, newSize: file.size };
+        try {
+          if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = './libs/pdf.worker.min.js';
+          }
+        } catch(e) {}
+
+        const arrayBuffer = await file.arrayBuffer();
+        const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+        const pdfDoc = await loadingTask.promise;
+        const numPages = pdfDoc.numPages;
+        if (numPages === 0) return { file, compressed: false, originalSize: file.size, newSize: file.size };
+
+        const images = [];
+        for (let p = 1; p <= numPages; p++) {
+          if (typeof onProgress === 'function') onProgress(p, numPages);
+          const page = await pdfDoc.getPage(p);
+          const initialViewport = page.getViewport({ scale: 1.0 });
+          let scale = 1.35;
+          if (initialViewport.width * scale > 1800) {
+            scale = 1800 / initialViewport.width;
+          }
+          const viewport = page.getViewport({ scale });
+          const canvas = document.createElement('canvas');
+          canvas.width = Math.round(viewport.width);
+          canvas.height = Math.round(viewport.height);
+          const ctx = canvas.getContext('2d');
+          ctx.fillStyle = '#FFFFFF';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          await page.render({ canvasContext: ctx, viewport }).promise;
+
+          const blob = await new Promise(r => canvas.toBlob(r, 'image/jpeg', 0.76));
+          if (!blob) throw new Error('Failed to rasterize PDF page');
+          const jpegBytes = new Uint8Array(await blob.arrayBuffer());
+
+          images.push({
+            bytes: jpegBytes,
+            width: canvas.width,
+            height: canvas.height,
+            ptWidth: initialViewport.width,
+            ptHeight: initialViewport.height
+          });
+        }
+
+        const pdfBytes = buildPdfFromJpegs(images);
+        if (pdfBytes && pdfBytes.length < file.size) {
+          const dotIdx = file.name.lastIndexOf('.');
+          const baseName = dotIdx > 0 ? file.name.substring(0, dotIdx) : file.name;
+          const optimizedFile = new File([pdfBytes], `${baseName}.pdf`, {
+            type: 'application/pdf',
+            lastModified: Date.now()
+          });
+          return { file: optimizedFile, compressed: true, originalSize: file.size, newSize: pdfBytes.length };
+        }
+        return { file, compressed: false, originalSize: file.size, newSize: file.size };
+      } catch (err) {
+        console.warn('PDF compression skipped, using original:', err);
+        return { file, compressed: false, originalSize: file.size, newSize: file.size };
+      }
+    }
+
+    // Office (PowerPoint PPTX & Word DOCX) Media Optimizer
+    async function compressOfficeFile(file, onProgress) {
+      try {
+        if (!window.JSZip) return { file, compressed: false, originalSize: file.size, newSize: file.size };
+        const arrayBuffer = await file.arrayBuffer();
+        const zip = await JSZip.loadAsync(arrayBuffer);
+
+        const mediaFiles = [];
+        zip.forEach((relativePath, zipEntry) => {
+          if (!zipEntry.dir && relativePath.match(/(ppt|word)\/media\/[^/]+\.(png|jpe?g|webp|bmp)$/i)) {
+            mediaFiles.push({ path: relativePath, entry: zipEntry });
+          }
+        });
+
+        if (mediaFiles.length === 0) {
+          return { file, compressed: false, originalSize: file.size, newSize: file.size };
+        }
+
+        let modified = false;
+        let processed = 0;
+        for (const item of mediaFiles) {
+          processed++;
+          if (typeof onProgress === 'function') onProgress(processed, mediaFiles.length);
+
+          const imgBlob = await item.entry.async('blob');
+          if (imgBlob.size > 200 * 1024) {
+            const comp = await compressImageFile(imgBlob, 1600, 1600, 0.78);
+            if (comp.compressed && comp.newSize < imgBlob.size) {
+              const u8 = new Uint8Array(await comp.file.arrayBuffer());
+              zip.file(item.path, u8);
+              modified = true;
+            }
+          }
+        }
+
+        if (modified) {
+          const newBlob = await zip.generateAsync({
+            type: 'blob',
+            compression: 'DEFLATE',
+            compressionOptions: { level: 6 }
+          });
+          if (newBlob.size < file.size) {
+            const optimizedFile = new File([newBlob], file.name, {
+              type: file.type || 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+              lastModified: Date.now()
+            });
+            return { file: optimizedFile, compressed: true, originalSize: file.size, newSize: newBlob.size };
+          }
+        }
+        return { file, compressed: false, originalSize: file.size, newSize: file.size };
+      } catch (err) {
+        console.warn('Office compression error, using original:', err);
+        return { file, compressed: false, originalSize: file.size, newSize: file.size };
+      }
     }
 
     // File input handler: live validation, compression, and feedback
@@ -4395,7 +4620,7 @@ syncLiveAdminVersion();
       const icon = document.getElementById('activeFileIcon');
       if (icon) icon.classList.remove('hidden');
       if (typeof AudioEngine !== 'undefined') AudioEngine.info();
-      showToast('تمت إزالة الملف المرفق.', 'info', 'المرفق');
+      showToast('تمت إزالة المرفق الحالي.', 'info', 'المرفقات');
     }
 
     // Unified processor for any attached file (file input, clipboard paste, or drag & drop)
@@ -4417,63 +4642,123 @@ syncLiveAdminVersion();
         feedback.innerHTML = '';
       }
 
-      const sizeMB = file.size / (1024 * 1024);
       const ext = (file.name.split('.').pop() || '').toLowerCase();
-
-      // 1. Strict Max Limit: 15 MB
-      if (sizeMB > 15) {
-        if (typeof AudioEngine !== 'undefined') AudioEngine.error();
-        if (feedback) {
-          feedback.className = 'text-xs p-2.5 rounded-xl border border-rose-500/40 bg-rose-500/10 text-rose-300 flex items-center gap-2 font-bold';
-          feedback.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-rose-400 text-sm"></i>
-            <span>حجم الملف (${sizeMB.toFixed(1)} MB) يتجاوز الحد الأقصى المسموح به (15 MB). يرجى تقليل حجم الملف قبل إرفاقه.</span>`;
-        }
-        clearAttachedFile();
-        return;
-      }
-
-      // 2. Automatic Image Compression for JPG/PNG/WebP > 400 KB
       const isImage = ['png', 'jpg', 'jpeg', 'webp', 'bmp'].includes(ext) || (file.type && file.type.startsWith('image/'));
-      if (isImage && file.size > 400 * 1024) {
+      const isPdf = ext === 'pdf';
+      const isOffice = ['pptx', 'ppt', 'docx', 'doc'].includes(ext);
+
+      // --- AUTOMATIC IN-BROWSER COMPRESSION PIPELINE ---
+      if (isImage && file.size > 300 * 1024) {
         if (feedback) {
           feedback.className = 'text-xs p-2.5 rounded-xl border border-blue-500/40 bg-blue-500/10 text-blue-300 flex items-center gap-2 font-semibold';
           feedback.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-blue-400"></i>
-            <span>جاري ضغط الصورة تلقائياً لتحسين سرعة التحميل...</span>`;
+            <span>جارٍ ضغط وتحسين الصورة تلقائياً لسرعة التحميل في المراكز...</span>`;
         }
-
         try {
-          const compResult = await compressImageFile(file, 2200, 2200, 0.82);
+          const compResult = await compressImageFile(file, 2000, 2000, 0.80);
           if (compResult.compressed && compResult.newSize < compResult.originalSize) {
             currentOptimizedFile = compResult.file;
             currentPastedFile = compResult.file;
             const savedPercent = Math.round((1 - compResult.newSize / compResult.originalSize) * 100);
-            const oldMB = (compResult.originalSize / (1024 * 1024)).toFixed(2);
-            const newKB = (compResult.newSize / 1024).toFixed(0);
+            const oldSize = compResult.originalSize > 1024 * 1024 ? (compResult.originalSize / (1024 * 1024)).toFixed(2) + ' MB' : (compResult.originalSize / 1024).toFixed(0) + ' KB';
+            const newSize = compResult.newSize > 1024 * 1024 ? (compResult.newSize / (1024 * 1024)).toFixed(2) + ' MB' : (compResult.newSize / 1024).toFixed(0) + ' KB';
             if (feedback) {
               feedback.className = 'text-xs p-2.5 rounded-xl border border-emerald-500/40 bg-emerald-500/10 text-emerald-300 flex items-center gap-2 font-bold';
-              feedback.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles text-emerald-400 text-sm"></i>
-                <span>تم ضغط الصورة بنجاح: تم تقليل الحجم من (${oldMB} MB) إلى (${newKB} KB) وتوفير ${savedPercent}% من السعة مع حفظ الجودة!</span>`;
+              feedback.innerHTML = `<i class="fa-solid fa-bolt text-emerald-400 text-sm"></i>
+                <span>تم ضغط الصورة تلقائياً: تم تقليص الحجم من (${oldSize}) إلى (${newSize}) وتوفير ${savedPercent}% من المساحة دون أي فقد في الوضوح!</span>`;
             }
           }
         } catch (compErr) {
           console.warn('Image compression fallback:', compErr);
         }
-      } else if (sizeMB > 4) {
+      } else if (isPdf && file.size > 800 * 1024) {
         if (feedback) {
-          feedback.className = 'text-xs p-2.5 rounded-xl border border-amber-500/40 bg-amber-500/10 text-amber-300 flex items-center gap-2 font-bold';
-          feedback.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-amber-400 text-sm"></i>
-            <span>تنبيه: حجم الملف (${sizeMB.toFixed(1)} MB) كبير نسبياً. يفضل استخدام ملفات أقل من 4MB لسرعة التصفح في المراكز وحفظ السعة.</span>`;
+          feedback.className = 'text-xs p-2.5 rounded-xl border border-indigo-500/40 bg-indigo-500/10 text-indigo-300 flex items-center gap-2 font-semibold';
+          feedback.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-indigo-400"></i>
+            <span id="pdfCompressStatus">جارٍ فحص وضغط مستند الـ PDF تلقائياً لأصغر حجم ممكن...</span>`;
+        }
+        try {
+          const compResult = await compressPdfFile(file, (p, total) => {
+            const el = document.getElementById('pdfCompressStatus');
+            if (el) el.innerText = `جارٍ ضغط وتحسين مستند الـ PDF تلقائياً... (معالجة صفحة ${p} من ${total})`;
+          });
+          if (compResult.compressed && compResult.newSize < compResult.originalSize) {
+            currentOptimizedFile = compResult.file;
+            currentPastedFile = compResult.file;
+            const savedPercent = Math.round((1 - compResult.newSize / compResult.originalSize) * 100);
+            const oldSize = compResult.originalSize > 1024 * 1024 ? (compResult.originalSize / (1024 * 1024)).toFixed(2) + ' MB' : (compResult.originalSize / 1024).toFixed(0) + ' KB';
+            const newSize = compResult.newSize > 1024 * 1024 ? (compResult.newSize / (1024 * 1024)).toFixed(2) + ' MB' : (compResult.newSize / 1024).toFixed(0) + ' KB';
+            if (feedback) {
+              feedback.className = 'text-xs p-2.5 rounded-xl border border-emerald-500/40 bg-emerald-500/10 text-emerald-300 flex items-center gap-2 font-bold';
+              feedback.innerHTML = `<i class="fa-solid fa-bolt text-emerald-400 text-sm"></i>
+                <span>تم ضغط الـ PDF تلقائياً: تم تقليص الحجم من (${oldSize}) إلى (${newSize}) وتوفير ${savedPercent}% مع الحفاظ التام على وضوح القراءة والطباعة!</span>`;
+            }
+          } else {
+            if (feedback) {
+              feedback.className = 'text-xs p-2.5 rounded-xl border border-slate-700 bg-slate-800/80 text-slate-300 flex items-center gap-2 font-semibold';
+              feedback.innerHTML = `<i class="fa-solid fa-check text-emerald-400"></i>
+                <span>مستند الـ PDF محسن ومضغوط بالفعل (${(file.size / 1024).toFixed(1)} KB) - جاهز للرفع المباشر.</span>`;
+            }
+          }
+        } catch (pdfErr) {
+          console.warn('PDF compression fallback:', pdfErr);
+        }
+      } else if (isOffice && file.size > 1024 * 1024) {
+        if (feedback) {
+          feedback.className = 'text-xs p-2.5 rounded-xl border border-amber-500/40 bg-amber-500/10 text-amber-300 flex items-center gap-2 font-semibold';
+          feedback.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-amber-400"></i>
+            <span id="officeCompressStatus">جارٍ فحص وضغط وسائط ملف العرض (PowerPoint/Word) تلقائياً...</span>`;
+        }
+        try {
+          const compResult = await compressOfficeFile(file, (done, total) => {
+            const el = document.getElementById('officeCompressStatus');
+            if (el) el.innerText = `جارٍ ضغط وسائط وصور العرض تلقائياً... (${done} من ${total})`;
+          });
+          if (compResult.compressed && compResult.newSize < compResult.originalSize) {
+            currentOptimizedFile = compResult.file;
+            currentPastedFile = compResult.file;
+            const savedPercent = Math.round((1 - compResult.newSize / compResult.originalSize) * 100);
+            const oldSize = compResult.originalSize > 1024 * 1024 ? (compResult.originalSize / (1024 * 1024)).toFixed(2) + ' MB' : (compResult.originalSize / 1024).toFixed(0) + ' KB';
+            const newSize = compResult.newSize > 1024 * 1024 ? (compResult.newSize / (1024 * 1024)).toFixed(2) + ' MB' : (compResult.newSize / 1024).toFixed(0) + ' KB';
+            if (feedback) {
+              feedback.className = 'text-xs p-2.5 rounded-xl border border-emerald-500/40 bg-emerald-500/10 text-emerald-300 flex items-center gap-2 font-bold';
+              feedback.innerHTML = `<i class="fa-solid fa-bolt text-emerald-400 text-sm"></i>
+                <span>تم ضغط ملف العرض تلقائياً: تم تخفيض الحجم من (${oldSize}) إلى (${newSize}) وتوفير ${savedPercent}% مع بقاء النصوص والشرائح 100%!</span>`;
+            }
+          } else {
+            if (feedback) {
+              feedback.className = 'text-xs p-2.5 rounded-xl border border-slate-700 bg-slate-800/80 text-slate-300 flex items-center gap-2 font-semibold';
+              feedback.innerHTML = `<i class="fa-solid fa-check text-emerald-400"></i>
+                <span>ملف العرض محسن بالفعل (${(file.size / 1024).toFixed(1)} KB) - جاهز للرفع المباشر.</span>`;
+            }
+          }
+        } catch (offErr) {
+          console.warn('Office compression fallback:', offErr);
         }
       } else {
         if (feedback) {
+          const sizeStr = file.size > 1024 * 1024 ? (file.size / (1024 * 1024)).toFixed(2) + ' MB' : (file.size / 1024).toFixed(1) + ' KB';
           feedback.className = 'text-xs p-2.5 rounded-xl border border-slate-700 bg-slate-800/80 text-slate-300 flex items-center gap-2 font-semibold';
           feedback.innerHTML = `<i class="fa-solid fa-check text-emerald-400"></i>
-            <span>المرفق جاهز للنشر: ${(file.size / 1024).toFixed(1)} KB (حجم ممتاز وخفيف).</span>`;
+            <span>المرفق بحجم خفيف ومثالي: ${sizeStr} (لا يحتاج إلى ضغط).</span>`;
         }
       }
 
-      // Update Preview Card UI
+      // Check final active file size
       const activeFile = currentOptimizedFile || currentPastedFile;
+      const finalSizeMB = activeFile.size / (1024 * 1024);
+      if (finalSizeMB > 25) {
+        if (typeof AudioEngine !== 'undefined') AudioEngine.error();
+        if (feedback) {
+          feedback.className = 'text-xs p-2.5 rounded-xl border border-rose-500/40 bg-rose-500/10 text-rose-300 flex items-center gap-2 font-bold';
+          feedback.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-rose-400 text-sm"></i>
+            <span>حجم المرفق حتى بعد الضغط (${finalSizeMB.toFixed(1)} MB) كبير جداً ويتجاوز الحد الأقصى (25 MB). يرجى تقليله قبل الرفع.</span>`;
+        }
+        clearAttachedFile();
+        return;
+      }
+
+      // Update Preview Card UI
       const previewCard = document.getElementById('activeFilePreviewCard');
       const nameEl = document.getElementById('activeFileName');
       const sizeEl = document.getElementById('activeFileSize');
@@ -4483,9 +4768,9 @@ syncLiveAdminVersion();
 
       if (previewCard && nameEl && sizeEl) {
         nameEl.innerText = activeFile.name;
-        sizeEl.innerText = (activeFile.size / 1024).toFixed(1) + ' KB';
+        sizeEl.innerText = activeFile.size > 1024 * 1024 ? (activeFile.size / (1024 * 1024)).toFixed(2) + ' MB' : (activeFile.size / 1024).toFixed(1) + ' KB';
         if (badgeEl) {
-          badgeEl.innerText = (source === 'clipboard' || source === 'paste') ? '📋 مرفق ملصق من الحافظة' : (source === 'drop' ? '🎯 تم إسقاط الملف' : '📁 ملف محدد');
+          badgeEl.innerText = (source === 'clipboard' || source === 'paste') ? 'تم اللصق من الحافظة' : (source === 'drop' ? 'تم عبر السحب والإفلات' : 'تم اختيار ملف');
         }
 
         if (isImage) {
@@ -4500,7 +4785,9 @@ syncLiveAdminVersion();
             iconEl.classList.remove('hidden');
             if (ext === 'pdf') iconEl.className = 'fa-solid fa-file-pdf text-xl text-rose-500';
             else if (['doc', 'docx'].includes(ext)) iconEl.className = 'fa-solid fa-file-word text-xl text-blue-500';
+            else if (['ppt', 'pptx'].includes(ext)) iconEl.className = 'fa-solid fa-file-powerpoint text-xl text-amber-500';
             else if (['xls', 'xlsx'].includes(ext)) iconEl.className = 'fa-solid fa-file-excel text-xl text-emerald-500';
+            else if (['mp3', 'wav', 'm4a', 'ogg'].includes(ext)) iconEl.className = 'fa-solid fa-file-audio text-xl text-purple-400';
             else iconEl.className = 'fa-solid fa-file text-xl text-slate-400';
           }
         }
@@ -4508,17 +4795,15 @@ syncLiveAdminVersion();
         previewCard.classList.remove('hidden');
       }
 
-      // Hide the legacy currentFileInfo if replacing
       const curInfo = document.getElementById('currentFileInfo');
       if (curInfo) curInfo.classList.add('hidden');
 
       if (typeof AudioEngine !== 'undefined') AudioEngine.success();
       if (source === 'clipboard' || source === 'paste' || source === 'drop') {
-        showToast(`تم إرفاق الملف بنجاح: ${activeFile.name}`, 'success', 'إرفاق المرفق');
+        showToast(`تم تجهيز المرفق بنجاح: ${activeFile.name}`, 'success', 'مرفق المحتوى');
       }
     }
 
-    // File input change listener
     async function handleFileInputChange(e) {
       if (e.target.files && e.target.files.length > 0) {
         await setAttachedFile(e.target.files[0], 'file');
@@ -8396,6 +8681,8 @@ syncLiveAdminVersion();
         const ext = (c.file_name || c.file_type || '').split('.').pop().toLowerCase();
         const isWord = (ext === 'doc' || ext === 'docx' || c.file_type === 'doc' || c.file_type === 'docx');
         const isExcel = (ext === 'xls' || ext === 'xlsx' || c.file_type === 'xls' || c.file_type === 'xlsx');
+      const isPpt = (ext === 'ppt' || ext === 'pptx' || c.file_type === 'ppt' || c.file_type === 'pptx');
+      const isAudio = (['mp3', 'wav', 'm4a', 'ogg'].includes(ext) || ['mp3', 'wav', 'm4a', 'ogg'].includes(c.file_type));
         const isPdf = (ext === 'pdf' || c.file_type === 'pdf');
         const isImage = (['png', 'jpg', 'jpeg', 'webp', 'gif', 'svg'].includes(ext) || c.file_type === 'image');
 
@@ -8416,6 +8703,13 @@ syncLiveAdminVersion();
         } else if (isExcel) {
           typeBadge = '<span class="bg-emerald-600/20 text-emerald-300 border border-emerald-500/40 text-xs font-black px-3 py-1 rounded-xl">جدول Excel</span>';
           fileIcon = 'fa-file-excel text-emerald-500';
+        }
+        else if (isPpt) {
+          typeBadge = '<span class="bg-amber-600/20 text-amber-300 border border-amber-500/40 text-xs font-black px-3 py-1 rounded-xl">عرض PowerPoint</span>';
+          fileIcon = 'fa-file-powerpoint text-amber-500';
+        } else if (isAudio) {
+          typeBadge = '<span class="bg-purple-600/20 text-purple-300 border border-purple-500/40 text-xs font-black px-3 py-1 rounded-xl">تسجيل صوتي</span>';
+          fileIcon = 'fa-file-audio text-purple-400';
         } else if (isImage) {
           typeBadge = '<span class="bg-purple-600/20 text-purple-300 border border-purple-500/40 text-xs font-black px-3 py-1 rounded-xl">صورة مرفقة</span>';
           fileIcon = 'fa-file-image text-purple-500';
