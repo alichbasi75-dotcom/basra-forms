@@ -43,7 +43,7 @@
   <link rel="apple-touch-icon" href="/icon-192.png">
 
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>لوحة الإدارة - منظومة استمارات وتوجيهات البصرة v2.0.1</title>
 
   <!-- Tailwind CSS & Font Awesome -->
@@ -57,6 +57,42 @@
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 
   <style>
+
+    /* Prevent mobile horizontal shift and page overflow */
+    html, body {
+      overflow-x: hidden !important;
+      width: 100% !important;
+      max-width: 100vw !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      position: relative !important;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* Enforce full screen coverage on mobile for all modals & backdrops */
+    .fixed.inset-0,
+    #loginModal,
+    #contentModal,
+    #sheetModal,
+    #unifiedPreviewModal,
+    #deptModal,
+    #userModal,
+    #confirmModal,
+    #resetPassModal,
+    #changePasswordModal {
+      position: fixed !important;
+      top: 0 !important;
+      right: 0 !important;
+      bottom: 0 !important;
+      left: 0 !important;
+      width: 100vw !important;
+      max-width: 100vw !important;
+      min-height: 100vh !important;
+      min-height: 100dvh !important;
+      overflow-x: hidden !important;
+      box-sizing: border-box !important;
+    }
+
     /* ========================================================================== */
     /* 1. CSS Root Variables & Base Body Typography                               */
     /* ========================================================================== */
@@ -1803,6 +1839,42 @@
   </script>
 
 <style>
+
+    /* Prevent mobile horizontal shift and page overflow */
+    html, body {
+      overflow-x: hidden !important;
+      width: 100% !important;
+      max-width: 100vw !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      position: relative !important;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* Enforce full screen coverage on mobile for all modals & backdrops */
+    .fixed.inset-0,
+    #loginModal,
+    #contentModal,
+    #sheetModal,
+    #unifiedPreviewModal,
+    #deptModal,
+    #userModal,
+    #confirmModal,
+    #resetPassModal,
+    #changePasswordModal {
+      position: fixed !important;
+      top: 0 !important;
+      right: 0 !important;
+      bottom: 0 !important;
+      left: 0 !important;
+      width: 100vw !important;
+      max-width: 100vw !important;
+      min-height: 100vh !important;
+      min-height: 100dvh !important;
+      overflow-x: hidden !important;
+      box-sizing: border-box !important;
+    }
+
     /* =========================================================================
        DYNAMIC HIGH-CONTRAST DUAL-THEME ENGINE (100% VISIBILITY IN LIGHT & DARK)
        ========================================================================= */
@@ -2319,7 +2391,7 @@ syncLiveAdminVersion();
       </div>
 
       <!-- Current Logged In User Info & Navigation -->
-      <div id="userHeaderSection" class="flex items-center gap-3">
+      <div id="userHeaderSection" class="flex flex-wrap items-center gap-2 sm:gap-3">
         <!-- User Badge -->
         <div class="user-profile-badge flex items-center gap-2.5 px-3.5 py-1.5 rounded-2xl shadow-sm">
           <div class="user-profile-icon w-8 h-8 rounded-xl flex items-center justify-center text-sm font-black shrink-0">
@@ -2359,7 +2431,7 @@ syncLiveAdminVersion();
     </div>
 
     <!-- Admin Navigation Tabs -->
-    <div class="bg-slate-900 border-t border-slate-800 px-4 py-2">
+    <div class="bg-slate-900 border-t border-slate-800 px-2 sm:px-4 py-2 w-full max-w-full overflow-hidden">
       <div class="max-w-7xl mx-auto flex items-center justify-between gap-3 overflow-x-auto whitespace-nowrap custom-scrollbar">
         <div class="flex items-center gap-2">
           
@@ -2423,7 +2495,7 @@ syncLiveAdminVersion();
       <div id="storageQuotaWidget" style="display: none !important;" class="hidden"></div>
       <!-- Search and Filter Bar -->
       <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex flex-wrap items-center justify-between gap-4">
-        <div class="flex items-center gap-3 flex-1 min-w-[280px]">
+        <div class="flex flex-wrap sm:flex-nowrap items-center gap-2.5 flex-1 min-w-0 w-full sm:w-auto">
           <div class="relative flex-1">
             <i class="fa-solid fa-magnifying-glass absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
             <input type="text" id="adminSearchInput" oninput="filterAdminContents()" placeholder="بحث في العناوين والتعليمات والناشرين..." class="w-full bg-slate-800 border border-slate-700 rounded-xl pr-10 pl-4 py-2 text-xs text-white focus:outline-none focus:border-blue-500">
@@ -2864,7 +2936,7 @@ syncLiveAdminVersion();
   </div>
 
   <!-- Modal: Login (Locked by default - Must log in on every launch) -->
-  <div id="loginModal" class="fixed inset-0 z-50 bg-slate-950 flex items-center justify-center p-4">
+  <div id="loginModal" class="fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-sm flex items-center justify-center p-4 w-screen min-h-screen">
     <div class="bg-slate-900 border border-slate-700 w-full max-w-sm rounded-3xl shadow-2xl p-7 text-center">
       <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white text-2xl mx-auto mb-4 shadow-lg">
         <i class="fa-solid fa-lock"></i>
@@ -8442,6 +8514,42 @@ syncLiveAdminVersion();
           <meta charset="UTF-8">
           <title>لوحة الإدارة - منظومة استمارات وتوجيهات البصرة v2.0.1</title>
           <style>
+
+    /* Prevent mobile horizontal shift and page overflow */
+    html, body {
+      overflow-x: hidden !important;
+      width: 100% !important;
+      max-width: 100vw !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      position: relative !important;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* Enforce full screen coverage on mobile for all modals & backdrops */
+    .fixed.inset-0,
+    #loginModal,
+    #contentModal,
+    #sheetModal,
+    #unifiedPreviewModal,
+    #deptModal,
+    #userModal,
+    #confirmModal,
+    #resetPassModal,
+    #changePasswordModal {
+      position: fixed !important;
+      top: 0 !important;
+      right: 0 !important;
+      bottom: 0 !important;
+      left: 0 !important;
+      width: 100vw !important;
+      max-width: 100vw !important;
+      min-height: 100vh !important;
+      min-height: 100dvh !important;
+      overflow-x: hidden !important;
+      box-sizing: border-box !important;
+    }
+
             @page {
               size: ${printOrientation};
               margin: 0;
