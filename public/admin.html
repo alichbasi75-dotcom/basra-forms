@@ -2678,7 +2678,7 @@ syncLiveAdminVersion();
           
           <div class="flex items-center gap-2.5 flex-wrap">
             <div class="flex-1 min-w-[200px]">
-              <input type="file" id="contentFileInput" onchange="handleFileInputChange(event)" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.png,.jpg,.jpeg,.webp,.mp3,.wav,.m4a,.ogg" class="block w-full text-xs text-slate-400 file:mr-0 file:ml-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-500 cursor-pointer">
+              <input type="file" id="contentFileInput" onchange="handleFileInputChange(event)" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.png,.jpg,.jpeg,.webp,.mp3,.wav,.m4a,.ogg,.opus,.aac,.webm,.amr" class="block w-full text-xs text-slate-400 file:mr-0 file:ml-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-500 cursor-pointer">
             </div>
             <button type="button" onclick="pasteAttachmentFromClipboard()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs px-3.5 py-2.5 rounded-xl flex items-center gap-2 transition-all shadow-md active:scale-95 cursor-pointer shrink-0" title="لصق صورة أو ملف من الحافظة أو عبر لقطة الشاشة">
               <i class="fa-solid fa-paste text-amber-300"></i>
@@ -4111,7 +4111,7 @@ syncLiveAdminVersion();
       const isWord = (ext === 'doc' || ext === 'docx' || c.file_type === 'doc' || c.file_type === 'docx');
       const isExcel = (ext === 'xls' || ext === 'xlsx' || c.file_type === 'xls' || c.file_type === 'xlsx');
       const isPpt = (ext === 'ppt' || ext === 'pptx' || c.file_type === 'ppt' || c.file_type === 'pptx');
-      const isAudio = (['mp3', 'wav', 'm4a', 'ogg'].includes(ext) || ['mp3', 'wav', 'm4a', 'ogg'].includes(c.file_type));
+      const isAudio = (['mp3', 'wav', 'm4a', 'ogg', 'opus', 'aac', 'webm', 'amr'].includes(ext) || ['mp3', 'wav', 'm4a', 'ogg', 'opus', 'aac', 'webm', 'amr'].includes(c.file_type));
 
       let fIcon = 'fa-file-lines';
       let fTileBg = 'bg-blue-100 text-blue-900 border-blue-300';
@@ -4787,7 +4787,7 @@ syncLiveAdminVersion();
             else if (['doc', 'docx'].includes(ext)) iconEl.className = 'fa-solid fa-file-word text-xl text-blue-500';
             else if (['ppt', 'pptx'].includes(ext)) iconEl.className = 'fa-solid fa-file-powerpoint text-xl text-amber-500';
             else if (['xls', 'xlsx'].includes(ext)) iconEl.className = 'fa-solid fa-file-excel text-xl text-emerald-500';
-            else if (['mp3', 'wav', 'm4a', 'ogg'].includes(ext)) iconEl.className = 'fa-solid fa-file-audio text-xl text-purple-400';
+            else if (['mp3', 'wav', 'm4a', 'ogg', 'opus', 'aac', 'webm', 'amr'].includes(ext)) iconEl.className = 'fa-solid fa-file-audio text-xl text-purple-400';
             else iconEl.className = 'fa-solid fa-file text-xl text-slate-400';
           }
         }
@@ -5211,10 +5211,10 @@ syncLiveAdminVersion();
           fileType = ext;
 
           // تحقق أمني صارم: حظر رفع الملفات التنفيذية والبرمجية المشبوهة
-          const ALLOWED_EXTS = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'png', 'jpg', 'jpeg', 'bmp', 'tiff', 'txt'];
+          const ALLOWED_EXTS = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'png', 'jpg', 'jpeg', 'bmp', 'tiff', 'txt', 'webp', 'opus', 'ogg', 'mp3', 'wav', 'm4a', 'aac', 'webm', 'amr'];
           if (!ALLOWED_EXTS.includes(ext)) {
             AudioEngine.error();
-            showToast('نوع الملف المرفق غير مسموح به لأسباب أمنية. يسمح فقط بمستندات Office و PDF والصور.', 'error', 'ملف غير مصرح');
+            showToast('نوع الملف المرفق غير مسموح به لأسباب أمنية. يسمح بمستندات Office و PDF والصور والتسجيلات الصوتية.', 'error', 'ملف غير مصرح');
             saveBtn.disabled = false;
             saveBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> حفظ ونشر في المنظومة';
             return;
@@ -7574,6 +7574,7 @@ syncLiveAdminVersion();
       const isOffice = ['docx', 'doc', 'xlsx', 'xls'].includes(ext) || f.file_type === 'doc' || f.file_type === 'docx' || f.file_type === 'xls' || f.file_type === 'xlsx';
       const isPdf = ext === 'pdf' || f.file_type === 'pdf';
       const isImg = ['png', 'jpg', 'jpeg', 'webp', 'gif', 'svg'].includes(ext) || f.file_type === 'image';
+      const isAudio = ['mp3', 'wav', 'm4a', 'ogg', 'opus', 'aac', 'webm', 'amr'].includes(ext) || f.file_type === 'audio';
       const hasActualUploadedFile = Boolean((f.file_url && f.file_url.trim() && f.file_type !== 'text_only') || (f.file_name && f.file_name.trim() && f.file_type !== 'text_only'));
       const hasBodyText = Boolean(f.body_text && f.body_text.trim());
 
@@ -7617,6 +7618,39 @@ syncLiveAdminVersion();
 
       const scrollArea = document.getElementById('sheetScrollArea');
       if (!scrollArea) return;
+
+      if (isAudio && activeForm.fileUrl) {
+        if (addBoxBtn) addBoxBtn.classList.add('hidden');
+        if (boxesCountWrap) boxesCountWrap.classList.add('hidden');
+        if (tipIcon) tipIcon.className = 'fa-solid fa-volume-high text-purple-500';
+        if (tipText) tipText.innerText = 'تشغيل البصمة أو التسجيل الصوتي المرفق.';
+        const bodyTextHtml = activeForm.body_text ? `
+          <div class="mt-6 p-4 rounded-2xl bg-slate-800/90 border border-slate-700/80 text-right w-full">
+            <h4 class="text-xs font-bold text-slate-400 mb-2">نص التعليمات والشرح المرافق:</h4>
+            <p class="text-sm text-slate-200 leading-relaxed whitespace-pre-wrap">${escapeHtml(activeForm.body_text)}</p>
+          </div>
+        ` : '';
+        scrollArea.innerHTML = `
+          <div class="flex flex-col items-center justify-center p-6 sm:p-8 bg-slate-900/90 rounded-3xl border border-purple-500/40 shadow-2xl max-w-xl mx-auto my-8 text-center text-white">
+            <div class="w-20 h-20 rounded-full bg-gradient-to-tr from-purple-600 to-indigo-600 flex items-center justify-center text-white text-3xl mb-4 shadow-lg shadow-purple-500/30 animate-pulse">
+              <i class="fa-solid fa-microphone-lines"></i>
+            </div>
+            <h3 class="text-lg font-black text-white mb-1">تسجيل / بصمة صوتية</h3>
+            <p class="text-xs text-purple-300 font-semibold mb-6 px-3 py-1 rounded-full bg-purple-950/60 border border-purple-800/50">${escapeHtml(activeForm.originalName || 'بصمة صوتية')}</p>
+            <audio controls autoplay class="w-full rounded-xl shadow-md mb-4 bg-slate-800" src="${activeForm.fileUrl}">
+              متصفحك لا يدعم تشغيل هذا الملف الصوتي مباشرة.
+            </audio>
+            <div class="flex items-center gap-3">
+              <a href="${activeForm.fileUrl}" download="${escapeHtml(activeForm.originalName || 'voice_note.opus')}" class="px-5 py-2.5 bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs rounded-xl flex items-center gap-2 transition-all shadow">
+                <i class="fa-solid fa-download"></i>
+                <span>تنزيل البصمة الصوتية</span>
+              </a>
+            </div>
+            ${bodyTextHtml}
+          </div>
+        `;
+        return;
+      }
 
       scrollArea.innerHTML = `
         <div class="flex flex-col items-center justify-center py-28 text-slate-700 gap-3">
@@ -8682,7 +8716,7 @@ syncLiveAdminVersion();
         const isWord = (ext === 'doc' || ext === 'docx' || c.file_type === 'doc' || c.file_type === 'docx');
         const isExcel = (ext === 'xls' || ext === 'xlsx' || c.file_type === 'xls' || c.file_type === 'xlsx');
       const isPpt = (ext === 'ppt' || ext === 'pptx' || c.file_type === 'ppt' || c.file_type === 'pptx');
-      const isAudio = (['mp3', 'wav', 'm4a', 'ogg'].includes(ext) || ['mp3', 'wav', 'm4a', 'ogg'].includes(c.file_type));
+      const isAudio = (['mp3', 'wav', 'm4a', 'ogg', 'opus', 'aac', 'webm', 'amr'].includes(ext) || ['mp3', 'wav', 'm4a', 'ogg', 'opus', 'aac', 'webm', 'amr'].includes(c.file_type));
         const isPdf = (ext === 'pdf' || c.file_type === 'pdf');
         const isImage = (['png', 'jpg', 'jpeg', 'webp', 'gif', 'svg'].includes(ext) || c.file_type === 'image');
 

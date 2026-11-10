@@ -3390,7 +3390,7 @@
         const isWord = (ext === 'doc' || ext === 'docx' || c.file_type === 'doc' || c.file_type === 'docx');
         const isExcel = (ext === 'xls' || ext === 'xlsx' || c.file_type === 'xls' || c.file_type === 'xlsx');
       const isPpt = (ext === 'ppt' || ext === 'pptx' || c.file_type === 'ppt' || c.file_type === 'pptx');
-      const isAudio = (['mp3', 'wav', 'm4a', 'ogg'].includes(ext) || ['mp3', 'wav', 'm4a', 'ogg'].includes(c.file_type));
+      const isAudio = (['mp3', 'wav', 'm4a', 'ogg', 'opus', 'aac', 'webm', 'amr'].includes(ext) || ['mp3', 'wav', 'm4a', 'ogg', 'opus', 'aac', 'webm', 'amr'].includes(c.file_type));
 
         let fIcon = 'fa-file-lines';
         let fTileBg = 'bg-blue-100 text-blue-900 border-blue-300';
@@ -3627,7 +3627,7 @@
         const isWord = (ext === 'doc' || ext === 'docx' || f.file_type === 'doc' || f.file_type === 'docx');
         const isExcel = (ext === 'xls' || ext === 'xlsx' || f.file_type === 'xls' || f.file_type === 'xlsx');
         const isPpt = (ext === 'ppt' || ext === 'pptx' || f.file_type === 'ppt' || f.file_type === 'pptx');
-        const isAudio = (['mp3', 'wav', 'm4a', 'ogg'].includes(ext) || ['mp3', 'wav', 'm4a', 'ogg'].includes(f.file_type));
+        const isAudio = (['mp3', 'wav', 'm4a', 'ogg', 'opus', 'aac', 'webm', 'amr'].includes(ext) || ['mp3', 'wav', 'm4a', 'ogg', 'opus', 'aac', 'webm', 'amr'].includes(f.file_type));
         const isPdf = (ext === 'pdf' || f.file_type === 'pdf');
         const isImage = (['png', 'jpg', 'jpeg', 'webp', 'gif', 'svg'].includes(ext) || f.file_type === 'image');
 
@@ -5174,6 +5174,7 @@
       const isOffice = ['docx', 'doc', 'xlsx', 'xls'].includes(ext) || f.file_type === 'doc' || f.file_type === 'docx' || f.file_type === 'xls' || f.file_type === 'xlsx';
       const isPdf = ext === 'pdf' || f.file_type === 'pdf';
       const isImg = ['png', 'jpg', 'jpeg', 'webp', 'gif', 'svg'].includes(ext) || f.file_type === 'image';
+      const isAudio = ['mp3', 'wav', 'm4a', 'ogg', 'opus', 'aac', 'webm', 'amr'].includes(ext) || f.file_type === 'audio';
       const hasActualUploadedFile = Boolean((f.file_url && f.file_url.trim() && f.file_type !== 'text_only') || (f.file_name && f.file_name.trim() && f.file_type !== 'text_only'));
       const hasBodyText = Boolean(f.body_text && f.body_text.trim());
 
@@ -5217,6 +5218,39 @@
 
       const scrollArea = document.getElementById('sheetScrollArea');
       if (!scrollArea) return;
+
+      if (isAudio && activeForm.fileUrl) {
+        if (addBoxBtn) addBoxBtn.classList.add('hidden');
+        if (boxesCountWrap) boxesCountWrap.classList.add('hidden');
+        if (tipIcon) tipIcon.className = 'fa-solid fa-volume-high text-purple-500';
+        if (tipText) tipText.innerText = 'تشغيل البصمة أو التسجيل الصوتي المرفق.';
+        const bodyTextHtml = activeForm.body_text ? `
+          <div class="mt-6 p-4 rounded-2xl bg-slate-800/90 border border-slate-700/80 text-right w-full">
+            <h4 class="text-xs font-bold text-slate-400 mb-2">نص التعليمات والشرح المرافق:</h4>
+            <p class="text-sm text-slate-200 leading-relaxed whitespace-pre-wrap">${escapeHtml(activeForm.body_text)}</p>
+          </div>
+        ` : '';
+        scrollArea.innerHTML = `
+          <div class="flex flex-col items-center justify-center p-6 sm:p-8 bg-slate-900/90 rounded-3xl border border-purple-500/40 shadow-2xl max-w-xl mx-auto my-8 text-center text-white">
+            <div class="w-20 h-20 rounded-full bg-gradient-to-tr from-purple-600 to-indigo-600 flex items-center justify-center text-white text-3xl mb-4 shadow-lg shadow-purple-500/30 animate-pulse">
+              <i class="fa-solid fa-microphone-lines"></i>
+            </div>
+            <h3 class="text-lg font-black text-white mb-1">تسجيل / بصمة صوتية</h3>
+            <p class="text-xs text-purple-300 font-semibold mb-6 px-3 py-1 rounded-full bg-purple-950/60 border border-purple-800/50">${escapeHtml(activeForm.originalName || 'بصمة صوتية')}</p>
+            <audio controls autoplay class="w-full rounded-xl shadow-md mb-4 bg-slate-800" src="${activeForm.fileUrl}">
+              متصفحك لا يدعم تشغيل هذا الملف الصوتي مباشرة.
+            </audio>
+            <div class="flex items-center gap-3">
+              <a href="${activeForm.fileUrl}" download="${escapeHtml(activeForm.originalName || 'voice_note.opus')}" class="px-5 py-2.5 bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs rounded-xl flex items-center gap-2 transition-all shadow">
+                <i class="fa-solid fa-download"></i>
+                <span>تنزيل البصمة الصوتية</span>
+              </a>
+            </div>
+            ${bodyTextHtml}
+          </div>
+        `;
+        return;
+      }
 
       scrollArea.innerHTML = `
         <div class="flex flex-col items-center justify-center py-28 text-slate-700 gap-3">
