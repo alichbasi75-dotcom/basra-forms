@@ -3207,7 +3207,7 @@
       // في حال كان المنشور نصياً بدون ملف مرفق، نقوم بتنزيل نص التوجيهات كملف نصي رسمي
       if (!item.file_url) {
         try {
-          const contentText = `مفوضية الانتخابات - مكتب انتخابات البصرة\nالشعبة المصدرة: ${item.department_name || 'الشعبة العامة'}\nالمسؤول: ${item.updated_by_name || 'مسؤول الشعبة'}\nالعنوان: ${item.title || 'بدون عنوان'}\nالتصنيف: ${item.category_name || 'عام'}\nتاريخ النشر: ${item.created_at ? new Date(item.created_at).toLocaleDateString('ar-IQ') : ''}\n\nنص التوجيهات والتعليمات:\n----------------------------------------\n${item.body_text || 'لا يوجد نص توجيهات'}\n`;
+          const contentText = `مفوضية الانتخابات - مكتب انتخابات البصرة\nالشعبة المصدرة: ${item.department_name || 'الشعبة العامة'}\nالمسؤول: ${item.updated_by_name || 'مسؤول الشعبة'}\nالعنوان: ${item.title || 'بدون عنوان'}\nالتصنيف: ${item.category_name || 'عام'}\nتاريخ النشر: ${item.created_at ? new Date(item.created_at).toLocaleDateString('ar-IQ') : ''}\n\nنص التوجيهات والتعليمات:\n----------------------------------------\n${stripAttachmentTags(item.body_text) || 'لا يوجد نص توجيهات'}\n`;
           const blob = new Blob([contentText], { type: 'text/plain;charset=utf-8' });
           const url = URL.createObjectURL(blob);
           const safeTitle = (item.title || 'توجيهات_مكتب_انتخابات_البصرة').replace(/[\\/:*?"<>|]/g, '_');
@@ -3560,14 +3560,34 @@
          * @param {Array} items - مصفوفة العناصر المصفاة للعرض
          */
         
+    function stripAttachmentTags(text) {
+      if (!text) return '';
+      return String(text).replace(/<!--AGY_ATTACHMENTS:.*?-->/gs, '').trim();
+    }
+
+    function resolveAttachmentExt(typeOrExt, fileName) {
+      let ext = String(typeOrExt || '').trim().toLowerCase();
+      if (ext.includes('/')) {
+        if (ext === 'application/pdf') ext = 'pdf';
+        else if (ext.startsWith('image/')) ext = ext.split('/')[1].split('+')[0];
+        else if (ext.startsWith('audio/')) ext = ext.split('/')[1].split(';')[0];
+      }
+      const nameStr = String(fileName || '').trim();
+      const nameExt = nameStr.includes('.') ? nameStr.split('.').pop().trim().toLowerCase() : '';
+      if (!ext || ['bin', 'file', 'document', 'other', 'image', 'audio', 'office'].includes(ext)) {
+        if (nameExt) return nameExt;
+      }
+      return ext || nameExt || 'bin';
+    }
+
     function extractItemAttachments(item) {
       if (!item) return { attachments: [], cleanBody: '' };
       const body = item.body_text || '';
+      const cleanBody = stripAttachmentTags(body);
       const match = body.match(/<!--AGY_ATTACHMENTS:(.*?)-->/s);
       if (match) {
         try {
           const attList = JSON.parse(match[1]);
-          const cleanBody = body.replace(/<!--AGY_ATTACHMENTS:.*?-->/s, '').trim();
           if (Array.isArray(attList) && attList.length > 0) {
             return { attachments: attList, cleanBody: cleanBody };
           }
@@ -3583,21 +3603,88 @@
             type: item.file_type || 'bin',
             size: item.file_size || ''
           }],
-          cleanBody: body
+          cleanBody: cleanBody
         };
       }
-      return { attachments: [], cleanBody: body };
+      return { attachments: [], cleanBody: cleanBody };
     }
 
     function getAttachmentFileIcon(ext) {
       ext = (ext || '').toLowerCase();
-      if (ext === 'pdf') return { icon: 'fa-file-pdf', color: 'text-rose-500', bg: 'bg-rose-500/10 border-rose-500/30' };
-      if (['doc', 'docx'].includes(ext)) return { icon: 'fa-file-word', color: 'text-blue-500', bg: 'bg-blue-500/10 border-blue-500/30' };
-      if (['xls', 'xlsx'].includes(ext)) return { icon: 'fa-file-excel', color: 'text-emerald-500', bg: 'bg-emerald-500/10 border-emerald-500/30' };
-      if (['ppt', 'pptx'].includes(ext)) return { icon: 'fa-file-powerpoint', color: 'text-amber-500', bg: 'bg-amber-500/10 border-amber-500/30' };
-      if (['mp3', 'wav', 'm4a', 'ogg', 'opus', 'aac', 'webm', 'amr'].includes(ext)) return { icon: 'fa-file-audio', color: 'text-purple-400', bg: 'bg-purple-500/10 border-purple-500/30' };
-      if (['png', 'jpg', 'jpeg', 'webp', 'gif', 'bmp', 'svg'].includes(ext)) return { icon: 'fa-file-image', color: 'text-purple-400', bg: 'bg-purple-500/10 border-purple-500/30' };
-      return { icon: 'fa-file', color: 'text-slate-400', bg: 'bg-slate-700/50 border-slate-600/40' };
+      if (ext === 'pdf') return { icon: 'fa-file-pdf', color: 'text-rose-500', bg: 'bg-rose-500/15 border-rose-500/35', label: 'مستند PDF', badgeClass: 'bg-rose-600 text-white border-rose-500' };
+      if (['doc', 'docx', 'word'].includes(ext)) return { icon: 'fa-file-word', color: 'text-blue-500', bg: 'bg-blue-500/15 border-blue-500/35', label: 'مستند Word', badgeClass: 'bg-blue-600 text-white border-blue-500' };
+      if (['xls', 'xlsx', 'excel'].includes(ext)) return { icon: 'fa-file-excel', color: 'text-emerald-500', bg: 'bg-emerald-500/15 border-emerald-500/35', label: 'ملف Excel', badgeClass: 'bg-emerald-600 text-white border-emerald-500' };
+      if (['ppt', 'pptx', 'powerpoint'].includes(ext)) return { icon: 'fa-file-powerpoint', color: 'text-amber-500', bg: 'bg-amber-500/15 border-amber-500/35', label: 'عرض تقديمي', badgeClass: 'bg-amber-600 text-white border-amber-500' };
+      if (['mp3', 'wav', 'm4a', 'ogg', 'opus', 'aac', 'webm', 'amr', 'audio'].includes(ext)) return { icon: 'fa-file-audio', color: 'text-purple-500', bg: 'bg-purple-500/15 border-purple-500/35', label: 'ملف صوتي', badgeClass: 'bg-purple-600 text-white border-purple-500' };
+      if (['png', 'jpg', 'jpeg', 'webp', 'gif', 'bmp', 'svg', 'image'].includes(ext)) return { icon: 'fa-file-image', color: 'text-purple-500', bg: 'bg-purple-500/15 border-purple-500/35', label: 'صورة مرفقة', badgeClass: 'bg-purple-600 text-white border-purple-500' };
+      return { icon: 'fa-file', color: 'text-slate-400', bg: 'bg-slate-600/20 border-slate-500/40', label: 'ملف مرفق', badgeClass: 'bg-slate-600 text-white border-slate-500' };
+    }
+
+    function renderGridAttachmentsHtml(itemId, itemTitle, attachments) {
+      if (!Array.isArray(attachments) || attachments.length === 0) return '';
+      const safeId = escapeHtml(String(itemId || ''));
+      const safeTitle = escapeHtml(itemTitle || 'مرفق');
+      const imgHeightClass = attachments.length > 1 ? 'h-32' : 'h-36';
+      const itemsHtml = attachments.map((att, idx) => {
+        const ext = resolveAttachmentExt(att.type, att.name);
+        const rawType = String(att.type || '').toLowerCase();
+        const isImg = ['png', 'jpg', 'jpeg', 'webp', 'gif', 'bmp', 'svg'].includes(ext) || rawType === 'image';
+        const safeName = escapeHtml(att.name || (isImg ? 'صورة مرفقة' : 'ملف مرفق'));
+        const safeUrl = escapeHtml(att.url || '');
+        const attNumBadge = attachments.length > 1
+          ? `<span class="text-[10px] font-black px-1.5 py-0.5 rounded bg-slate-800/80 text-white border border-slate-500/40 shrink-0">مرفق ${idx + 1}</span>`
+          : '';
+        if (isImg && safeUrl) {
+          return `
+            <div onclick="event.stopPropagation(); openSheetModal('${safeId}', 'attachment', ${idx})" role="button" tabindex="0"
+                 class="rounded-xl overflow-hidden border border-slate-500/30 hover:border-blue-500 ${imgHeightClass} bg-slate-900/10 cursor-pointer relative group shadow-sm transition-all">
+              <img src="${safeUrl}" alt="${safeName || safeTitle}" loading="lazy"
+                   onerror="this.onerror=null; const fb=this.closest('[role=button]')?.querySelector('.att-img-fallback'); if(fb) fb.classList.remove('hidden'); this.classList.add('hidden');"
+                   class="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-300">
+              <div class="att-img-fallback hidden w-full h-full flex flex-col items-center justify-center gap-1 p-3 text-slate-400">
+                <i class="fa-solid fa-image text-2xl"></i>
+                <span class="text-[11px] font-bold truncate max-w-full">${safeName}</span>
+              </div>
+              <div class="absolute inset-0 bg-gradient-to-t from-slate-900/85 via-slate-900/15 to-transparent flex items-end justify-between p-2 gap-2">
+                <div class="flex items-center gap-1.5 min-w-0">
+                  ${attNumBadge}
+                  <span class="text-[10px] font-bold text-white truncate drop-shadow">${safeName}</span>
+                </div>
+                <span class="shrink-0 text-[10px] font-black text-white bg-purple-600/95 px-2 py-0.5 rounded-full flex items-center gap-1 shadow">
+                  <i class="fa-solid fa-eye"></i> معاينة الصورة
+                </span>
+              </div>
+            </div>`;
+        }
+        const iconInfo = getAttachmentFileIcon(ext);
+        const sizeBadge = att.size ? `<span class="text-[10px] font-bold opacity-75 shrink-0" dir="ltr">${escapeHtml(att.size)}</span>` : '';
+        return `
+          <div onclick="event.stopPropagation(); openSheetModal('${safeId}', 'attachment', ${idx})" role="button" tabindex="0"
+               class="attachment-box-table group cursor-pointer rounded-xl border border-slate-500/30 hover:border-blue-500 p-2.5 flex items-center justify-between gap-2.5 shadow-sm hover:shadow-md transition-all">
+            <div class="flex items-center gap-2.5 min-w-0 flex-1">
+              <div class="w-10 h-10 rounded-xl border flex items-center justify-center shrink-0 ${iconInfo.bg} group-hover:scale-105 transition-transform">
+                <i class="fa-solid ${iconInfo.icon} ${iconInfo.color} text-lg"></i>
+              </div>
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center gap-1.5 flex-wrap mb-1">
+                  ${attNumBadge}
+                  <span class="text-[10px] font-black px-2 py-0.5 rounded-md border ${iconInfo.badgeClass}">${iconInfo.label}</span>
+                  ${sizeBadge}
+                </div>
+                <p class="text-xs font-extrabold truncate" title="${safeName}">${safeName}</p>
+                <p class="text-[10px] font-bold text-blue-500 flex items-center gap-1 mt-0.5">
+                  <i class="fa-solid fa-hand-pointer text-[9px]"></i>
+                  <span>اضغط للعرض والخيارات</span>
+                </p>
+              </div>
+            </div>
+            <div class="shrink-0 bg-blue-600 group-hover:bg-blue-500 text-white text-[11px] font-black px-2.5 py-1.5 rounded-lg flex items-center gap-1 shadow-sm transition-colors">
+              <i class="fa-solid fa-eye"></i>
+              <span class="hidden sm:inline">عرض</span>
+            </div>
+          </div>`;
+      }).join('');
+      return `<div class="space-y-2 mb-3">${itemsHtml}</div>`;
     }
 
     function renderTableView(items) {
@@ -3913,67 +4000,7 @@
           fileIcon = 'fa-file-lines text-blue-500';
         }
 
-        let mediaBannerHtml = '';
-        if (attachments.length === 1) {
-          const singleAtt = attachments[0];
-          const singleExt = (singleAtt.name || singleAtt.type || '').split('.').pop().toLowerCase();
-          const singleIsImage = ['png', 'jpg', 'jpeg', 'webp', 'gif', 'svg'].includes(singleExt);
-          const singleStyle = getAttachmentFileIcon(singleExt);
-
-          if (singleIsImage && singleAtt.url) {
-            mediaBannerHtml = `
-              <div onclick="openSheetModal(\'${f.id}\', \'attachment\', 0)" class="relative group cursor-pointer overflow-hidden rounded-xl border border-slate-700/70 mb-3 bg-slate-900 h-28 mb-2.5 flex items-center justify-center shadow-inner" title="اضغط لمعاينة وتكبير وتحميل الصورة">
-                <img src="${singleAtt.url}" alt="${escapeHtml(f.title)}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
-                <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 text-white text-xs font-black backdrop-blur-[2px]">
-                  <i class="fa-solid fa-magnifying-glass-plus text-base text-amber-300"></i>
-                  <span>معاينة وتكبير وتحميل</span>
-                </div>
-              </div>
-            `;
-          } else {
-            mediaBannerHtml = `
-              <div onclick="openSheetModal(\'${f.id}\', \'attachment\', 0)" class="cursor-pointer rounded-xl border border-slate-700/70 bg-slate-800/40 p-2 mb-2 flex items-center gap-3 hover:border-blue-500 transition-all shadow-sm group" title="اضغط لفتح الملف، المعاينة، الطباعة، أو التنزيل">
-                <div class="w-10 h-10 rounded-lg ${singleStyle.bg} border flex items-center justify-center text-lg font-black shrink-0 shadow-sm group-hover:scale-105 transition-transform">
-                  <i class="fa-solid ${singleStyle.icon} ${singleStyle.color}"></i>
-                </div>
-                <div class="min-w-0 flex-1">
-                  <div class="text-xs font-black text-slate-100 truncate group-hover:text-blue-400 transition-colors">${escapeHtml(singleAtt.name || 'ملف مرفق')}</div>
-                  <div class="text-[10px] text-slate-400 font-bold">${singleAtt.size || 'مرفق رسمي'} • اضغط للعرض والخيارات</div>
-                </div>
-                <i class="fa-regular fa-eye text-blue-400 text-sm group-hover:scale-110 transition-transform"></i>
-              </div>
-            `;
-          }
-        } else if (attachments.length > 1) {
-          mediaBannerHtml = `
-            <div class="rounded-xl border border-slate-700/70 bg-slate-800/50 p-2.5 mb-2.5 flex flex-col gap-1.5 shadow-sm">
-              <div class="flex items-center justify-between text-[11px] font-black text-indigo-300 pb-1 border-b border-slate-700/50">
-                <span class="flex items-center gap-1.5"><i class="fa-solid fa-paperclip text-indigo-400"></i> ${attachments.length} مرفقات متاحة:</span>
-              </div>
-              <div class="flex flex-col gap-1.5 max-h-40 overflow-y-auto custom-scrollbar pr-0.5">
-                ${attachments.map((att, aIdx) => {
-                  const aExt = (att.name || att.type || '').split('.').pop().toLowerCase();
-                  const aStyle = getAttachmentFileIcon(aExt);
-                  return `
-                    <div onclick="openSheetModal('${f.id}', 'attachment', ${aIdx})"
-                      class="cursor-pointer rounded-lg border border-slate-700/60 bg-slate-900/80 p-1.5 flex items-center gap-2 hover:border-blue-500 hover:bg-slate-800 transition-all group"
-                      title="اضغط لفتح الملف: ${escapeHtml(att.name)}">
-                      <div class="w-7 h-7 rounded ${aStyle.bg} border flex items-center justify-center text-xs font-black shrink-0 group-hover:scale-105 transition-transform">
-                        <i class="fa-solid ${aStyle.icon} ${aStyle.color}"></i>
-                      </div>
-                      <div class="min-w-0 flex-1">
-                        <div class="text-xs font-black text-slate-100 truncate group-hover:text-blue-400 transition-colors">${escapeHtml(att.name)}</div>
-                        <div class="text-[9px] text-slate-400 font-semibold">${att.size || ''}</div>
-                      </div>
-                      <i class="fa-regular fa-eye text-blue-400 text-xs group-hover:scale-110 transition-transform"></i>
-                    </div>
-                  `;
-                }).join('')}
-              </div>
-            </div>
-          `;
-        }
-
+        const mediaBannerHtml = renderGridAttachmentsHtml(f.id, f.title, attachments);
         return `
           <div class="content-card bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg flex flex-col justify-between transition-all hover:border-slate-700">
             <div>
@@ -4048,6 +4075,7 @@
     // OPTION 3: EXPANDABLE TEXT & RICH INSTRUCTION VIEWER
     // =========================================================================
     function formatBodyTextWithClickableLinks(text) {
+      text = stripAttachmentTags(text);
       if (!text) return '';
       const escaped = escapeHtml(text);
       const urlRegex = /(https?:\/\/[^\s<]+[^<.,:;"')\]\s])/g;
@@ -4084,11 +4112,12 @@
      * نسخ نص التوجيه المعروض بالكامل إلى الحافظة مع إشعار صوتي ومرئي
      */
     function copyUnifiedBodyText() {
-      if (!currentUnifiedItem || !currentUnifiedItem.body_text) {
+      const cleanCopyText = stripAttachmentTags(currentUnifiedItem && currentUnifiedItem.body_text);
+      if (!currentUnifiedItem || !cleanCopyText) {
         if (typeof showToast === 'function') showToast('لا يوجد نص لنسخه.', 'warning', 'تنبيه');
         return;
       }
-      navigator.clipboard.writeText(currentUnifiedItem.body_text).then(() => {
+      navigator.clipboard.writeText(cleanCopyText).then(() => {
         const btnLabel = document.getElementById('btnCopyBodyTextLabel');
         if (btnLabel) {
           const old = btnLabel.innerText;
@@ -4494,7 +4523,8 @@
       }
 
       const { deptName, officerName } = getOfficerAndDeptName(item);
-      const hasBodyText = Boolean(item.body_text && item.body_text.trim());
+      const cleanPrintBody = stripAttachmentTags(item.body_text);
+      const hasBodyText = Boolean(cleanPrintBody);
 
       // التنبيه بعدم وجود نص وإلغاء أمر الطباعة في حال خلو المنشور من المحتوى النصي
       if (!hasBodyText) {
@@ -4550,7 +4580,7 @@
 
           <!-- نص التعليمات والشرح والتوجيهات الكامل -->
           <div style="border: 1px solid #cbd5e1; border-radius: 8px; padding: 20px 24px; font-size: 14px; line-height: 2.1; color: #0f172a; white-space: pre-wrap; background: #ffffff; min-height: 240px;">
-            ${escapeHtml(item.body_text)}
+            ${escapeHtml(cleanPrintBody)}
           </div>
 
           <!-- تذييل وثيقة إلكترونية -->
@@ -5550,23 +5580,28 @@
         selectedAtt = attachments[attIndex] || attachments[0];
       }
 
-      const ext = selectedAtt ? ((selectedAtt.name || selectedAtt.type || '').split('.').pop().toLowerCase()) : ((f.file_name || f.file_type || '').split('.').pop().toLowerCase());
-      const isOffice = ['docx', 'doc', 'xlsx', 'xls', 'ppt', 'pptx'].includes(ext) || f.file_type === 'doc' || f.file_type === 'docx' || f.file_type === 'xls' || f.file_type === 'xlsx' || f.file_type === 'ppt' || f.file_type === 'pptx';
-      const isPdf = ext === 'pdf' || f.file_type === 'pdf';
-      const isImg = ['png', 'jpg', 'jpeg', 'webp', 'gif', 'svg', 'bmp'].includes(ext) || f.file_type === 'image';
-      const isAudio = ['mp3', 'wav', 'm4a', 'ogg', 'opus', 'aac', 'webm', 'amr'].includes(ext) || f.file_type === 'audio';
-
       const fileUrl = selectedAtt ? selectedAtt.url : f.file_url;
       const fileName = selectedAtt ? selectedAtt.name : f.file_name;
+      const rawType = String(selectedAtt ? (selectedAtt.type || '') : (f.file_type || '')).toLowerCase();
+      const ext = resolveAttachmentExt(rawType, fileName);
+      const isOffice = ['docx', 'doc', 'xlsx', 'xls', 'ppt', 'pptx'].includes(ext) || ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'word', 'excel', 'powerpoint', 'office'].includes(rawType);
+      const isPdf = ext === 'pdf' || rawType === 'pdf';
+      const isImg = ['png', 'jpg', 'jpeg', 'webp', 'gif', 'svg', 'bmp'].includes(ext) || rawType === 'image';
+      const isAudio = ['mp3', 'wav', 'm4a', 'ogg', 'opus', 'aac', 'webm', 'amr'].includes(ext) || rawType === 'audio';
+      const cleanedBodyText = stripAttachmentTags(f.body_text);
 
       activeForm = {
         ...f,
+        body_text: cleanedBodyText,
         id: f.id,
         title: f.title || fileName || 'توجيهات ونماذج',
+        file_url: fileUrl || '',
+        file_name: fileName || '',
+        file_type: shouldRenderText ? 'pdf' : (ext || rawType),
         fileName: fileName || `${(f.title || 'مستند').replace(/[\/\\?%*:|"<>]/g, '_')}.pdf`,
         originalName: fileName || `${(f.title || 'مستند').replace(/[\/\\?%*:|"<>]/g, '_')}.pdf`,
-        fileType: shouldRenderText ? 'pdf' : (ext || f.file_type),
-        fileUrl: (typeof getDocumentAccessUrl === 'function' && fileUrl) ? getDocumentAccessUrl({ ...f, file_url: fileUrl }) : (fileUrl || ''),
+        fileType: shouldRenderText ? 'pdf' : (ext || rawType),
+        fileUrl: (typeof getDocumentAccessUrl === 'function' && fileUrl) ? getDocumentAccessUrl({ ...f, file_url: fileUrl, file_name: fileName }) : (fileUrl || ''),
         isOffice: shouldRenderText ? false : isOffice,
         isTextGenerated: shouldRenderText,
         hasBothTextAndFile: Boolean(hasActualUploadedFile && hasBodyText),
@@ -5803,7 +5838,7 @@
           switchContainer.classList.remove('hidden');
           if (shouldRenderText) {
             switchContainer.innerHTML = `
-              <button type="button" onclick="openSheetModal('${activeForm.id}', 'attachment')" class="shrink-0 bg-blue-700 hover:bg-blue-600 text-white font-black text-[11px] sm:text-xs px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl flex items-center gap-1.5 shadow-md active:scale-95 transition-all">
+              <button type="button" onclick="openSheetModal('${activeForm.id}', 'attachment', ${activeForm.activeAttIndex || 0})" class="shrink-0 bg-blue-700 hover:bg-blue-600 text-white font-black text-[11px] sm:text-xs px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl flex items-center gap-1.5 shadow-md active:scale-95 transition-all">
                 <i class="fa-solid fa-paperclip"></i>
                 <span>عرض الملف المرفق</span>
               </button>
@@ -6859,7 +6894,8 @@
       const deptName = (item.department_name && item.department_name.trim()) ? item.department_name.trim() : 'المفوضية العليا المستقلة للانتخابات';
       const catName = (item.category_name && item.category_name.trim()) ? item.category_name.trim() : 'التعليمات والتوجيهات';
       const titleText = (item.title && item.title.trim()) ? item.title.trim() : 'تعليمات وتوجيهات إدارية';
-      const bodyText = (item.body_text && item.body_text.trim()) ? item.body_text.trim() : titleText;
+      const cleanDirectiveBody = stripAttachmentTags(item.body_text);
+      const bodyText = cleanDirectiveBody ? cleanDirectiveBody : titleText;
       const publisherName = (item.updated_by_name && item.updated_by_name.trim()) ? item.updated_by_name.trim() : 'مسؤول المنظومة';
       const docNum = item.id ? ('بصرة / ' + String(item.id).substring(0, 8)) : '---';
 
