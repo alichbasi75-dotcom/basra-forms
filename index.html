@@ -5,6 +5,10 @@
 <script>
 // ROBUST STORAGE POLYFILL FOR LOCAL APPS (file:// & WebView2)
 (function() {
+  /**
+   * محاكي تخزين بديل (Polyfill) لـ localStorage و sessionStorage
+   * يضمن عمل التطبيق دون أخطاء في بيئات سطح المكتب والتطبيقات المحلية (WebView2 و file://)
+   */
   function makeStorage() {
     var s = {};
     return {
@@ -2320,6 +2324,9 @@
 </style>
 <script>window.__BASRA_APP_VERSION__ = "v2.0.1";
 
+    /**
+     * مزامنة رقم الإصدار الحي للتطبيق من ملف version-centers.json وتحديث شارة العرض
+     */
     async function syncLiveAppVersion() {
       try {
         const res = await fetch('./version-centers.json?t=' + Date.now(), { cache: 'no-store' });
@@ -2564,6 +2571,9 @@
       dbName: 'BasraOfflineStoreV2',
       version: 1,
       _dbPromise: null,
+      /**
+       * تهيئة وفتح قاعدة بيانات IndexedDB المحلية للتخزين المؤقت في وضع عدم الاتصال
+       */
       getDB() {
         if (!this._dbPromise) {
           this._dbPromise = new Promise((resolve) => {
@@ -2581,6 +2591,10 @@
         }
         return this._dbPromise;
       },
+      /**
+       * استرجاع كائن Blob أو ملف مخزن محلياً وتحويله إلى رابط كائن مؤقت (Blob URL)
+       * @param {string} key - مفتاح الملف المخزن
+       */
       async getBlobUrl(key) {
         try {
           const db = await this.getDB();
@@ -2603,6 +2617,11 @@
           return null;
         }
       },
+      /**
+       * حفظ واستبقاء كائن الملف/الصورة (Blob) داخل قاعدة البيانات المحلية
+       * @param {string} key - مفتاح الحفظ
+       * @param {Blob} blob - كائن البيانات الثنائية
+       */
       async saveBlob(key, blob) {
         try {
           const db = await this.getDB();
@@ -2616,6 +2635,9 @@
           });
         } catch(e) {}
       },
+      /**
+       * التخزين الاستباقي التلقائي لنماذج الاستمارات الأكثر استخداماً في الذاكرة المحلية
+       */
       async autoCacheSheets() {
         const sheetsToCache = [
           'form_09_page_1.png',
@@ -2650,6 +2672,10 @@
       bucket: "basra-files-new"
     };
 
+    /**
+     * قراءة إعدادات ومفاتيح الاتصال السحابي (Supabase) النشطة أو استخدام الإعدادات الافتراضية
+     * @returns {Object} كائن إعدادات الاتصال السحابي
+     */
     function getBackendConfig() {
       if (window.__BASRA_CONFIG__ && window.__BASRA_CONFIG__.endpoint) {
         return window.__BASRA_CONFIG__;
@@ -2658,6 +2684,9 @@
     }
 
     let supabaseClient = null;
+    /**
+     * تهيئة وتفعيل عميل الاتصال السحابي بقاعدة البيانات ومستودع الملفات Supabase
+     */
     function initSupabase() {
       try {
         const cfg = getBackendConfig();
@@ -2696,6 +2725,9 @@
     // ==============================================================================
     const AudioEngine = {
       ctx: null,
+      /**
+       * تهيئة سياق الصوت الرقمي Web Audio API
+       */
       init() {
         if (!this.ctx && (window.AudioContext || window.webkitAudioContext)) {
           this.ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -2704,6 +2736,9 @@
           this.ctx.resume();
         }
       },
+      /**
+       * توليد نغمات صوتية نقية باستخدام مذبذب Web Audio API
+       */
       playTone(freq, type, duration, startTime, gainVal) {
         this.init();
         if (!this.ctx) return;
@@ -2718,6 +2753,9 @@
         osc.start(startTime);
         osc.stop(startTime + duration);
       },
+      /**
+       * تشغيل النغمة الصوتية المخصصة لعمليات النجاح وتأكيد الإجراءات
+       */
       success() {
         try {
           this.init();
@@ -2727,6 +2765,9 @@
           this.playTone(880, 'sine', 0.35, t + 0.1, 0.25); // A5
         } catch(e) {}
       },
+      /**
+       * تشغيل نغمة التنبيه المخصصة للتحذيرات
+       */
       warning() {
         try {
           this.init();
@@ -2736,6 +2777,9 @@
           this.playTone(370, 'triangle', 0.35, t + 0.12, 0.25); // F#4
         } catch(e) {}
       },
+      /**
+       * تشغيل النغمة الصوتية المخصصة للأخطاء وفشل العمليات
+       */
       error() {
         try {
           this.init();
@@ -2745,6 +2789,9 @@
           this.playTone(196, 'sawtooth', 0.4, t + 0.15, 0.2);
         } catch(e) {}
       },
+      /**
+       * تشغيل نغمة صوتية هادئة للإشعارات والمعلومات العامة
+       */
       info() {
         try {
           this.init();
@@ -2755,6 +2802,12 @@
       }
     };
 
+    /**
+     * عرض إشعار مرئي عائم (Toast) مع تشغيل نغمة التنبيه المناسبة
+     * @param {string} message - نص رسالة التنبيه
+     * @param {string} type - نوع الإشعار ('success' | 'warning' | 'error' | 'info')
+     * @param {string} title - عنوان الإشعار الاختياري
+     */
     function showToast(message, type = 'success', title = '') {
       const container = document.getElementById('toastContainer');
       if (!container) return;
@@ -2906,6 +2959,9 @@
       startAppBootstrap();
     }
 
+    /**
+     * جلب قائمة الأقسام والشعب الانتخابية الرسمية من قاعدة البيانات وتحديث الذاكرة
+     */
     async function fetchDepartments() {
       try {
         if (!supabaseClient) initSupabase();
@@ -3004,21 +3060,36 @@
       }
     }
 
+    /**
+     * تفعيل فلتر القسم المحدد وتحديث عرض المحتويات المصفاة
+     * @param {string} deptId - معرّف القسم المختار
+     */
     function setCenterDeptFilter(deptId) {
       selectedDeptId = deptId || 'all';
       filterAndRenderContent();
     }
 
+    /**
+     * تفعيل فلتر نوع المستند/التصنيف وتحديث عرض المحتويات
+     * @param {string} cat - التصنيف المختار
+     */
     function setCenterCategoryFilter(cat) {
       selectedCategory = cat || 'all';
       filterAndRenderContent();
     }
 
+    /**
+     * تفعيل فلتر جهة النشر وتحديث عرض المحتويات
+     * @param {string} pub - اسم أو معرّف جهة النشر
+     */
     function setCenterPublisherFilter(pub) {
       selectedPublisher = pub || 'all';
       filterAndRenderContent();
     }
 
+    /**
+     * تصفير وإعادة ضبط كافة فلاتر البحث والخيارات لعرض جميع المحتويات
+     */
     function resetAllCenterFilters() {
       selectedDeptId = 'all';
       selectedCategory = 'all';
@@ -3041,8 +3112,17 @@
 
     // Compatibility aliases
     function renderCategoryTabs() { populateCenterFilterDropdowns(); }
+    /**
+     * ضبط فلتر التصنيف وتحديث العرض
+     */
     function setCategoryFilter(cat) { setCenterCategoryFilter(cat); }
+    /**
+     * تحديث واجهة خيارات أقسام الفلترة
+     */
     function renderDepartmentFilters() { populateCenterFilterDropdowns(); }
+    /**
+     * ضبط فلتر القسم وتحديث العرض
+     */
     function setDeptFilter(deptId) { setCenterDeptFilter(deptId); }
 
     // ==========================================================================
@@ -3057,6 +3137,10 @@
       return item.file_url;
     }
 
+    /**
+     * تنزيل ملف المستند وحفظه في مجلد المستندات المحلي وفتح المجلد للمستخدم
+     * @param {string} itemId - معرّف المستند المطلوب تنزيله
+     */
     async function downloadAndOpenFolder(itemId) {
       const item = (typeof allContents !== 'undefined' ? allContents : []).find(c => String(c.id) === String(itemId)) 
                 || (typeof currentUnifiedItem !== 'undefined' ? currentUnifiedItem : null);
@@ -3108,6 +3192,10 @@
       }
     }
 
+    /**
+     * إظهار نافذة (حفظ باسم) للمستخدم لتحديد مسار حفظ المستند يدوياً على جهازه
+     * @param {string} itemId - معرّف المستند المطلوب
+     */
     async function triggerSaveAsDialog(itemId) {
       const item = (typeof allContents !== 'undefined' ? allContents : []).find(c => String(c.id) === String(itemId)) 
                 || (typeof currentUnifiedItem !== 'undefined' ? currentUnifiedItem : null);
@@ -3183,6 +3271,10 @@
       }
     }
 
+    /**
+     * مزامنة وفحص المستندات المرفقة وتخزينها محلياً لضمان توفرها أثناء انقطاع الإنترنت
+     * @param {Array} items - مصفوفة عناصر المحتوى المطلوب فحصها
+     */
     async function syncLocalDocumentCache(items) {
       try {
         if (location.hostname !== '127.0.0.1' && location.hostname !== 'localhost') return;
@@ -3206,6 +3298,10 @@
 
     // Fetch Contents from Supabase with Timeout Protection and Offline Cache
     let lastKnownHeartbeat = null;
+    /**
+     * مزامنة وجلب أحدث البيانات والمستندات والتوجيهات من السحابة وتحديث الشاشة
+     * @param {boolean} isManual - هل التحديث يدوي بطلب من المستخدم
+     */
     async function fetchLatestData(isManual = false) {
       const syncIcon = document.getElementById('syncIcon');
       if (syncIcon) syncIcon.classList.add('fa-spin');
@@ -3306,6 +3402,10 @@
       }
     }
 
+    /**
+     * معالجة نص البحث اللحظي في العناوين والكتب ونصوص التعليمات مع تأخير زمني لمنع التكرار
+     * @param {string} val - النص المدخل في حقل البحث
+     */
     function handleSearch(val) {
       searchQuery = (val || '').trim().toLowerCase();
       const clearBtn = document.getElementById('clearSearchBtn');
@@ -3316,6 +3416,9 @@
       filterAndRenderContent();
     }
 
+    /**
+     * مسح حقل البحث وإعادة عرض النتائج الكاملة
+     */
     function clearSearch() {
       const input = document.getElementById('searchInput');
       if (input) input.value = '';
@@ -3325,11 +3428,18 @@
       filterAndRenderContent();
     }
 
+    /**
+     * تطبيق ترتيب العناصر حسب الخيار المختار (الأحدث، الأقدم، الترتيب الأبجدي)
+     * @param {string} val - معيار الترتيب
+     */
     function applySorting(val) {
       currentSort = val;
       filterAndRenderContent();
     }
 
+    /**
+     * المحرك المركزي لتطبيق الفلاتر النشطة والبحث والفرز وإرسال النتائج للعرض
+     */
     function filterAndRenderContent() {
       const wrapper = document.getElementById('filterBarWrapper');
       const infoBar = document.getElementById('filterInfoBar');
@@ -3413,6 +3523,10 @@
 
     let currentViewMode = 'grid';
 
+    /**
+     * التبديل بين طريقة عرض البطاقات (Grid) وطريقة عرض الجدول (Table)
+     * @param {string} mode - نمط العرض ('grid' أو 'table')
+     */
     function setViewMode(mode) {
       currentViewMode = mode;
       const gridBtn = document.getElementById('viewGridBtn');
@@ -3441,7 +3555,52 @@
       }
     }
 
-        function renderTableView(items) {
+        /**
+         * بناء وتصيير المحتويات والمرفقات ضمن جدول بيانات منظم ومفصل
+         * @param {Array} items - مصفوفة العناصر المصفاة للعرض
+         */
+        
+    function extractItemAttachments(item) {
+      if (!item) return { attachments: [], cleanBody: '' };
+      const body = item.body_text || '';
+      const match = body.match(/<!--AGY_ATTACHMENTS:(.*?)-->/s);
+      if (match) {
+        try {
+          const attList = JSON.parse(match[1]);
+          const cleanBody = body.replace(/<!--AGY_ATTACHMENTS:.*?-->/s, '').trim();
+          if (Array.isArray(attList) && attList.length > 0) {
+            return { attachments: attList, cleanBody: cleanBody };
+          }
+        } catch (e) {
+          console.warn('Attachments JSON parse error:', e);
+        }
+      }
+      if (item.file_url && item.file_url.trim() && item.file_type !== 'text_only') {
+        return {
+          attachments: [{
+            url: item.file_url,
+            name: item.file_name || 'ملف مرفق',
+            type: item.file_type || 'bin',
+            size: item.file_size || ''
+          }],
+          cleanBody: body
+        };
+      }
+      return { attachments: [], cleanBody: body };
+    }
+
+    function getAttachmentFileIcon(ext) {
+      ext = (ext || '').toLowerCase();
+      if (ext === 'pdf') return { icon: 'fa-file-pdf', color: 'text-rose-500', bg: 'bg-rose-500/10 border-rose-500/30' };
+      if (['doc', 'docx'].includes(ext)) return { icon: 'fa-file-word', color: 'text-blue-500', bg: 'bg-blue-500/10 border-blue-500/30' };
+      if (['xls', 'xlsx'].includes(ext)) return { icon: 'fa-file-excel', color: 'text-emerald-500', bg: 'bg-emerald-500/10 border-emerald-500/30' };
+      if (['ppt', 'pptx'].includes(ext)) return { icon: 'fa-file-powerpoint', color: 'text-amber-500', bg: 'bg-amber-500/10 border-amber-500/30' };
+      if (['mp3', 'wav', 'm4a', 'ogg', 'opus', 'aac', 'webm', 'amr'].includes(ext)) return { icon: 'fa-file-audio', color: 'text-purple-400', bg: 'bg-purple-500/10 border-purple-500/30' };
+      if (['png', 'jpg', 'jpeg', 'webp', 'gif', 'bmp', 'svg'].includes(ext)) return { icon: 'fa-file-image', color: 'text-purple-400', bg: 'bg-purple-500/10 border-purple-500/30' };
+      return { icon: 'fa-file', color: 'text-slate-400', bg: 'bg-slate-700/50 border-slate-600/40' };
+    }
+
+    function renderTableView(items) {
       const tbody = document.getElementById('contentTableBody');
       if (!tbody) return;
 
@@ -3452,17 +3611,19 @@
 
       tbody.innerHTML = items.map(c => {
         const dateStr = c.created_at ? new Date(c.created_at).toLocaleDateString('ar-IQ', { year: 'numeric', month: '2-digit', day: '2-digit' }) : '';
-        const hasFile = Boolean(c.file_url && c.file_url.trim() && c.file_type !== 'text_only');
-        const hasBodyText = Boolean(c.body_text && c.body_text.trim());
+        const { attachments, cleanBody } = extractItemAttachments(c);
+        const hasFile = attachments.length > 0;
+        const hasBodyText = Boolean(cleanBody && cleanBody.trim());
         const publisherName = (c.updated_by_name && c.updated_by_name.trim()) ? c.updated_by_name.trim() : 'مسؤول الشعبة';
 
-        const ext = (c.file_name || c.file_type || '').split('.').pop().toLowerCase();
-        const isImage = (['png', 'jpg', 'jpeg', 'webp', 'gif', 'svg'].includes(ext) || c.file_type === 'image');
-        const isPdf = (ext === 'pdf' || c.file_type === 'pdf');
-        const isWord = (ext === 'doc' || ext === 'docx' || c.file_type === 'doc' || c.file_type === 'docx');
-        const isExcel = (ext === 'xls' || ext === 'xlsx' || c.file_type === 'xls' || c.file_type === 'xlsx');
-      const isPpt = (ext === 'ppt' || ext === 'pptx' || c.file_type === 'ppt' || c.file_type === 'pptx');
-      const isAudio = (['mp3', 'wav', 'm4a', 'ogg', 'opus', 'aac', 'webm', 'amr'].includes(ext) || ['mp3', 'wav', 'm4a', 'ogg', 'opus', 'aac', 'webm', 'amr'].includes(c.file_type));
+        const firstAtt = hasFile ? attachments[0] : null;
+        const ext = firstAtt ? (firstAtt.name || firstAtt.type || '').split('.').pop().toLowerCase() : '';
+        const isImage = (['png', 'jpg', 'jpeg', 'webp', 'gif', 'svg'].includes(ext));
+        const isPdf = (ext === 'pdf');
+        const isWord = (ext === 'doc' || ext === 'docx');
+        const isExcel = (ext === 'xls' || ext === 'xlsx');
+        const isPpt = (ext === 'ppt' || ext === 'pptx');
+        const isAudio = (['mp3', 'wav', 'm4a', 'ogg', 'opus', 'aac', 'webm', 'amr'].includes(ext));
 
         let fIcon = 'fa-file-lines';
         let fTileBg = 'bg-blue-100 text-blue-900 border-blue-300';
@@ -3480,8 +3641,7 @@
           fIcon = 'fa-file-excel text-emerald-600';
           fTileBg = 'bg-emerald-100 text-emerald-900 border-emerald-300';
           fLabel = 'ملف Excel';
-        }
-        else if (isPpt) {
+        } else if (isPpt) {
           fIcon = 'fa-file-powerpoint text-amber-600';
           fTileBg = 'bg-amber-100 text-amber-900 border-amber-300';
           fLabel = 'عرض تقديمي (PowerPoint)';
@@ -3497,11 +3657,11 @@
 
         return `
         <tr class="transition-colors border-b-2">
-          <!-- 1. نص التعليمات والتفاصيل وبجانبها مصغر المرفق (المساحة المتبقية كاملة) -->
+          <!-- 1. نص التعليمات والتفاصيل وبجانبها مصغر المرفق -->
           <td class="p-4 align-top">
             <div class="flex flex-col gap-2.5">
-              <!-- عنوان المنشور الرئيسي (عالي التباين في الوضعين الليلي والنهاري) -->
-              <div onclick="openSheetModal(\'${c.id}\', \'auto\')" class="table-title font-black text-base cursor-pointer hover:underline hover:text-blue-500 transition-colors flex items-center gap-2 select-text" title="اضغط لقراءة وطباعة التعليمات كاملة">
+              <!-- عنوان المنشور الرئيسي -->
+              <div onclick="openSheetModal('${c.id}', 'auto')" class="table-title font-black text-base cursor-pointer hover:underline hover:text-blue-500 transition-colors flex items-center gap-2 select-text" title="اضغط لقراءة وطباعة التعليمات كاملة">
                 <i class="fa-solid fa-file-signature text-blue-500 text-base shrink-0"></i>
                 <span class="text-base font-black">${escapeHtml(c.title || 'بدون عنوان')}</span>
               </div>
@@ -3509,22 +3669,22 @@
               <!-- صندوق التعليمات وبجانبه مصغر المرفق -->
               <div class="instruction-box-table rounded-2xl p-4 font-bold text-xs transition-all shadow-xs leading-relaxed">
                 <div class="flex flex-col lg:flex-row items-start justify-between gap-4">
-                  <!-- النص المكتوب (يأخذ المساحة المرنة كلها) -->
+                  <!-- النص المكتوب -->
                   <div class="flex-1 min-w-0">
                     ${hasBodyText ? `
-                      <div class="table-desc whitespace-pre-wrap select-text text-sm leading-relaxed font-bold cursor-pointer hover:text-blue-500 transition-colors" onclick="openSheetModal('${c.id}', 'text')">${formatBodyTextWithClickableLinks(c.body_text)}</div>
+                      <div class="table-desc whitespace-pre-wrap select-text text-sm leading-relaxed font-bold cursor-pointer hover:text-blue-500 transition-colors" onclick="openSheetModal('${c.id}', 'text')">${formatBodyTextWithClickableLinks(cleanBody)}</div>
                     ` : `
                       <div class="text-xs text-slate-400 font-bold py-2">لا توجد توجيهات نصية إضافية - يرجى استعراض الملف المرفق بجانب النص.</div>
                     `}
                   </div>
 
-                  <!-- مصغر المرفق بجانب التعليمات النصية -->
-                  ${hasFile ? `
+                  <!-- المرفقات -->
+                  ${attachments.length === 1 ? `
                     <div class="attachment-box-table shrink-0 w-full sm:w-64 rounded-xl p-3 shadow-sm hover:border-blue-500 transition-all flex flex-col gap-2">
                       <div class="flex items-center gap-2.5">
-                        ${isImage && c.file_url ? `
+                        ${isImage && firstAtt.url ? `
                           <div onclick="openSheetModal('${c.id}')" class="w-14 h-14 rounded-lg overflow-hidden border border-slate-400/50 shrink-0 cursor-pointer shadow-xs hover:scale-105 transition-transform bg-slate-800 relative group" title="اضغط لتكبير الصورة">
-                            <img src="${c.file_url}" alt="${escapeHtml(c.title)}" class="w-full h-full object-cover" />
+                            <img src="${firstAtt.url}" alt="${escapeHtml(c.title)}" class="w-full h-full object-cover" />
                             <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs">
                               <i class="fa-solid fa-magnifying-glass-plus"></i>
                             </div>
@@ -3537,11 +3697,11 @@
                         `}
                         <div class="min-w-0 flex-1 text-right">
                           <div class="text-[10px] font-black opacity-75">الملف المرفق:</div>
-                          <div onclick="openSheetModal('${c.id}')" class="truncate text-xs font-black cursor-pointer hover:text-blue-500 hover:underline" title="${escapeHtml(c.file_name || fLabel)}">
-                            ${escapeHtml(c.file_name || fLabel)}
+                          <div onclick="openSheetModal('${c.id}')" class="truncate text-xs font-black cursor-pointer hover:text-blue-500 hover:underline" title="${escapeHtml(firstAtt.name || fLabel)}">
+                            ${escapeHtml(firstAtt.name || fLabel)}
                           </div>
                           <div class="text-[10px] font-mono font-bold opacity-80 mt-0.5">
-                            ${c.file_size ? (String(c.file_size).toUpperCase().includes('B') ? c.file_size : `KB ${c.file_size}`) : fLabel}
+                            ${firstAtt.size ? (String(firstAtt.size).toUpperCase().includes('B') ? firstAtt.size : `KB ${firstAtt.size}`) : fLabel}
                           </div>
                         </div>
                       </div>
@@ -3552,75 +3712,77 @@
                           <i class="fa-solid fa-eye text-xs"></i>
                           <span>استعراض المرفق</span>
                         </button>
-                        <a href="${c.file_url}" download="${escapeHtml(c.file_name || 'attachment')}" target="_blank" class="py-1.5 px-2.5 bg-slate-200/40 hover:bg-slate-300/60 rounded-lg font-bold text-xs flex items-center justify-center gap-1 border border-slate-400/30 transition-all shadow-xs" title="تنزيل الملف" onclick="event.stopPropagation()">
+                        <a href="${firstAtt.url}" download="${escapeHtml(firstAtt.name || 'attachment')}" target="_blank" class="py-1.5 px-2.5 bg-slate-200/40 hover:bg-slate-300/60 rounded-lg font-bold text-xs flex items-center justify-center gap-1 border border-slate-400/30 transition-all shadow-xs" title="تنزيل الملف" onclick="event.stopPropagation()">
                           <i class="fa-solid fa-download"></i>
                           <span>تنزيل</span>
                         </a>
                       </div>
                     </div>
-                  ` : ''}
+                  ` : (attachments.length > 1 ? `
+                    <div class="attachment-box-table shrink-0 w-full sm:w-72 rounded-xl p-3 shadow-sm hover:border-blue-500 transition-all flex flex-col gap-2">
+                      <div class="flex items-center justify-between pb-1.5 border-b border-slate-700/40 text-[10px] font-black text-indigo-400">
+                        <span class="flex items-center gap-1.5"><i class="fa-solid fa-paperclip"></i> ${attachments.length} مرفقات متاحة</span>
+                      </div>
+                      <div class="flex flex-col gap-1.5 max-h-48 overflow-y-auto custom-scrollbar pr-0.5">
+                        ${attachments.map((att, aIdx) => {
+                          const aExt = (att.name || att.type || '').split('.').pop().toLowerCase();
+                          const aStyle = getAttachmentFileIcon(aExt);
+                          return `
+                            <div onclick="openSheetModal('${c.id}', 'attachment', ${aIdx})"
+                              class="flex items-center justify-between gap-2 p-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 cursor-pointer border border-slate-700/60 transition-all group"
+                              title="اضغط لاستعراض: ${escapeHtml(att.name)}">
+                              <div class="flex items-center gap-2 min-w-0 flex-1">
+                                <div class="w-7 h-7 rounded ${aStyle.bg} border flex items-center justify-center shrink-0">
+                                  <i class="fa-solid ${aStyle.icon} ${aStyle.color} text-xs"></i>
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                  <div class="truncate text-xs font-black text-slate-100 group-hover:text-blue-400">${escapeHtml(att.name)}</div>
+                                  <div class="text-[9px] text-slate-400 font-semibold">${att.size || ''}</div>
+                                </div>
+                              </div>
+                              <i class="fa-regular fa-eye text-blue-400 text-xs shrink-0 group-hover:scale-110"></i>
+                            </div>
+                          `;
+                        }).join('')}
+                      </div>
+                    </div>
+                  ` : '')}
                 </div>
+              </div>
 
-                <!-- الرابط السفلي للمطالعة والطباعة كاملة -->
-                <div onclick="openSheetModal(\'${c.id}\')" class="mt-3 pt-2.5 border-t border-slate-500/20 flex items-center justify-between text-xs text-blue-500 hover:text-blue-400 font-black cursor-pointer select-none">
-                  <span class="inline-flex items-center gap-1.5"><i class="fa-solid fa-book-open text-amber-500 text-sm"></i> قراءة وطباعة التعليمات والتوجيهات كاملة</span>
-                  <span class="opacity-75 font-bold">عرض مكبر وتنسيق طباعة 🖨️</span>
-                </div>
+              <!-- أسفل المنشور: بيانات الشعبة والناشر والتصنيف والتاريخ -->
+              <div class="flex items-center gap-3 text-xs font-bold flex-wrap opacity-90 pt-1">
+                <span class="table-dept-pill px-3 py-1 rounded-xl flex items-center gap-1.5 shadow-xs border">
+                  <i class="fa-solid fa-building-user text-blue-600"></i>
+                  <span>${escapeHtml(c.department_name || 'الشعبة العامة')}</span>
+                </span>
+
+                <span class="table-cat-pill px-3 py-1 rounded-xl flex items-center gap-1.5 shadow-xs border">
+                  <i class="fa-solid fa-tag text-purple-600"></i>
+                  <span>${escapeHtml(c.category_name || 'عام')}</span>
+                </span>
+
+                <span class="table-meta-pill px-3 py-1 rounded-xl flex items-center gap-1.5 shadow-xs border">
+                  <i class="fa-solid fa-user-pen text-slate-500"></i>
+                  <span>الناشر: ${escapeHtml(publisherName)}</span>
+                </span>
+
+                <span class="table-meta-pill px-3 py-1 rounded-xl flex items-center gap-1.5 shadow-xs border">
+                  <i class="fa-regular fa-calendar-days text-slate-500"></i>
+                  <span>${dateStr || 'اليوم'}</span>
+                </span>
               </div>
             </div>
           </td>
 
-          <!-- 2. بطاقة موحدة تجمع بيانات المنشور والخيارات -->
-          <td class="p-4 align-top w-80 min-w-[280px] max-w-[320px]">
-            <div class="table-side-card flex flex-col gap-2.5 p-3 rounded-2xl shadow-sm text-right">
-              <!-- الشعبة والناشر -->
-              <div class="flex flex-col gap-1.5">
-                <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-black bg-blue-500/20 text-blue-400 border border-blue-500/30" title="الشعبة المصدرة">
-                  <i class="fa-solid fa-building-columns text-[11px] text-blue-500 shrink-0"></i>
-                  <span class="truncate font-black">${escapeHtml(c.department_name || 'عامة')}</span>
-                </div>
-                <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-black bg-indigo-500/20 text-indigo-400 border border-indigo-500/30" title="المسؤول الناشر">
-                  <i class="fa-solid fa-user-shield text-[11px] text-indigo-500 shrink-0"></i>
-                  <span class="truncate font-black">${escapeHtml(publisherName)}</span>
-                </div>
-              </div>
-
-              <!-- التصنيف وحالة المرفق -->
-              <div class="flex items-center gap-1.5 flex-wrap">
-                <span class="px-2.5 py-1 rounded-xl text-xs font-black bg-amber-500/20 text-amber-400 border border-amber-500/30 shadow-xs">
-                  ${escapeHtml(c.category_name || 'التعليمات')}
-                </span>
-                ${!hasFile ? `
-                  <span class="px-2.5 py-1 rounded-xl text-xs font-black bg-slate-500/20 text-slate-300 border border-slate-500/30 flex items-center gap-1 shadow-xs">
-                    <i class="fa-solid fa-align-right text-[10px] text-amber-500"></i> نص تعليمات فقط
-                  </span>
-                ` : `
-                  <span class="px-2.5 py-1 rounded-xl text-xs font-black ${fTileBg} flex items-center gap-1 shadow-xs border">
-                    <i class="fa-solid ${fIcon} text-[10px]"></i> ${fLabel}
-                  </span>
-                `}
-              </div>
-
-              <!-- تاريخ النشر -->
-              <div class="flex items-center gap-1.5 text-xs font-black px-1 font-mono opacity-85">
-                <i class="fa-regular fa-calendar-days text-slate-400 text-xs"></i>
-                <span>تاريخ النشر: ${dateStr}</span>
-              </div>
-
-              <!-- أزرار الخيارات والعمليات الأساسية -->
-              <div class="pt-2 border-t border-slate-500/20 flex flex-col gap-1.5">
-                <button type="button" onclick="openSheetModal(\'${c.id}\')" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black text-xs py-2 px-3 rounded-xl flex items-center justify-center gap-1.5 shadow-md active:scale-95 cursor-pointer transition-all" style="background-color: #2563eb !important; color: #ffffff !important;">
-                  <i class="fa-solid fa-book-open text-xs text-white" style="color: #ffffff !important;"></i>
-                  <span style="color: #ffffff !important; font-weight: 900 !important;">قراءة وطباعة التعليمات</span>
-                </button>
-                ${hasFile ? `
-                  <button type="button" onclick="openSheetModal('${c.id}')" class="w-full bg-slate-200/50 hover:bg-blue-500/20 border border-slate-400/40 font-black text-xs py-1.5 px-2.5 rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer">
-                    <i class="fa-solid fa-eye text-xs text-blue-500"></i>
-                    <span>عرض النموذج المرفق</span>
-                  </button>
-                ` : ''}
-              </div>
-            </div>
+          <!-- 2. عمود الإجراءات للمراكز -->
+          <td class="p-4 align-top w-36 text-center">
+            <button onclick="openSheetModal('${c.id}', 'auto')"
+              class="w-full py-2.5 px-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-black text-xs flex items-center justify-center gap-1.5 shadow-sm transition-all cursor-pointer"
+              title="معاينة وطباعة النموذج والتعليمات">
+              <i class="fa-solid fa-expand text-xs"></i>
+              <span>معاينة وطباعة</span>
+            </button>
           </td>
         </tr>
         `;
@@ -3628,6 +3790,11 @@
     }
 
     
+    /**
+     * معالجة النقر على بطاقة التوجيه واختيار طريقة المعاينة المناسبة لمحتواها
+     * @param {Event} event - حدث النقر
+     * @param {string} contentId - معرّف المحتوى المختار
+     */
     function handleInstructionCardClick(event, contentId) {
       try {
         const sel = window.getSelection();
@@ -3647,6 +3814,10 @@
       }
     }
 
+    /**
+     * تصيير وبناء بطاقات المحتوى التفاعلية بتصميم شبكي أنيق
+     * @param {Array} items - مصفوفة العناصر المصفاة للعرض
+     */
     function renderGrid(items) {
       const grid = document.getElementById('contentGrid');
       const empty = document.getElementById('emptyState');
@@ -3695,18 +3866,20 @@
       if (empty) empty.classList.add('hidden');
 
       grid.innerHTML = items.map(f => {
-        const ext = (f.file_name || f.file_type || '').split('.').pop().toLowerCase();
-        const isWord = (ext === 'doc' || ext === 'docx' || f.file_type === 'doc' || f.file_type === 'docx');
-        const isExcel = (ext === 'xls' || ext === 'xlsx' || f.file_type === 'xls' || f.file_type === 'xlsx');
-        const isPpt = (ext === 'ppt' || ext === 'pptx' || f.file_type === 'ppt' || f.file_type === 'pptx');
-        const isAudio = (['mp3', 'wav', 'm4a', 'ogg', 'opus', 'aac', 'webm', 'amr'].includes(ext) || ['mp3', 'wav', 'm4a', 'ogg', 'opus', 'aac', 'webm', 'amr'].includes(f.file_type));
-        const isPdf = (ext === 'pdf' || f.file_type === 'pdf');
-        const isImage = (['png', 'jpg', 'jpeg', 'webp', 'gif', 'svg'].includes(ext) || f.file_type === 'image');
-
-        const hasFile = Boolean(f.file_url && f.file_url.trim() && f.file_type !== 'text_only');
-        const hasBodyText = Boolean(f.body_text && f.body_text.trim());
+        const { attachments, cleanBody } = extractItemAttachments(f);
+        const hasFile = attachments.length > 0;
+        const hasBodyText = Boolean(cleanBody && cleanBody.trim());
         const publisherName = (f.updated_by_name && f.updated_by_name.trim()) ? f.updated_by_name.trim() : 'إدارة المنظومة';
         const dateStr = f.created_at ? new Date(f.created_at).toLocaleDateString('ar-IQ') : '';
+
+        const firstAtt = hasFile ? attachments[0] : null;
+        const ext = firstAtt ? (firstAtt.name || firstAtt.type || '').split('.').pop().toLowerCase() : '';
+        const isWord = (ext === 'doc' || ext === 'docx');
+        const isExcel = (ext === 'xls' || ext === 'xlsx');
+        const isPpt = (ext === 'ppt' || ext === 'pptx');
+        const isAudio = (['mp3', 'wav', 'm4a', 'ogg', 'opus', 'aac', 'webm', 'amr'].includes(ext));
+        const isPdf = (ext === 'pdf');
+        const isImage = (['png', 'jpg', 'jpeg', 'webp', 'gif', 'svg'].includes(ext));
 
         let typeBadge = '';
         let fileIcon = '';
@@ -3714,14 +3887,16 @@
         if (!hasFile) {
           typeBadge = '<span class="table-badge-textonly text-xs font-black px-3 py-1 rounded-xl border flex items-center gap-1.5"><i class="fa-solid fa-align-right text-[11px]"></i> تعليمات نصية فقط</span>';
           fileIcon = 'fa-file-lines text-amber-500';
+        } else if (attachments.length > 1) {
+          typeBadge = `<span class="bg-indigo-600/20 text-indigo-300 border border-indigo-500/40 text-xs font-black px-3 py-1 rounded-xl flex items-center gap-1.5"><i class="fa-solid fa-paperclip"></i> ${attachments.length} مرفقات</span>`;
+          fileIcon = 'fa-paperclip text-indigo-400';
         } else if (isWord) {
           typeBadge = '<span class="bg-blue-600/20 text-blue-300 border border-blue-500/40 text-xs font-black px-3 py-1 rounded-xl">مستند Word</span>';
           fileIcon = 'fa-file-word text-blue-500';
         } else if (isExcel) {
           typeBadge = '<span class="bg-emerald-600/20 text-emerald-300 border border-emerald-500/40 text-xs font-black px-3 py-1 rounded-xl">جدول Excel</span>';
           fileIcon = 'fa-file-excel text-emerald-500';
-        }
-        else if (isPpt) {
+        } else if (isPpt) {
           typeBadge = '<span class="bg-amber-600/20 text-amber-300 border border-amber-500/40 text-xs font-black px-3 py-1 rounded-xl">عرض PowerPoint</span>';
           fileIcon = 'fa-file-powerpoint text-amber-500';
         } else if (isAudio) {
@@ -3738,32 +3913,63 @@
           fileIcon = 'fa-file-lines text-blue-500';
         }
 
-        const fileSizeFormatted = hasFile
-          ? (f.file_size ? (String(f.file_size).toUpperCase().includes('B') ? f.file_size : `KB ${f.file_size}`) : '')
-          : '';
-
         let mediaBannerHtml = '';
-        if (hasFile && isImage && f.file_url) {
+        if (attachments.length === 1) {
+          const singleAtt = attachments[0];
+          const singleExt = (singleAtt.name || singleAtt.type || '').split('.').pop().toLowerCase();
+          const singleIsImage = ['png', 'jpg', 'jpeg', 'webp', 'gif', 'svg'].includes(singleExt);
+          const singleStyle = getAttachmentFileIcon(singleExt);
+
+          if (singleIsImage && singleAtt.url) {
+            mediaBannerHtml = `
+              <div onclick="openSheetModal(\'${f.id}\', \'attachment\', 0)" class="relative group cursor-pointer overflow-hidden rounded-xl border border-slate-700/70 mb-3 bg-slate-900 h-28 mb-2.5 flex items-center justify-center shadow-inner" title="اضغط لمعاينة وتكبير وتحميل الصورة">
+                <img src="${singleAtt.url}" alt="${escapeHtml(f.title)}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
+                <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 text-white text-xs font-black backdrop-blur-[2px]">
+                  <i class="fa-solid fa-magnifying-glass-plus text-base text-amber-300"></i>
+                  <span>معاينة وتكبير وتحميل</span>
+                </div>
+              </div>
+            `;
+          } else {
+            mediaBannerHtml = `
+              <div onclick="openSheetModal(\'${f.id}\', \'attachment\', 0)" class="cursor-pointer rounded-xl border border-slate-700/70 bg-slate-800/40 p-2 mb-2 flex items-center gap-3 hover:border-blue-500 transition-all shadow-sm group" title="اضغط لفتح الملف، المعاينة، الطباعة، أو التنزيل">
+                <div class="w-10 h-10 rounded-lg ${singleStyle.bg} border flex items-center justify-center text-lg font-black shrink-0 shadow-sm group-hover:scale-105 transition-transform">
+                  <i class="fa-solid ${singleStyle.icon} ${singleStyle.color}"></i>
+                </div>
+                <div class="min-w-0 flex-1">
+                  <div class="text-xs font-black text-slate-100 truncate group-hover:text-blue-400 transition-colors">${escapeHtml(singleAtt.name || 'ملف مرفق')}</div>
+                  <div class="text-[10px] text-slate-400 font-bold">${singleAtt.size || 'مرفق رسمي'} • اضغط للعرض والخيارات</div>
+                </div>
+                <i class="fa-regular fa-eye text-blue-400 text-sm group-hover:scale-110 transition-transform"></i>
+              </div>
+            `;
+          }
+        } else if (attachments.length > 1) {
           mediaBannerHtml = `
-            <div onclick="openSheetModal(\'${f.id}\', \'attachment\')" class="relative group cursor-pointer overflow-hidden rounded-xl border border-slate-700/70 mb-3 bg-slate-900 h-28 mb-2.5 flex items-center justify-center shadow-inner" title="اضغط لمعاينة وتكبير وتحميل الصورة">
-              <img src="${f.file_url}" alt="${escapeHtml(f.title)}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
-              <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 text-white text-xs font-black backdrop-blur-[2px]">
-                <i class="fa-solid fa-magnifying-glass-plus text-base text-amber-300"></i>
-                <span>معاينة وتكبير وتحميل</span>
+            <div class="rounded-xl border border-slate-700/70 bg-slate-800/50 p-2.5 mb-2.5 flex flex-col gap-1.5 shadow-sm">
+              <div class="flex items-center justify-between text-[11px] font-black text-indigo-300 pb-1 border-b border-slate-700/50">
+                <span class="flex items-center gap-1.5"><i class="fa-solid fa-paperclip text-indigo-400"></i> ${attachments.length} مرفقات متاحة:</span>
               </div>
-            </div>
-          `;
-        } else if (hasFile) {
-          mediaBannerHtml = `
-            <div onclick="openSheetModal(\'${f.id}\', \'attachment\')" class="cursor-pointer rounded-xl border border-slate-700/70 bg-slate-800/40 p-2 mb-2 flex items-center gap-3 hover:border-blue-500 transition-all shadow-sm group" title="اضغط لفتح الملف، المعاينة، الطباعة، أو التنزيل">
-              <div class="w-10 h-10 rounded-lg bg-blue-600/20 text-blue-400 border border-blue-500/30 flex items-center justify-center text-lg font-black shrink-0 shadow-sm group-hover:scale-105 transition-transform">
-                <i class="fa-solid ${fileIcon}"></i>
+              <div class="flex flex-col gap-1.5 max-h-40 overflow-y-auto custom-scrollbar pr-0.5">
+                ${attachments.map((att, aIdx) => {
+                  const aExt = (att.name || att.type || '').split('.').pop().toLowerCase();
+                  const aStyle = getAttachmentFileIcon(aExt);
+                  return `
+                    <div onclick="openSheetModal('${f.id}', 'attachment', ${aIdx})"
+                      class="cursor-pointer rounded-lg border border-slate-700/60 bg-slate-900/80 p-1.5 flex items-center gap-2 hover:border-blue-500 hover:bg-slate-800 transition-all group"
+                      title="اضغط لفتح الملف: ${escapeHtml(att.name)}">
+                      <div class="w-7 h-7 rounded ${aStyle.bg} border flex items-center justify-center text-xs font-black shrink-0 group-hover:scale-105 transition-transform">
+                        <i class="fa-solid ${aStyle.icon} ${aStyle.color}"></i>
+                      </div>
+                      <div class="min-w-0 flex-1">
+                        <div class="text-xs font-black text-slate-100 truncate group-hover:text-blue-400 transition-colors">${escapeHtml(att.name)}</div>
+                        <div class="text-[9px] text-slate-400 font-semibold">${att.size || ''}</div>
+                      </div>
+                      <i class="fa-regular fa-eye text-blue-400 text-xs group-hover:scale-110 transition-transform"></i>
+                    </div>
+                  `;
+                }).join('')}
               </div>
-              <div class="min-w-0 flex-1">
-                <div class="text-xs font-black text-slate-100 truncate group-hover:text-blue-400 transition-colors">${escapeHtml(f.file_name || 'ملف مرفق')}</div>
-                <div class="text-[10px] text-slate-400 font-bold">${fileSizeFormatted || 'مرفق رسمي'} • اضغط للعرض والخيارات</div>
-              </div>
-              <i class="fa-regular fa-eye text-blue-400 text-sm group-hover:scale-110 transition-transform"></i>
             </div>
           `;
         }
@@ -3781,47 +3987,46 @@
                     </span>
                   ` : ''}
                 </div>
-                ${fileSizeFormatted ? `<span class="text-[11px] font-mono font-bold text-slate-400 select-none">${fileSizeFormatted}</span>` : ''}
+                <span class="card-dept-badge text-[11px] font-bold px-2.5 py-1 rounded-xl border flex items-center gap-1.5 shadow-sm" title="الشعبة المصدرة">
+                  <i class="fa-solid fa-building-user text-[11px] text-blue-400"></i>
+                  <span>${escapeHtml(f.department_name || 'الشعبة العامة')}</span>
+                </span>
               </div>
 
               ${mediaBannerHtml}
 
-              <div class="flex items-start gap-3">
-                <i class="fa-solid ${fileIcon} text-2xl mt-1 shrink-0"></i>
-                <div class="min-w-0 flex-1">
-                  <h3 class="card-title text-base font-black text-slate-100 leading-snug cursor-pointer hover:text-blue-400 transition-colors" onclick="openSheetModal(\'${f.id}\')" title="اضغط لفتح نافذة قراءة وطباعة ونسخ التعليمات">
-                    ${escapeHtml(f.title || f.file_name || 'بدون عنوان')}
-                  </h3>
+              <div class="mb-2">
+                <span class="card-category-badge text-[10px] font-bold px-2.5 py-0.5 rounded-lg border inline-flex items-center gap-1 mb-1">
+                  <i class="fa-solid fa-tag text-[9px] text-purple-400"></i>
+                  <span>${escapeHtml(f.category_name || 'عام')}</span>
+                </span>
+                <h4 onclick="openSheetModal(\'${f.id}\', \'auto\')" class="card-title text-sm sm:text-base font-black text-white hover:text-blue-400 transition-colors line-clamp-2 cursor-pointer select-text" title="${escapeHtml(f.title)}">
+                  ${escapeHtml(f.title)}
+                </h4>
+              </div>
 
-                  ${hasBodyText ? `
-                    <div class="mt-2.5">
-                      <div onclick="handleInstructionCardClick(event, \'${f.id}\')" class="instruction-box-card p-2.5 sm:p-3 rounded-xl border leading-relaxed shadow-sm cursor-pointer hover:border-blue-500 transition-all select-text" title="اضغط هنا لفتح خيارات الطباعة ونسخ التعليمات">
-                        <div id="cardDesc_${f.id}" class="card-desc text-xs font-bold leading-relaxed whitespace-pre-wrap select-text transition-all">
-                          ${formatBodyTextWithClickableLinks(f.body_text)}
-                        </div>
-                      </div>
-                    </div>
-                  ` : ''}
-
-                  <div class="mt-3 pt-2.5 border-t border-slate-800/80 flex items-center justify-between text-xs font-bold gap-2 flex-wrap">
-                    <div class="card-dept flex items-center gap-1.5 text-amber-400 font-black">
-                      <i class="fa-solid fa-building-columns text-[11px]"></i>
-                      <span>${escapeHtml(f.department_name || '—')}</span>
-                    </div>
-                    <div class="flex items-center gap-2 flex-wrap">
-                      ${dateStr ? `
-                        <div class="card-date-badge px-2.5 py-1 rounded-lg border text-[11px] font-bold flex items-center gap-1" title="تاريخ التعليمات">
-                          <i class="fa-regular fa-calendar-days text-[10px] text-sky-400"></i>
-                          <span>${dateStr}</span>
-                        </div>
-                      ` : ''}
-                    <div class="table-publisher-badge px-2.5 py-1 rounded-lg border text-[11px] font-bold flex items-center gap-1" title="المسؤول الناشر">
-                      <i class="fa-solid fa-user-shield text-[10px]"></i>
-                      <span class="truncate max-w-[120px]">${escapeHtml(publisherName)}</span>
-                    </div>
-                    </div>
-                  </div>
+              ${hasBodyText ? `
+                <div class="card-text-snippet text-xs text-slate-300 leading-relaxed mb-4 max-h-48 overflow-y-auto custom-scrollbar p-2.5 rounded-xl bg-slate-800/40 border border-slate-800 whitespace-pre-wrap select-text font-bold">
+                  ${formatBodyTextWithClickableLinks(cleanBody)}
                 </div>
+              ` : `
+                <div class="text-[11px] text-slate-400 py-1 mb-3">
+                  ${hasFile ? 'يرجى استعراض الملف المرفق للاطلاع على التعليمات الكاملة.' : 'لا توجد توجيهات نصية إضافية.'}
+                </div>
+              `}
+            </div>
+
+            <div class="pt-3 border-t border-slate-800/80 flex items-center justify-between gap-2 flex-wrap">
+              <span class="card-publisher-badge text-[11px] font-bold px-2.5 py-1 rounded-xl border flex items-center gap-1.5" title="الناشر">
+                <i class="fa-solid fa-user-pen text-[11px] text-slate-400"></i>
+                <span>الناشر: ${escapeHtml(publisherName)}</span>
+              </span>
+
+              <div class="flex items-center gap-2">
+                <button onclick="openSheetModal(\'${f.id}\', \'auto\')" class="bg-blue-600 hover:bg-blue-500 text-white font-black text-xs px-3.5 py-1.5 rounded-xl transition-all shadow-md active:scale-95 inline-flex items-center gap-1.5 cursor-pointer">
+                  <i class="fa-solid fa-expand text-[11px]"></i>
+                  <span>معاينة وطباعة</span>
+                </button>
               </div>
             </div>
           </div>
@@ -3851,6 +4056,11 @@
       });
     }
 
+    /**
+     * طي أو توسيع النص الطويل داخل بطاقة التوجيه لمنع ازدحام الواجهة
+     * @param {string} id - معرّف العنصر
+     * @param {Event} event - حدث النقر
+     */
     function toggleCardText(id, event) {
       if (event) event.stopPropagation();
       const descEl = document.getElementById(`cardDesc_${id}`);
@@ -3870,6 +4080,9 @@
       }
     }
 
+    /**
+     * نسخ نص التوجيه المعروض بالكامل إلى الحافظة مع إشعار صوتي ومرئي
+     */
     function copyUnifiedBodyText() {
       if (!currentUnifiedItem || !currentUnifiedItem.body_text) {
         if (typeof showToast === 'function') showToast('لا يوجد نص لنسخه.', 'warning', 'تنبيه');
@@ -4052,10 +4265,22 @@
       }
     }
 
+    /**
+     * فتح نافذة المعاينة الموحدة الذكية لتفاصيل التوجيه ومستنده المرفق
+     * @param {string} itemId - معرّف العنصر المطلوب معاينته
+     * @param {string} mode - وضع المعاينة ('auto' افتراضياً)
+     */
     function openUnifiedModal(itemId, mode = "auto") {
       openSheetModal(itemId, mode);
     }
 
+    /**
+     * تهيئة مساحة العرض والتنزيل الخاصة بملفات الأوفيس والمرفقات غير المباشرة
+     * @param {Object} item - كائن المستند
+     * @param {string} iconClass - فئة أيقونة الملف
+     * @param {string} iconBoxClass - فئة لون خلفية الأيقونة
+     * @param {string} typeLabel - وصف نوع المستند
+     */
     function setupOfficeBox(item, iconClass, iconBoxClass, typeLabel = 'مستند رسمي') {
       const isLight = document.body.classList.contains('light-theme');
       const iconEl = document.getElementById('unifiedOfficeIcon');
@@ -4076,6 +4301,9 @@
       }
     }
 
+    /**
+     * إغلاق نافذة المعاينة الموحدة وتنظيف الذاكرة وموارد العرض
+     */
     function closeUnifiedPreviewModal() {
       if (typeof window.closeUnifiedPreviewModal === 'function' && window.closeUnifiedPreviewModal !== closeUnifiedPreviewModal) {
         window.closeUnifiedPreviewModal = closeUnifiedPreviewModal;
@@ -4101,6 +4329,11 @@
     // محرك معالجة وطباعة ملفات PDF والمستندات بدقة كاملة
     // ==========================================================================
 
+    /**
+     * تحميل وتصيير كافة صفحات مستند الـ PDF بالتتابع داخل عنصر الواجهة
+     * @param {string} pdfUrl - رابط ملف الـ PDF
+     * @param {HTMLElement} targetContainer - عنصر الحاوية المراد رسم الصفحات بداخله
+     */
     async function loadAndRenderPdfPages(pdfUrl, targetContainer) {
       if (typeof pdfjsLib === 'undefined') {
         console.warn('PDF.js library is not loaded');
@@ -4166,6 +4399,11 @@
       }
     }
 
+    /**
+     * استخراج اسم القسم واسم المسؤول المعتمد لعرضهما في الترويسات الرسمية
+     * @param {Object} item - كائن المستند
+     * @returns {Object} كائن يحتوي على اسم القسم والمسؤول
+     */
     function getOfficerAndDeptName(item) {
       let deptName = item.department_name || '';
       let officerName = item.updated_by_name || '';
@@ -4328,10 +4566,17 @@
       }, 150);
     }
 
+    /**
+     * توجيه أمر الطباعة المناسب للمحتوى المعروض حالياً في نافذة المعاينة
+     */
     function printUnifiedContent() {
       printUnifiedFullReport();
     }
 
+    /**
+     * تشغيل أمر طباعة مباشر لعنصر محدد عبر معرّفه
+     * @param {string} itemId - معرّف العنصر
+     */
     function printUnifiedItem(itemId) {
       const item = allContents.find(c => c.id === itemId);
       if (!item) return;
@@ -4352,15 +4597,29 @@
     function openPreviewModal(id) {
       openUnifiedModal(id);
     }
+    /**
+     * فتح نافذة قراءة نص التوجيه المستقلة
+     * @param {string} id - معرّف التوجيه
+     */
     function openTextModal(id) {
       openUnifiedModal(id);
     }
+    /**
+     * إغلاق نافذة معاينة المستند
+     */
     function closePreviewModal() {
       closeUnifiedPreviewModal();
     }
+    /**
+     * إغلاق نافذة نص التوجيه
+     */
     function closeTextModal() {
       closeUnifiedPreviewModal();
     }
+    /**
+     * طباعة عنصر محدد مباشرة
+     * @param {string} itemId - معرّف العنصر
+     */
     function printItem(itemId) {
       printUnifiedItem(itemId);
     }
@@ -4675,6 +4934,9 @@
       syncAllContrasts();
     }
 
+    /**
+     * التبديل بين النمطين النهاري والليلي وحفظ التفضيل محلياً
+     */
     function toggleTheme() {
       const isLight = document.body.classList.contains('light-theme');
       const newMode = isLight ? 'dark' : 'light';
@@ -4693,6 +4955,11 @@
       applyTheme('light');
     }
 
+    /**
+     * تأمين وتشفير الرموز الخاصة في النصوص لمنع ثغرات الحقن (XSS)
+     * @param {string} str - النص الأصلي
+     * @returns {string} النص المؤمّن
+     */
     function escapeHtml(str) {
       if (!str) return '';
       return String(str)
@@ -4717,10 +4984,21 @@
     let currentSheetWidth = 850;
     let currentSheetZoom = 850;
 
+    /**
+     * تسجيل وتتبع نشاطات وإحصائيات المستخدم داخل التطبيق
+     * @param {string} id - معرّف العنصر
+     * @param {string} title - عنوان النشاط
+     * @param {string} action - نوع الإجراء
+     */
     function trackActivity(id, title, action) {
       // Safe activity tracker
     }
 
+    /**
+     * توحيد صيغ المسارات والروابط لمنع أخطاء بيئات العمل المختلفة
+     * @param {string} p - المسار الأصلي
+     * @returns {string} المسار القياسي الموحد
+     */
     function normalizePath(p) {
       if (!p) return '';
       if (p.startsWith('/local-docs/')) return p;
@@ -5037,6 +5315,12 @@
 
     
 
+    /**
+     * معالجة أخطاء تعذر تحميل صور الاستمارات وتوجيه العرض للبدائل المتاحة
+     * @param {HTMLImageElement} img - عنصر الصورة
+     * @param {string} fileName - اسم الملف
+     * @param {string} origSrc - المسار الأصلي
+     */
     async function handleSheetImgError(img, fileName, origSrc) {
       const cleanKey = (origSrc || '').split('/').pop();
       if (typeof BasraOfflineDB !== 'undefined') {
@@ -5189,6 +5473,11 @@
       a.remove();
     }
 
+    /**
+     * توليد اسم ملف رسمي ومعياري عند تنزيل الاستمارة
+     * @param {Object} form - كائن بيانات الاستمارة
+     * @returns {string} اسم الملف المنظم
+     */
     function getFormDownloadName(form) {
       if (!form) return 'النموذج.docx';
       let ext = 'docx';
@@ -5206,6 +5495,10 @@
       return `${cleanTitle}.${ext}`;
     }
 
+    /**
+     * بدء إجراءات تنزيل ملف الاستمارة للمستخدم
+     * @param {string} formId - معرّف الاستمارة
+     */
     function downloadFormFile(formId) {
       const f = (typeof allContents !== 'undefined' ? allContents : (typeof allForms !== 'undefined' ? allForms : [])).find(item => String(item.id) === String(formId));
       if (!f) return;
@@ -5217,6 +5510,9 @@
       downloadFileWithPicker(downloadUrl, downloadName);
     }
 
+    /**
+     * تنزيل المستند المفتوح حالياً داخل نافذة المعاينة
+     */
     function handleModalDownload() {
       if (!activeForm) return;
       if (typeof trackActivity === 'function') {
@@ -5232,7 +5528,7 @@
     }
 
     // ================= OPEN SHEET MODAL =================
-    async function openSheetModal(formId, mode = 'auto') {
+    async function openSheetModal(formId, mode = 'auto', attIndex = 0) {
       const f = (typeof adminContents !== 'undefined' ? adminContents.find(item => String(item.id) === String(formId)) : null)
              || (typeof allContents !== 'undefined' ? allContents.find(item => String(item.id) === String(formId)) : null)
              || (typeof allForms !== 'undefined' ? allForms.find(item => String(item.id) === String(formId)) : null);
@@ -5242,28 +5538,40 @@
         trackActivity(f.id, f.title, 'view');
       }
 
-      const ext = (f.file_name || f.file_type || '').split('.').pop().toLowerCase();
-      const isOffice = ['docx', 'doc', 'xlsx', 'xls'].includes(ext) || f.file_type === 'doc' || f.file_type === 'docx' || f.file_type === 'xls' || f.file_type === 'xlsx';
-      const isPdf = ext === 'pdf' || f.file_type === 'pdf';
-      const isImg = ['png', 'jpg', 'jpeg', 'webp', 'gif', 'svg'].includes(ext) || f.file_type === 'image';
-      const isAudio = ['mp3', 'wav', 'm4a', 'ogg', 'opus', 'aac', 'webm', 'amr'].includes(ext) || f.file_type === 'audio';
-      const hasActualUploadedFile = Boolean((f.file_url && f.file_url.trim() && f.file_type !== 'text_only') || (f.file_name && f.file_name.trim() && f.file_type !== 'text_only'));
-      const hasBodyText = Boolean(f.body_text && f.body_text.trim());
+      const { attachments, cleanBody } = extractItemAttachments(f);
+      const hasActualUploadedFile = attachments.length > 0;
+      const hasBodyText = Boolean(cleanBody && cleanBody.trim());
 
       // Determine if we should render text as PDF
       const shouldRenderText = (mode === 'text') || (!hasActualUploadedFile && hasBodyText) || (!hasActualUploadedFile && !f.file_url);
 
+      let selectedAtt = null;
+      if (!shouldRenderText && attachments.length > 0) {
+        selectedAtt = attachments[attIndex] || attachments[0];
+      }
+
+      const ext = selectedAtt ? ((selectedAtt.name || selectedAtt.type || '').split('.').pop().toLowerCase()) : ((f.file_name || f.file_type || '').split('.').pop().toLowerCase());
+      const isOffice = ['docx', 'doc', 'xlsx', 'xls', 'ppt', 'pptx'].includes(ext) || f.file_type === 'doc' || f.file_type === 'docx' || f.file_type === 'xls' || f.file_type === 'xlsx' || f.file_type === 'ppt' || f.file_type === 'pptx';
+      const isPdf = ext === 'pdf' || f.file_type === 'pdf';
+      const isImg = ['png', 'jpg', 'jpeg', 'webp', 'gif', 'svg', 'bmp'].includes(ext) || f.file_type === 'image';
+      const isAudio = ['mp3', 'wav', 'm4a', 'ogg', 'opus', 'aac', 'webm', 'amr'].includes(ext) || f.file_type === 'audio';
+
+      const fileUrl = selectedAtt ? selectedAtt.url : f.file_url;
+      const fileName = selectedAtt ? selectedAtt.name : f.file_name;
+
       activeForm = {
         ...f,
         id: f.id,
-        title: f.title || f.file_name || 'توجيهات ونماذج',
-        fileName: f.file_name || `${(f.title || 'مستند').replace(/[\/\\?%*:|"<>]/g, '_')}.pdf`,
-        originalName: f.file_name || `${(f.title || 'مستند').replace(/[\/\\?%*:|"<>]/g, '_')}.pdf`,
+        title: f.title || fileName || 'توجيهات ونماذج',
+        fileName: fileName || `${(f.title || 'مستند').replace(/[\/\\?%*:|"<>]/g, '_')}.pdf`,
+        originalName: fileName || `${(f.title || 'مستند').replace(/[\/\\?%*:|"<>]/g, '_')}.pdf`,
         fileType: shouldRenderText ? 'pdf' : (ext || f.file_type),
-        fileUrl: (typeof getDocumentAccessUrl === 'function' && f.file_url) ? getDocumentAccessUrl(f) : (f.file_url || ''),
+        fileUrl: (typeof getDocumentAccessUrl === 'function' && fileUrl) ? getDocumentAccessUrl({ ...f, file_url: fileUrl }) : (fileUrl || ''),
         isOffice: shouldRenderText ? false : isOffice,
         isTextGenerated: shouldRenderText,
-        hasBothTextAndFile: Boolean(hasActualUploadedFile && hasBodyText)
+        hasBothTextAndFile: Boolean(hasActualUploadedFile && hasBodyText),
+        attachments: attachments,
+        activeAttIndex: attIndex
       };
 
       const titleEl = document.getElementById('modalSheetTitle');
@@ -5283,6 +5591,42 @@
       if (boxesCountWrap) boxesCountWrap.classList.remove('hidden');
       if (tipIcon) tipIcon.className = 'fa-solid fa-lightbulb text-amber-600';
       if (tipText) tipText.innerText = 'اضغط زر "إضافة نص"، ثم اسحبه لأي مكان في النموذج وكبّره وصغّره حسب الفراغ.';
+
+      // Multi-Attachment Switcher Tabs Bar
+      const tabsBar = document.getElementById('modalAttachmentTabsBar');
+      if (tabsBar) {
+        if (attachments.length > 1 || (attachments.length >= 1 && hasBodyText)) {
+          tabsBar.classList.remove('hidden');
+          let tabsHtml = '<div class="flex items-center gap-1.5 text-xs font-bold shrink-0 text-slate-400 pl-2"><i class="fa-solid fa-paperclip text-amber-400"></i><span>المرفقات:</span></div>';
+          if (hasBodyText) {
+            const isTextActive = shouldRenderText;
+            tabsHtml += `
+              <button type="button" onclick="openSheetModal('${f.id}', 'text')"
+                class="px-3 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 shrink-0 ${isTextActive ? 'bg-amber-500 text-slate-950 shadow-md font-black' : 'bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700'}">
+                <i class="fa-solid fa-file-lines text-xs"></i>
+                <span>نص التوجيهات (PDF)</span>
+              </button>
+            `;
+          }
+          attachments.forEach((att, idx) => {
+            const aExt = (att.name || att.type || '').split('.').pop().toLowerCase();
+            const aStyle = getAttachmentFileIcon(aExt);
+            const isActive = !shouldRenderText && idx === attIndex;
+            tabsHtml += `
+              <button type="button" onclick="openSheetModal('${f.id}', 'attachment', ${idx})"
+                class="px-3 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 shrink-0 ${isActive ? 'bg-blue-600 text-white shadow-md' : 'bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700'}">
+                <i class="fa-solid ${aStyle.icon} text-xs"></i>
+                <span class="truncate max-w-[160px]">${escapeHtml(att.name)}</span>
+                <span class="text-[10px] opacity-80 font-mono">(${att.size || aExt})</span>
+              </button>
+            `;
+          });
+          tabsBar.innerHTML = tabsHtml;
+        } else {
+          tabsBar.classList.add('hidden');
+          tabsBar.innerHTML = '';
+        }
+      }
 
       // Show modal
       const modal = document.getElementById('sheetModal');
@@ -5511,6 +5855,10 @@
       setTimeout(applySheetRotation, 50);
     }
 
+    /**
+     * تدوير زاوية عرض الاستمارة الحالية بمقدار 90 درجة
+     * @param {number} delta - زاوية التدوير (افتراضياً 90)
+     */
     function rotateCurrentSheet(delta = 90) {
       if (typeof currentSheetWidth !== 'number' || isNaN(currentSheetWidth)) {
         currentSheetWidth = 850;
@@ -5519,6 +5867,10 @@
       applySheetRotation();
     }
 
+    /**
+     * تعديل وضبط عرض الاستمارة داخل نافذة المحرر
+     * @param {string} width - القيمة المطلوبة للعرض
+     */
     function setSheetWidth(width) {
       const targetW = (typeof width === 'number' && !isNaN(width)) ? width : 850;
       currentSheetWidth = Math.max(300, Math.min(2600, targetW));
@@ -5537,6 +5889,10 @@
       applySheetRotation();
     }
 
+    /**
+     * تكبير أو تصغير حجم عرض الاستمارة (Zoom In/Out)
+     * @param {number} delta - مقدار التغيير في التكبير
+     */
     function adjustSheetZoom(delta) {
       if (typeof currentSheetWidth !== 'number' || isNaN(currentSheetWidth)) {
         currentSheetWidth = 850;
@@ -5544,6 +5900,9 @@
       setSheetWidth(currentSheetWidth + delta);
     }
 
+    /**
+     * تطبيق زاوية التدوير المحددة على صور وعناصر الاستمارة
+     */
     function applySheetRotation() {
       const wrappers = document.querySelectorAll('#sheetScrollArea .sheet-wrapper');
       const badge = document.getElementById('rotationAngleBadge');
@@ -5613,11 +5972,19 @@
       });
     }
 
+    /**
+     * إغلاق نافذة محرر الاستمارات ومسح المربعات المؤقتة وتنظيف الذاكرة
+     */
     function closeSheetModal() {
+      const tabsBar = document.getElementById('modalAttachmentTabsBar');
+      if (tabsBar) { tabsBar.classList.add('hidden'); tabsBar.innerHTML = ''; }
       document.getElementById('sheetModal').classList.add('hidden');
       document.getElementById('sheetScrollArea').innerHTML = '';
     }
 
+    /**
+     * إضافة مربع نص تفاعلي جديد على الصفحة الظاهرة حالياً داخل المحرر
+     */
     function addDraggableBoxToCurrentPage() {
       // Find visible page in scroll area
       const wrappers = document.querySelectorAll('#sheetScrollArea .sheet-wrapper');
@@ -5733,6 +6100,10 @@
       }, 50);
     }
 
+    /**
+     * حذف المربع النصي المحدد من الصفحة وتحديث العداد
+     * @param {string} id - معرّف المربع المراد حذفه
+     */
     function deleteBox(id) {
       const el = document.getElementById(id);
       if (el) el.remove();
@@ -5760,6 +6131,11 @@
       addDraggableBox(text, newLeftPct.toFixed(2), newTopPct.toFixed(2), srcWidthPct.toFixed(2), srcHeightPct.toFixed(2), pageNum, baseFont);
     }
 
+    /**
+     * تكبير أو تصغير حجم الخط داخل المربع النصي
+     * @param {string} id - معرّف المربع
+     * @param {number} delta - مقدار الزيادة أو النقصان
+     */
     function adjustBoxFont(id, delta) {
       const el = document.getElementById(id);
       if (!el) return;
@@ -5772,6 +6148,9 @@
       ta.style.fontSize = `${Math.round(baseFont * zoomRatio)}px`;
     }
 
+    /**
+     * تحديث عداد المربعات النصية المضافة في شريط أدوات المحرر
+     */
     function updateBoxesCount() {
       const count = document.querySelectorAll('#sheetScrollArea .drag-box').length;
       const badge = document.getElementById('boxesCountBadge');
@@ -5781,6 +6160,12 @@
     // Drag Implementation with Rotation Support
     let activeDrag = null;
 
+    /**
+     * بدء عملية سحب وتحريك المربع النصي بالفأرة أو اللمس
+     * @param {Event} e - حدث المؤشر
+     * @param {string} boxId - معرّف المربع
+     * @param {number} pageNum - رقم الصفحة
+     */
     function startDrag(e, boxId, pageNum = 1) {
       if (e.target.closest('.no-drag')) return;
       e.preventDefault();
@@ -5811,6 +6196,10 @@
       window.addEventListener('pointerup', stopDrag);
     }
 
+    /**
+     * حساب إحداثيات وموقع المربع النصي أثناء تحريكه
+     * @param {Event} e - حدث حركة المؤشر
+     */
     function onDragging(e) {
       if (!activeDrag) return;
       e.preventDefault();
@@ -5845,6 +6234,9 @@
       activeDrag.box.style.top = `${topPct.toFixed(2)}%`;
     }
 
+    /**
+     * إنهاء عملية سحب المربع النصي وتثبيت إحداثياته الجديدة
+     */
     function stopDrag() {
       if (activeDrag && activeDrag.box) {
         activeDrag.box.classList.remove('active');
@@ -5857,6 +6249,11 @@
     // Resize Implementation with Rotation Support
     let activeResize = null;
 
+    /**
+     * بدء عملية تغيير قياسات المربع النصي عبر مقبض التحكم
+     * @param {Event} e - حدث المؤشر
+     * @param {string} boxId - معرّف المربع
+     */
     function startResize(e, boxId) {
       e.preventDefault();
       e.stopPropagation();
@@ -5883,6 +6280,10 @@
       window.addEventListener('pointerup', stopResize);
     }
 
+    /**
+     * تعديل العرض والارتفاع للمربع النصي أثناء سحب مقبض التحجيم
+     * @param {Event} e - حدث حركة المؤشر
+     */
     function onResizing(e) {
       if (!activeResize) return;
       e.preventDefault();
@@ -5914,6 +6315,9 @@
       activeResize.box.style.height = `${heightPct.toFixed(2)}%`;
     }
 
+    /**
+     * إنهاء عملية التحجيم وتثبيت القياسات الجديدة للمربع
+     */
     function stopResize() {
       if (activeResize && activeResize.box) {
         activeResize.box.classList.remove('active');
@@ -6039,6 +6443,9 @@
     // Print the Sheet with 100% pixel accuracy (supports all pages)
     
 
+    /**
+     * إرسال الاستمارة ببياناتها ومربعاتها المدمجة مباشرة إلى نافذة الطباعة بالحجم الحقيقي A4
+     */
     async function printSheetWithBoxes() {
       if (!activeForm) return;
       trackActivity(activeForm.id, activeForm.title, 'print');
@@ -6372,6 +6779,9 @@
       const total = iframeImgs.length;
       let printTriggered = false;
 
+      /**
+       * إطلاق أمر الطباعة النهائي للمتصفح بعد اكتمال تجهيز الصفحات
+       */
       function triggerPrintNow() {
         if (printTriggered) return;
         printTriggered = true;
@@ -6403,6 +6813,9 @@
       }
     }
 
+    /**
+     * تصدير وتنزيل الاستمارة بجميع بياناتها ومربعاتها المدمجة كملف PDF جاهز
+     */
     async function downloadBakedSheet() {
       if (!activeForm) return;
       try {
@@ -6431,6 +6844,11 @@
     // OFFICIAL A4 DIRECTIVE TO PDF & CANVAS ENGINE (IHEC BASRA)
     // =========================================================================
 
+    /**
+     * تحويل وتنسيق نصوص التوجيهات الطويلة إلى صفحات A4 قياسية تحتوي على الترويسة الرسمية والترقيم
+     * @param {Object} item - كائن التوجيه
+     * @returns {Array} مصفوفة صور الصفحات
+     */
     function renderDirectiveTextToA4Pages(item) {
       const pageW = 1240;
       const pageH = 1754;
@@ -6447,6 +6865,11 @@
 
       const pages = [];
 
+      /**
+       * إنشاء لوحة Canvas قياسية لمقاس A4 مزودة بالترويسة والحدود الرسمية للانتخابات
+       * @param {number} pageNum - رقم الصفحة
+       * @returns {HTMLCanvasElement} عنصر لوحة الرسم المُنشأ
+       */
       function createPageCanvas(pageNum) {
         const c = document.createElement('canvas');
         c.width = pageW;
@@ -6511,6 +6934,13 @@
         return { canvas: c, ctx, y: 225, pageNum };
       }
 
+      /**
+       * تقسيم الفقرات النصية الطويلة إلى أسطر متناسبة مع عرض صفحة الطباعة
+       * @param {CanvasRenderingContext2D} ctx - سياق رسم الـ Canvas
+       * @param {string} text - النص
+       * @param {number} maxW - أقصى عرض للسطر
+       * @returns {Array} مصفوفة الأسطر المقسمة
+       */
       function getLines(ctx, text, maxW) {
         const rawParagraphs = text.split('\n');
         const lines = [];
@@ -6636,12 +7066,18 @@
       let currentOffset = 0;
       const enc = new TextEncoder();
 
+      /**
+       * كتابة النصوص المقطعية داخل مصفوفة البايتات لملف الـ PDF
+       */
       function writeAscii(str) {
         const bytes = enc.encode(str);
         binaryChunks.push(bytes);
         currentOffset += bytes.length;
       }
 
+      /**
+       * ضخ البيانات الثنائية في تيار بناء ملف الـ PDF
+       */
       function writeBytes(u8) {
         binaryChunks.push(u8);
         currentOffset += u8.length;
@@ -6697,6 +7133,11 @@
       return new Blob(binaryChunks, { type: 'application/pdf' });
     }
 
+    /**
+     * تجميع وحفظ صفحات الـ Canvas المصيرة في ملف PDF وتنزيله مباشرة لجهاز المستخدم
+     * @param {string} title - عنوان المستند
+     * @param {Array} dataUrls - مصفوفة صور الصفحات
+     */
     async function downloadCanvasesAsPdf(title, dataUrls) {
       try {
         const pdfBlob = buildPdfFromJpegDataUrls(dataUrls);
@@ -6854,6 +7295,9 @@
           </button>
         </div>
       </div>
+
+      <!-- Multi-Attachment Selector Tabs Bar -->
+      <div id="modalAttachmentTabsBar" class="hidden bg-slate-900 border-b border-slate-800 px-3 py-1.5 flex items-center gap-2 overflow-x-auto custom-scrollbar shrink-0"></div>
 
       <!-- Quick Guidance Bar -->
       <div class="bg-amber-50 border-b border-amber-200 px-3 sm:px-4 py-1.5 text-xs text-amber-900 flex items-center justify-between" id="modalGuidanceBar">
