@@ -2413,13 +2413,13 @@
       <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3 text-xs">
         
         <div class="flex flex-wrap items-center gap-3">
-          <!-- 1. الشعبة -->
+          <!-- 1. الجهة المصدرة -->
           <div class="flex items-center gap-1.5">
             <span class="text-slate-400 font-bold flex items-center gap-1 select-none">
-              <i class="fa-solid fa-building-columns text-amber-400 text-xs"></i> الشعبة:
+              <i class="fa-solid fa-building-columns text-amber-400 text-xs"></i> الجهة المصدرة:
             </span>
             <select id="centerDeptFilter" onchange="setCenterDeptFilter(this.value)" class="bg-slate-800 border border-slate-700 text-slate-100 text-xs rounded-xl px-3 py-1.5 font-bold focus:outline-none focus:border-amber-400 cursor-pointer shadow-sm">
-              <option value="all">كل الشعب</option>
+              <option value="all">كافة الجهات (الأقسام والشعب والوحدات)</option>
             </select>
           </div>
 
@@ -2491,7 +2491,7 @@
           <select id="sortSelect" onchange="applySorting(this.value)" class="bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-slate-200 focus:outline-none">
             <option value="latest">الأحدث إضافة</option>
             <option value="title">الأبجدي (العنوان)</option>
-            <option value="dept">حسب الشعبة</option>
+            <option value="dept">حسب الجهة المصدرة</option>
           </select>
         </div>
       </div>
@@ -3000,7 +3000,7 @@
       const deptSelect = document.getElementById('centerDeptFilter');
       if (deptSelect) {
         const curDept = selectedDeptId || 'all';
-        let deptHtml = '<option value="all">كل الشعب</option>';
+        let deptHtml = '<option value="all">كافة الجهات (الأقسام والشعب والوحدات)</option>';
         if (Array.isArray(allDepartments) && allDepartments.length > 0) {
           allDepartments.forEach(d => {
             const isSel = (d.id === curDept) ? 'selected' : '';
@@ -3506,7 +3506,7 @@
         const parts = [];
         if (selectedDeptId !== 'all') {
           const dObj = allDepartments.find(d => d.id === selectedDeptId);
-          parts.push(`شعبة: ${dObj ? dObj.name : selectedDeptId}`);
+          parts.push(`الجهة: ${dObj ? dObj.name : selectedDeptId}`);
         }
         if (selectedCategory !== 'all') {
           parts.push(`تصنيف: ${selectedCategory}`);
@@ -4558,7 +4558,7 @@
             <!-- شريط بيانات المنشور المطلوبة: تاريخ المنشور + اسم المجموعة / الشعبة + اسم الناشر -->
             <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 14px; padding: 10px 14px; background: #f1f5f9; border-radius: 8px; font-size: 13px; border: 1px solid #e2e8f0;">
               <div>
-                <span style="font-weight: 700; color: #475569;">المجموعة / الشعبة المصدرة: </span>
+                <span style="font-weight: 700; color: #475569;">الجهة المصدرة: </span>
                 <strong style="font-weight: 900; color: #0f172a; font-size: 14px;">${escapeHtml(deptName)}</strong>
               </div>
               <div>
