@@ -656,6 +656,66 @@
       -webkit-text-fill-color: #b45309 !important;
     }
 
+    /* صناديق الملاحظات والتنبيهات البنفسجية في الوضع النهاري (وضوح فائق وعالي التباين) */
+    body.light-theme .dept-mandatory-notice-box,
+    body.light-theme .bg-purple-950\/40,
+    body.light-theme .bg-purple-950\/30,
+    body.light-theme .bg-purple-950\/60 {
+      background-color: #fdf4ff !important;
+      border: 1.5px solid #d8b4fe !important;
+      color: #581c87 !important;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+    }
+
+    body.light-theme .dept-mandatory-notice-box *,
+    body.light-theme .bg-purple-950\/40 *,
+    body.light-theme .bg-purple-950\/30 *,
+    body.light-theme .bg-purple-950\/60 * {
+      color: #581c87 !important;
+      -webkit-text-fill-color: #581c87 !important;
+      font-weight: 700 !important;
+    }
+
+    body.light-theme .dept-mandatory-notice-box i,
+    body.light-theme .bg-purple-950\/40 i.fa-user-shield,
+    body.light-theme .bg-purple-950\/40 i.fa-key,
+    body.light-theme .bg-blue-950\/40 i.fa-key {
+      color: #b45309 !important;
+      -webkit-text-fill-color: #b45309 !important;
+    }
+
+    body.light-theme .dept-mandatory-notice-box p,
+    body.light-theme .bg-purple-950\/40 p,
+    body.light-theme .bg-blue-950\/40 p {
+      color: #334155 !important;
+      -webkit-text-fill-color: #334155 !important;
+      font-weight: 600 !important;
+    }
+
+    body.light-theme .bg-purple-950\/40 span.font-mono,
+    body.light-theme .bg-blue-950\/40 span.font-mono {
+      background-color: #dbeafe !important;
+      border: 1px solid #93c5fd !important;
+      color: #1e40af !important;
+      -webkit-text-fill-color: #1e40af !important;
+      font-weight: 900 !important;
+    }
+
+    /* صناديق الملاحظات البنفسجية في الوضع الليلي */
+    body:not(.light-theme) .dept-mandatory-notice-box {
+      background-color: rgba(59, 7, 100, 0.5) !important;
+      border: 1.5px solid rgba(168, 85, 247, 0.5) !important;
+      color: #f3e8ff !important;
+    }
+    body:not(.light-theme) .dept-mandatory-notice-box * {
+      color: #f3e8ff !important;
+      -webkit-text-fill-color: #f3e8ff !important;
+    }
+    body:not(.light-theme) .dept-mandatory-notice-box i {
+      color: #fbbf24 !important;
+      -webkit-text-fill-color: #fbbf24 !important;
+    }
+
     /* صناديق الملاحظات والتنبيهات في الوضع الليلي */
     body:not(.light-theme) .callout-info-box {
       background-color: rgba(15, 23, 42, 0.85) !important;
@@ -3191,9 +3251,11 @@
         <!-- Initial Department Admin Account (إلزامي عند إضافة جهة جديدة) -->
         <div id="deptInitialAccountFields" class="pt-3 border-t border-slate-800 space-y-3">
           <div
-            class="bg-purple-950/40 border border-purple-500/40 p-2.5 rounded-xl flex items-center gap-2 text-purple-300 text-[11px] font-bold">
-            <i class="fa-solid fa-user-shield text-amber-400 text-sm"></i>
-            <span>إجراء إلزامي: تعيين حساب مسؤول أولي واحد على الأقل للجهة الجديدة</span>
+            class="dept-mandatory-notice-box bg-purple-950/40 border border-purple-500/40 p-3 rounded-xl flex items-center gap-2.5 text-purple-300 text-xs font-bold shadow-sm">
+            <div class="w-7 h-7 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center shrink-0">
+              <i class="fa-solid fa-user-shield text-amber-400 text-sm"></i>
+            </div>
+            <span class="leading-relaxed">إجراء إلزامي: تعيين حساب مسؤول أولي واحد على الأقل للجهة الجديدة</span>
           </div>
 
           <div>
